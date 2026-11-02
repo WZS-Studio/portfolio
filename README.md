@@ -4,7 +4,7 @@ Portfólio de **Wesley Zanchettin de Souza**, desenvolvedor front-end de Vila Fl
 
 Este próprio site é HTML, CSS e JavaScript puros, com GSAP, Lenis e um terminal interativo.
 
-**▶ Assista na página do portfólio: https://wzsstudio.github.io/portfolio/**
+**▶ Assista na página do portfólio: https://wzsstudio.com.br**
 
 ---
 
@@ -66,6 +66,12 @@ Faça já seu orçamento:
 
 - WhatsApp: [+55 54 99714-7741](https://wa.me/5554997147741)
 - E-mail: [wzs.studio11@gmail.com](mailto:wzs.studio11@gmail.com)
+
+---
+
+## Publicação
+
+O site fica na hospedagem da MasterSite (cPanel), no domínio [wzsstudio.com.br](https://wzsstudio.com.br). Para publicar uma alteração: faça o push na `main`, depois no cPanel abra **Git™ Version Control → portfolio → Pull or Deploy** e clique em **Update from Remote** e **Deploy HEAD Commit**. O [`.cpanel.yml`](.cpanel.yml) copia para o `public_html` só o que o site usa.
 
 ---
 
