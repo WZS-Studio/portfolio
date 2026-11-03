@@ -71,7 +71,7 @@ Faça já seu orçamento:
 
 ## Publicação
 
-O site fica na hospedagem da MasterSite (cPanel), no domínio [wzsstudio.com.br](https://wzsstudio.com.br). Para publicar uma alteração: faça o push na `main`, depois no cPanel abra **Git™ Version Control → portfolio → Pull or Deploy** e clique em **Update from Remote** e **Deploy HEAD Commit**. O [`.cpanel.yml`](.cpanel.yml) copia para o `public_html` só o que o site usa.
+O site fica na hospedagem da MasterSite (cPanel), no domínio [wzsstudio.com.br](https://wzsstudio.com.br). Para publicar uma alteração: faça o push na `main`, depois no cPanel abra **Git™ Version Control → WZS-Studio/portfolio → Manage → Pull or Deploy** e clique em **Update from Remote** e **Deploy HEAD Commit**. O [`.cpanel.yml`](.cpanel.yml) copia para o `public_html` só o que o site usa.
 
 ---
 
