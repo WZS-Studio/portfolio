@@ -1,8 +1,9 @@
 # Publicação na hospedagem da MasterSite (cPanel → Git Version Control → Deploy HEAD Commit).
-# Copia só o que o site usa; midia/, previews/ e qrcode/ ficam apenas no repositório.
+# Copia só o que o site usa; conteudo/, tools/, midia/, previews/ e qrcode/ ficam apenas no repositório.
+# As páginas (index.html, sites/, criativos/) são geradas por `node tools/gerar.mjs` antes do commit.
 ---
 deployment:
   tasks:
     - export DEPLOYPATH=$HOME/public_html/
     - /bin/cp index.html 404.html logo-3d.html .htaccess robots.txt sitemap.xml $DEPLOYPATH
-    - /bin/cp -R assets audio posters videos $DEPLOYPATH
+    - /bin/cp -R assets media sites criativos audio posters videos $DEPLOYPATH

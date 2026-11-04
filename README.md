@@ -1,78 +1,82 @@
 # WZS Studio · Portfólio
 
-Portfólio de **Wesley Zanchettin de Souza**, desenvolvedor front-end de Vila Flores, RS, atendendo toda a região. Demonstrações em vídeo de sites, landing pages e sistemas escritos do zero.
+**Uma marca, duas especialidades:** *Criativos e conteúdos virais* e *Sites que convertem*.
+Site em HTML, CSS e JavaScript puros (sem build), com um mundo 3D em Three.js que continua vivo entre as páginas.
 
-Este próprio site é HTML, CSS e JavaScript puros, com GSAP, Lenis e um terminal interativo.
-
-**▶ Assista na página do portfólio: https://wzsstudio.com.br**
-
----
-
-## JurisConta — sistema para escritórios de advocacia
-
-⭐ **Projeto em destaque** · [jurisconta.com](https://jurisconta.com)
-
-![Prévia do JurisConta](previews/jurisconta-site.gif)
-
-Plataforma web de gestão jurídica: intimações capturadas do DJEN pelo número da OAB, calculadoras com memória de cálculo, assistente que cita a fonte oficial, modelos que viram .docx, casos, agenda e indicadores.
-
-Node.js · Express · MySQL · IA com RAG — [vídeo do site de apresentação (0:45)](videos/jurisconta-site.mp4)
-
-## Dolce Migliavaca — site para confeitaria
-
-🌐 **No ar:** [dolce-migliavaca.pages.dev](https://dolce-migliavaca.pages.dev)
-
-![Prévia do site Dolce Migliavaca](previews/dolce-migliavaca.gif)
-
-Site de uma página para confeitaria caseira: cheesecake em 3D que gira com o mouse ou o dedo, cardápio arrastável com pedido direto no WhatsApp, galeria com revelação na rolagem e área de tele-entrega. Logo e identidade visual criados para o projeto.
-
-HTML · CSS · JavaScript · Three.js · Cloudflare Pages — [vídeo completo (0:19)](videos/dolce-migliavaca.mp4)
-
-> Modelo 3D [“Cheese Cake”](https://sketchfab.com/3d-models/cheese-cake-7290e12a31d04cb3892049f379c4bafb) por [rebuilderai](https://sketchfab.com/RebuilderAI-vrin) (Sketchfab), licença [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.pt-br).
-
-## Hyper Frame Studio — site para estúdio de fotografia
-
-![Prévia do site Hyper Frame Studio](previews/hyper-frame.gif)
-
-Site para estúdio de fotografia de eventos, ensaios e cosplay: abertura com o logo em pixel, mosaico de fotos animado pela rolagem, câmera desenhada que vira visor do portfólio, serviços, ensaio autoral, galeria com filtros e formulário de contato.
-
-HTML · CSS · JavaScript · GSAP · ScrollTrigger · Lenis — [vídeo completo (0:38)](videos/hyper-frame.mp4)
-
-> Fotos: acervo do Hyper Frame Studio.
-
-## Forja Academia — site para academia
-
-![Prévia da Forja Academia](previews/forja-academia.gif)
-
-Landing page com halter 3D animado pela rolagem (Three.js), vídeo de fundo, modalidades, grade de horários, FAQ, mapa e contato via WhatsApp.
-
-HTML · CSS · JavaScript · Three.js — [vídeo completo (0:56)](videos/forja-academia.mp4)
-
-> Marca fictícia criada para o portfólio. Fotos e vídeo do Pexels (licença livre).
-
-## App de treino — PWA para celular
-
-![Prévia do app de treino](previews/app-fitness.gif)
-
-Meta semanal, montagem de treinos, registro de séries e cargas com cronômetro, evolução por exercício, músculos trabalhados, dieta, sequência de dias e ranking entre amigos.
-
-PWA · JavaScript · Supabase — [vídeo completo (0:45)](videos/app-fitness.mp4)
+**No ar:** https://wzsstudio.com.br · Antes de publicar, confira o `PENDENCIAS.md` local (fica fora do repositório, que é público).
 
 ---
 
-## Orçamento
+## Como o site funciona
 
-Faça já seu orçamento:
+| Endereço | O que é |
+|---|---|
+| `/` | Portal: a logo 3D entre os dois caminhos. Mover o mouse (ou o dedo) antecipa o universo; clicar ou tocar confirma. |
+| `/sites/` | Jornada *Sites que convertem*, contada em capítulos: a logo expande → o problema (notebook 3D com um site que perde o visitante) → as cinco camadas → o caso MedGrind → mais projetos → a oportunidade → planos e vagas. |
+| `/criativos/` | Jornada *Criativos e conteúdos virais*: a logo expande → o problema (celular 3D com o feed sendo pulado) → as camadas de um reel → o celular gira com um reel que deu certo → números das fontes → vídeos → anúncios → a oportunidade → planos e vagas. |
 
-- WhatsApp: [+55 54 99714-7741](https://wa.me/5554997147741)
-- E-mail: [wzs.studio11@gmail.com](mailto:wzs.studio11@gmail.com)
+Os capítulos (`.cap`) ficam presos na tela enquanto a pessoa rola; a rolagem continua natural. Os textos de cada capítulo, os planos e as **vagas do mês** estão em `conteudo/site.mjs` (`historia`, `planos`, `vagas`).
 
----
+- As três páginas são HTML completo (funcionam sem JavaScript, boas para Google e para compartilhar link).
+  Com JavaScript, a troca entre elas acontece sem recarregar: a câmera mergulha na logo ou um círculo de luz atravessa a tela.
+- `assets/js/mundo.js` — a cena 3D (logo em esfera de contornos, luz por universo, telas e quadros de vídeo em órbita).
+  Três níveis de qualidade automáticos; `?qualidade=baixa|media|alta` força um nível e `?3d=0` desliga o 3D.
+- `assets/js/dispositivos.js` — celular e notebook em 3D (materiais físicos, luz de estúdio), camadas que se montam e partículas, guiados pelo progresso de cada capítulo.
+- `assets/js/app.js` — navegação, portal, capítulos, animações de rolagem, estudos de caso, player de vídeo.
+- `assets/js/cursor.js` — cursor com a logo (o rodapé tem o botão para voltar ao cursor padrão).
+- `assets/js/medicao.js` — eventos: `escolha_especialidade`, `abrir_projeto`, `reproduzir_video`, `clique_whatsapp`. Nenhum dado pessoal.
+- `assets/tex/matcap-*.jpg` — materiais da logo renderizados no Blender (`tools/blender/matcaps.py`).
+- Com “reduzir movimento” ligado no sistema: sem rolagem suave, sem voo de câmera, troca de página por corte curto.
+
+## Como atualizar o conteúdo
+
+Tudo que muda fica em **`conteudo/site.mjs`**: textos, projetos, vídeos, métricas, depoimentos, serviços, perguntas, links, WhatsApp e IDs de medição.
+
+```bash
+node tools/gerar.mjs
+```
+
+Esse comando reescreve `index.html`, `sites/index.html`, `criativos/index.html` e `sitemap.xml`. Não edite esses quatro à mão.
+
+Regras do arquivo de conteúdo:
+- Toda métrica leva **fonte e data**. Visualização, curtida, CTR e venda são coisas diferentes: escreva qual é.
+- Lista vazia esconde a seção (ex.: `depoimentos`, `anuncios.videos`).
+- `publicar: false` numa série de vídeos deixa ela pronta, mas fora do site.
+
+### Adicionar um vídeo
+
+```bash
+node tools/midia.mjs video "C:/caminho/do/video.mp4" nome-do-video 1.5
+```
+
+Gera `media/criativos/nome-do-video.mp4` (720×1280, leve) e a capa `.jpg` no segundo indicado. Depois acrescente o vídeo na série em `conteudo/site.mjs` e rode `node tools/gerar.mjs`. A duração é lida do arquivo.
+
+### Adicionar a captura de um site
+
+```bash
+node tools/midia.mjs captura "C:/caminho/tela.png" media/sites/projeto/desk-1.webp
+```
+
+Para celular use largura 780: `... media/sites/projeto/cel-1.webp 780`.
+
+## Testar no computador
+
+```bash
+node tools/servidor.mjs 5190
+```
+
+Abra http://localhost:5190 (o servidor entende `/sites/`, `/criativos/`, o 404 e vídeo com Range).
 
 ## Publicação
 
-O site fica na hospedagem da MasterSite (cPanel), no domínio [wzsstudio.com.br](https://wzsstudio.com.br). Para publicar uma alteração: faça o push na `main`, depois no cPanel abra **Git™ Version Control → WZS-Studio/portfolio → Manage → Pull or Deploy** e clique em **Update from Remote** e **Deploy HEAD Commit**. O [`.cpanel.yml`](.cpanel.yml) copia para o `public_html` só o que o site usa.
+O site fica na hospedagem da MasterSite (cPanel), no domínio [wzsstudio.com.br](https://wzsstudio.com.br).
+
+1. Rode `node tools/gerar.mjs` e confira localmente.
+2. Faça o commit e o push na `main`.
+3. No cPanel: **Git™ Version Control → WZS-Studio/portfolio → Manage → Pull or Deploy** → **Update from Remote** e **Deploy HEAD Commit**.
+
+O [`.cpanel.yml`](.cpanel.yml) copia só o que o site usa: as páginas, `assets/`, `media/` e as pastas antigas de vídeo. `conteudo/`, `tools/`, `midia/`, `previews/` e `qrcode/` ficam só no repositório.
 
 ---
 
-Trilha do showreel: [“Off Road Hobbies”](https://pixabay.com/music/rock-off-road-hobbies-487682/), de WelbornWorks, via Pixabay (Pixabay Content License). O vídeo foi montado na grade da música: 85,33 BPM, um take a cada 2 compassos.
+Bibliotecas em `assets/vendor/`: Three.js r160, GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fontes: Bricolage Grotesque, Geist e Geist Mono (Google Fonts).

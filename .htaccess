@@ -1,5 +1,8 @@
 # WZS Studio · wzsstudio.com.br (Apache da MasterSite)
 Options -Indexes
+AddType image/webp .webp
+AddType video/webm .webm
+AddType font/woff2 .woff2
 ErrorDocument 404 /404.html
 
 <IfModule mod_rewrite.c>
@@ -41,6 +44,8 @@ ErrorDocument 404 /404.html
   ExpiresByType image/svg+xml "access plus 1 month"
   ExpiresByType image/png "access plus 1 month"
   ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
   ExpiresByType video/mp4 "access plus 1 month"
+  ExpiresByType video/webm "access plus 1 month"
   ExpiresByType audio/mpeg "access plus 1 month"
 </IfModule>
