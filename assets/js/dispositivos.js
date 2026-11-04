@@ -594,7 +594,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     cacos.visible = false; moedas.visible = notas.visible = false; cafe.visible = false;
     if (cap !== "c-montagem") camReel.forEach((k) => (k.m.visible = false));
     if (cap !== "s-montagem") camSite.forEach((k) => (k.m.visible = false));
-    quadro++; const redesenha = reduce || quadro % 2 === 0;
+    quadro++; const redesenha = reduce || quadro % (leve ? 3 : 2) === 0;
     if (cap !== ultimoCap) { corac = []; ultimoCap = cap; }
 
     if (cap === "c-problema") {

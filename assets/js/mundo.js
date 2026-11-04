@@ -165,13 +165,114 @@ const FUNDO_VERT = /* glsl */ `
 const FUNDO_FRAG = /* glsl */ `
   uniform vec2 uRes, uFoco; uniform float uTime, uMix, uPortal, uPortrait, uDim, uSplitK, uLuz, uOnda, uVelT;
   uniform vec3 uDeep, uNavy, uRec, uAmber, uBlue, uCyan, uCorLuz;
+  uniform vec3 uDeep2, uNavy2, uRec2, uAmber2, uBlue2, uCyan2;
+  uniform float uTroca, uLado, uBaixo, uPadA, uPadB;
   varying vec2 vUv;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
+  float ruido(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
+  float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * ruido(p); p = p * 2.03 + 7.1; a *= 0.5; } return v; }
+  float caixa(vec2 q, vec2 b, float r) { vec2 d = abs(q) - b + r; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - r; }
+  float traco(float d, float w) { return 1.0 - smoothstep(0.0, w, abs(d)); }
+  float dot2(vec2 v) { return dot(v, v); }
+  // coração (distância com sinal; ponta em y = 0, topo perto de y = 1)
+  float coracao(vec2 p) { p.x = abs(p.x); if (p.y + p.x > 1.0) return sqrt(dot2(p - vec2(0.25, 0.75))) - 0.35355; return sqrt(min(dot2(p - vec2(0.0, 1.0)), dot2(p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y); }
+  // desenho do fundo de cada capítulo; devolve (luz principal, luz secundária) na cor do universo
+  vec2 padrao(float id, vec2 p, vec2 f, float t, float vt, float ar) {
+    float r = length(p - f), a = atan(p.y - f.y, p.x - f.x);
+    if (id < 0.5) { // riscos diagonais
+      return vec2(0.0, smoothstep(0.985, 1.0, sin((p.x * 0.8 + p.y) * 26.0 - t * 2.4 - vt * 7.0)) * 0.55);
+    }
+    if (id < 1.5) { // grade em perspectiva
+      float hz = -0.12, l = 0.0;
+      if (p.y < hz) { float z = 0.45 / (hz - p.y); vec2 gp = vec2(p.x * z, z + t * 0.12 + vt * 0.9);
+        vec2 gl = abs(fract(gp * 1.2) - 0.5) / fwidth(gp * 1.2); l = (1.0 - min(min(gl.x, gl.y), 1.0)) * smoothstep(9.0, 1.2, z) * smoothstep(hz, hz - 0.08, p.y); }
+      return vec2(0.0, l * 0.9);
+    }
+    if (id < 2.5) { // feed: cartões subindo em colunas
+      vec2 cel = vec2(0.3, 0.46); float col = floor(p.x / cel.x); vec2 q = p; q.y += t * 0.16 * (1.0 + 0.35 * mod(col, 2.0)) + vt * 0.6 + col * 0.21;
+      vec2 g = (fract(q / cel) - 0.5) * cel; float d = caixa(g, cel * vec2(0.4, 0.42), 0.025);
+      return vec2(traco(d, 0.0045) * 0.9, d < 0.0 ? 0.05 : 0.0);
+    }
+    if (id < 3.5) { // estilhaços
+      vec2 q = p * 4.2, i = floor(q), fq = fract(q); float d1 = 8.0, d2 = 8.0;
+      for (int y = -1; y <= 1; y++) for (int x = -1; x <= 1; x++) {
+        vec2 o = vec2(float(x), float(y)), h = hash2(i + o); vec2 dd = o + 0.5 + 0.4 * sin(h * 6.28 + t * 0.3) - fq; float d = dot(dd, dd);
+        if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) { d2 = d; } }
+      return vec2(traco(sqrt(d2) - sqrt(d1), 0.07) * 0.85, 0.0);
+    }
+    if (id < 4.5) { // trilhas de uma linha do tempo, com a agulha
+      float ln = floor(p.y * 6.0), fy = fract(p.y * 6.0) - 0.5;
+      float bx = fract((p.x + t * (0.06 + 0.1 * hash(vec2(ln, 3.0))) + vt * 0.3) * 1.6 + hash(vec2(ln, 7.0)) * 9.0);
+      float bloco = step(0.12, bx) * step(bx, 0.78) * step(abs(fy), 0.3);
+      float borda = bloco * (1.0 - step(abs(fy), 0.25) * step(0.145, bx) * step(bx, 0.755));
+      float agulha = traco(p.x - (fract(t * 0.07) * 2.0 - 1.0) * ar * 0.5, 0.004);
+      return vec2(borda * 0.45, agulha * 0.8 + bloco * 0.025);
+    }
+    if (id < 5.5) { // corações subindo
+      vec2 cel = vec2(0.24); vec2 q = p; q.y -= t * 0.08 + vt * 0.4; vec2 i = floor(q / cel), g = (fract(q / cel) - 0.5) * cel, h = hash2(i);
+      g -= (h - 0.5) * cel * 0.4; float s = 0.05 + h.x * 0.045; float d = coracao(g / s + vec2(0.0, 0.5)) * s;
+      return vec2(traco(d, 0.0035) * 0.85 * step(0.3, h.y), d < 0.0 ? 0.05 * step(0.3, h.y) : 0.0);
+    }
+    if (id < 6.5) { // matriz de pontos ondulando a partir da logo
+      vec2 g = (fract(p / 0.04) - 0.5) * 0.04; float on = 0.5 + 0.5 * sin(r * 22.0 - t * 2.6);
+      float d = length(g) - 0.003 - 0.0045 * on * exp(-r * 1.1);
+      return vec2(0.0, (1.0 - smoothstep(0.0, 0.002, d)) * (0.3 + 0.7 * on));
+    }
+    if (id < 7.5) { // barras de gráfico
+      float ci = floor(p.x * 9.0), fx = fract(p.x * 9.0), h = -0.2 + 0.45 * ruido(vec2(ci * 0.7, t * 0.25));
+      float dentro = step(0.18, fx) * step(fx, 0.82) * step(p.y, h);
+      float borda = dentro * (1.0 - step(0.215, fx) * step(fx, 0.785) * step(p.y, h - 0.008));
+      return vec2(borda * 0.75 + dentro * 0.05, traco(p.y - h, 0.004) * step(0.18, fx) * step(fx, 0.82));
+    }
+    if (id < 8.5) { // radar: anéis, meridianos e a varredura
+      float an = traco(fract(r * 5.0 - t * 0.25) - 0.5, 0.025) * smoothstep(1.7, 0.2, r);
+      float me = traco(sin(a * 6.0 + t * 0.2), 0.05) * smoothstep(1.5, 0.3, r);
+      float va = smoothstep(0.75, 1.0, fract((a + t * 0.6) / 6.2832)) * smoothstep(1.4, 0.0, r);
+      return vec2(an * 0.7 + me * 0.3, va * 0.35);
+    }
+    if (id < 9.5) { // céu: nuvens e chão isométrico
+      float n = fbm(p * 2.2 + vec2(t * 0.03, 0.0));
+      vec2 iso = vec2(p.x * 1.732 + p.y, p.x * 1.732 - p.y) * 3.0, gi = abs(fract(iso) - 0.5) / fwidth(iso);
+      return vec2((1.0 - min(min(gi.x, gi.y), 1.0)) * smoothstep(-0.1, -0.6, p.y) * 0.55, smoothstep(0.45, 0.85, n) * 0.35);
+    }
+    if (id < 10.5) { // bolhas de conversa subindo, uma de cada lado
+      float yy = (p.y + t * 0.12 + vt * 0.5) / 0.16, lin = floor(yy), fy = fract(yy) - 0.5;
+      float lado = mod(lin, 2.0) < 1.0 ? -1.0 : 1.0, w = 0.16 + 0.15 * hash(vec2(lin, 1.0));
+      float d = caixa(vec2(p.x - lado * (ar * 0.5 - w - 0.08), fy * 0.16), vec2(w, 0.05), 0.045);
+      return vec2(traco(d, 0.0045) * 0.85, d < 0.0 ? 0.06 : 0.0);
+    }
+    if (id < 11.5) { // vapor: curvas de nível que sobem e se enrolam
+      vec2 q = p * 1.1; q.y -= t * 0.1; q += 0.45 * vec2(fbm(q + t * 0.04), fbm(q + 3.1));
+      return vec2(traco(fract(fbm(q) * 5.0) - 0.5, 0.045) * 0.5 * smoothstep(-0.6, 0.1, p.y), 0.0);
+    }
+    if (id < 12.5) { // raios saindo da logo
+      float ra = pow(abs(sin(a * 9.0 + t * 0.15)), 24.0) * smoothstep(0.15, 0.5, r) * exp(-r * 0.7);
+      return vec2(ra * 0.9, ra * 0.3);
+    }
+    if (id < 13.5) { // carregando: anéis tracejados girando em volta da logo
+      float k = 0.0;
+      for (int i = 0; i < 3; i++) { float fi = float(i); k += traco(r - 0.35 - fi * 0.22, 0.004) * step(0.5, fract((a / 6.2832) * (10.0 + fi * 6.0) + t * (0.3 - fi * 0.17))); }
+      return vec2(k * 0.75, 0.0);
+    }
+    // código: linhas de traços que sobem
+    float yy = (p.y + t * 0.05 + vt * 0.4) * 22.0, ln = floor(yy), fy = fract(yy) - 0.5;
+    float x0 = -ar * 0.5 + 0.08 + floor(hash(vec2(ln, 2.0)) * 4.0) * 0.06, len = 0.2 + 0.9 * hash(vec2(ln, 5.0));
+    float tok = step(0.28, fract((p.x - x0) * 9.0 + hash(vec2(ln, 9.0))));
+    return vec2(0.0, step(x0, p.x) * step(p.x, x0 + len) * step(abs(fy), 0.18) * tok * 0.4);
+  }
   void main() {
     vec2 uv = vUv;
     float ar = uRes.x / uRes.y;
     vec2 p = (uv - 0.5) * vec2(ar, 1.0);
     float t = uTime;
+    // troca de paleta: a cor do capítulo novo se espalha em círculo a partir da logo
+    float rT = length(p - (uFoco - 0.5) * vec2(ar, 1.0));
+    float RT = uTroca * 2.7;
+    float kT = uTroca >= 1.0 ? 1.0 : (uTroca <= 0.0 ? 0.0 : smoothstep(RT + 0.22, RT - 0.04, rT));
+    vec3 cDeep = mix(uDeep, uDeep2, kT), cNavy = mix(uNavy, uNavy2, kT), cRec = mix(uRec, uRec2, kT);
+    vec3 cAmber = mix(uAmber, uAmber2, kT), cBlue = mix(uBlue, uBlue2, kT), cCyan = mix(uCyan, uCyan2, kT);
     float c = clamp(-uMix, 0.0, 1.0), s = clamp(uMix, 0.0, 1.0);
 
     // lado: 0 = Criativos (esquerda / topo), 1 = Sites (direita / base)
@@ -182,7 +283,7 @@ const FUNDO_FRAG = /* glsl */ `
     float wS = mix(s, side * (0.3 + 0.7 * s) * (1.0 - 0.75 * c), uPortal);
     wC *= 1.0 - uDim * 0.82; wS *= 1.0 - uDim * 0.82;
 
-    vec3 col = mix(uNavy, uDeep, smoothstep(0.2, 1.1, length(p)));
+    vec3 col = mix(cNavy, cDeep, smoothstep(0.2, 1.1, length(p)));
 
     // nas jornadas a luz fica presa à logo (um halo), para o texto continuar legível
     float jr = 1.0 - uPortal;
@@ -193,15 +294,15 @@ const FUNDO_FRAG = /* glsl */ `
     vec2 b2 = mix(vec2(-0.05 * ar + cos(t * 0.55) * 0.25, -0.3 + sin(t * 1.1) * 0.12), f + vec2(cos(t * 0.55) * 0.16 - 0.12, sin(t * 1.1) * 0.08 - 0.14), jr);
     float g1 = exp(-dot(p - b1, p - b1) * mix(3.2, 7.0, jr));
     float g2 = exp(-dot(p - b2, p - b2) * mix(4.5, 9.0, jr));
-    vec3 warm = uRec * g1 * mix(0.85, 0.62, jr) + uAmber * g2 * mix(0.55, 0.4, jr);
+    vec3 warm = cRec * g1 * mix(0.85, 0.62, jr) + cAmber * g2 * mix(0.55, 0.4, jr);
     float streak = smoothstep(0.985, 1.0, sin((p.x * 0.8 + p.y) * 26.0 - t * 2.4 - uVelT * 7.0)) * 0.06;
-    warm += uAmber * streak * (g1 + g2 + mix(0.25, 0.04, jr));
+    warm += cAmber * streak * (g1 + g2 + 0.25) * uPortal;
     col += warm * wC;
 
     // Sites: brilho frio no alto + piso em perspectiva com linhas finas
     vec2 cpos = mix(vec2(0.32 * ar, 0.42), f + vec2(0.06, 0.1), jr);
     float glow = exp(-dot(p - cpos, p - cpos) * mix(2.4, 5.0, jr));
-    vec3 cool = uBlue * glow * mix(0.55, 0.5, jr);
+    vec3 cool = cBlue * glow * mix(0.55, 0.5, jr);
     float hz = -0.12;
     if (p.y < hz) {
       float z = 0.45 / (hz - p.y);
@@ -209,10 +310,10 @@ const FUNDO_FRAG = /* glsl */ `
       vec2 gl = abs(fract(gp * 1.2) - 0.5) / fwidth(gp * 1.2);
       float line = 1.0 - min(min(gl.x, gl.y), 1.0);
       float fade = smoothstep(9.0, 1.2, z) * smoothstep(hz, hz - 0.08, p.y);
-      cool += uCyan * line * fade * mix(0.22, 0.12, jr);
+      cool += cCyan * line * fade * 0.22 * uPortal;
     }
     float scan = smoothstep(0.996, 1.0, sin(uv.y * uRes.y * 0.5)) * 0.015;
-    cool += uCyan * scan;
+    cool += cCyan * scan;
     col += cool * wS;
 
     // luz que a logo emite quando "fala": clarão no foco e uma onda circular que atravessa a tela
@@ -223,6 +324,19 @@ const FUNDO_FRAG = /* glsl */ `
       col += uCorLuz * exp(-pow((rl - R) / (0.035 + uOnda * 0.09), 2.0)) * pow(1.0 - uOnda, 1.6) * 0.34;
       col += uCorLuz * smoothstep(R, R - 0.6, rl) * pow(1.0 - uOnda, 3.0) * 0.07;
     }
+    // padrão do capítulo: o novo se abre em círculo a partir da logo; mais aceso perto da luz dela
+    if (jr > 0.01) {
+      vec2 pA = padrao(uPadA, p, f, t, uVelT, ar);
+      vec2 pB = (kT > 0.001 && abs(uPadB - uPadA) > 0.5) ? padrao(uPadB, p, f, t, uVelT, ar) : pA;
+      vec2 pat = mix(pA, pB, kT);
+      float lp = (0.2 + 0.95 * exp(-rT * rT * 1.3)) * (1.0 + uLuz * 0.9) * jr;
+      col += (cRec * pat.x + cAmber * pat.y) * lp * wC * 0.6 + (cBlue * pat.x + cCyan * pat.y) * lp * wS * 0.6;
+    }
+    // a frente da troca é uma linha de luz
+    if (uTroca > 0.0 && uTroca < 1.0) col += mix(cRec, cBlue, s) * exp(-pow((rT - RT) / 0.028, 2.0)) * 0.32 * (1.0 - uTroca);
+    // escurecimento para leitura, preso à tela (sem bordas que rolam junto com as seções)
+    col *= 1.0 - uLado * 0.62 * smoothstep(0.78, 0.02, uv.x);
+    col *= 1.0 - uBaixo * 0.86 * smoothstep(0.56, 0.0, uv.y);
     col += (hash(uv * uRes + fract(t) * 37.0) - 0.5) * (0.018 + 0.03 * wC);
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
@@ -318,7 +432,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: nivel === "alta", alpha: false, powerPreference: "high-performance" });
   } catch { return null; }
-  let dprMax = nivel === "alta" ? 1.75 : nivel === "media" ? 1.5 : 1;
+  let dprMax = nivel === "alta" ? 1.5 : nivel === "media" ? 1.25 : 1;
   renderer.setPixelRatio(Math.min(devicePixelRatio, dprMax));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor(CORES.deep);
@@ -347,6 +461,26 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     uDeep: { value: C(CORES.deep) }, uNavy: { value: C(CORES.navy) }, uRec: { value: C(CORES.rec) },
     uAmber: { value: C(CORES.amber) }, uBlue: { value: C(CORES.blue) }, uCyan: { value: C(CORES.cyan) },
     uLuz: { value: 0 }, uOnda: { value: 0 }, uVelT: { value: 0 }, uCorLuz: { value: C(CORES.ice) },
+    uDeep2: { value: C(CORES.deep) }, uNavy2: { value: C(CORES.navy) }, uRec2: { value: C(CORES.rec) },
+    uAmber2: { value: C(CORES.amber) }, uBlue2: { value: C(CORES.blue) }, uCyan2: { value: C(CORES.cyan) },
+    uTroca: { value: 0 }, uLado: { value: 0 }, uBaixo: { value: 0 }, uPadA: { value: 0 }, uPadB: { value: 0 },
+  };
+  // desenho do fundo por capítulo (a cor continua a do universo):
+  // 0 riscos · 1 grade · 2 feed · 3 estilhaços · 4 trilhas · 5 corações · 6 pontos · 7 barras · 8 radar
+  // 9 céu · 10 bolhas · 11 vapor · 12 raios · 13 carregando · 14 código
+  const PADROES = {
+    "c-problema": 2, "c-explode": 3, "c-montagem": 4, "c-sucesso": 5, numeros: 6, trabalhos: 12, "c-dinheiro": 7, anuncios: 6, "c-oportunidade": 8,
+    "s-problema": 13, "s-montagem": 14, "s-medgrind": 9, projetos: 6, "s-oportunidade": 10, "s-cafe": 11,
+  };
+  const tomPara = (nome, imediato) => {
+    const id = PADROES[nome] ?? (st.universo === "sites" ? 1 : 0);
+    if (!imediato && id === fundoU.uPadB.value && st.tomChave === "ok") return;
+    st.tomChave = "ok";
+    if (imediato || reduce) { fundoU.uPadA.value = fundoU.uPadB.value = id; st.troca = 0; return; }
+    // se a troca anterior ainda corre, parte do padrão que domina a tela
+    if (st.troca > 0.5) fundoU.uPadA.value = fundoU.uPadB.value;
+    fundoU.uPadB.value = id; st.troca = 0.0001;
+    st.pulso = Math.max(st.pulso, 0.85); st.onda = 0.001;
   };
   const triGeo = new THREE.BufferGeometry();
   triGeo.setAttribute("position", new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
@@ -437,7 +571,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   const cReels = reels.slice(0, 7).map((src, i) => cartao(src, 9 / 16, "reel", i));
 
   // ---------- estado ----------
-  const st = { onda: 0, vel: 0, velT: 0,
+  const st = { onda: 0, vel: 0, velT: 0, troca: 0, tomChave: "", lado: 0, baixo: 0,
     universo: "portal",              // portal | sites | criativos
     lean: 0, mix: 0,                 // lean = alvo no portal; mix = valor suavizado
     cena: "portal", dim: 0,
@@ -455,6 +589,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   }
   function resize() {
     const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
+    // teto de pixels: em monitores grandes a cena não passa de ~2,3 milhões de pixels
+    renderer.setPixelRatio(Math.max(0.75, Math.min(devicePixelRatio, dprMax, Math.sqrt(2.3e6 / (w * h)))));
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     retrato = w / h < 0.9;
@@ -556,7 +692,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     st.ocioso += dt;
 
     // auto-ajuste: se os primeiros quadros forem lentos, baixa a resolução
-    if (frames < 90) { frames++; acc += dt; if (frames === 90 && acc / 90 > 1 / 40 && dprMax > 1) { dprMax = 1; renderer.setPixelRatio(1); resize(); } }
+    frames++; acc += dt;
+    if (frames >= 90) { if (acc / frames > 1 / 44 && dprMax > 1) { dprMax = Math.max(1, dprMax - 0.25); renderer.setPixelRatio(Math.min(devicePixelRatio, dprMax)); resize(); } frames = 0; acc = 0; }
 
     // portal: no toque (ou mouse parado no centro), a logo respira entre os dois universos
     let alvoMix;
@@ -595,6 +732,16 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
 
     st.pulso = damp(st.pulso, 0, reduce ? 12 : 2.6, dt);
     if (st.onda > 0) { st.onda += dt * 0.7; if (st.onda >= 1) st.onda = 0; }
+    if (st.troca > 0) {
+      st.troca += dt * 0.62;
+      if (st.troca >= 1) { st.troca = 0; fundoU.uPadA.value = fundoU.uPadB.value; }
+    }
+    fundoU.uTroca.value = st.troca;
+    // leitura: escurece a esquerda no hero e o pé da tela no celular, sem faixas que rolam
+    const retr = fundoU.uPortrait.value > 0.5, jornada = st.universo !== "portal";
+    st.lado = damp(st.lado, jornada && !retr && st.cena === "hero" ? 1 : 0, 2.4, dt);
+    st.baixo = damp(st.baixo, jornada && retr && ["hero", "fundo", "painel", "globo"].includes(st.cena) ? 1 : 0, 2.4, dt);
+    fundoU.uLado.value = st.lado; fundoU.uBaixo.value = st.baixo;
     st.velT = (st.velT || 0) + dt * Math.abs(st.vel || 0) * 0.6;
     const fala = Math.sin(Math.min(1, st.pulso) * Math.PI * 0.5);
     logoPos.position.copy(st.lp);
@@ -645,7 +792,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     innerU.uColA.value.set(CORES.amber); innerU.uColB.value.set(CORES.rec);
 
     // luz emitida: cor do universo, mais forte quando a logo fala
-    const corLuz = tmpCol5.set(CORES.ice).lerp(tmpCol2.set("#ff7a3d"), c).lerp(tmpCol2.set("#5aa8ff"), s);
+    const corLuz = st.universo === "portal" ? tmpCol5.set(CORES.ice).lerp(tmpCol2.set("#ff7a3d"), c).lerp(tmpCol2.set("#5aa8ff"), s)
+      : tmpCol5.copy(c > s ? fundoU.uRec2.value : fundoU.uBlue2.value).lerp(tmpCol2.set("#ffffff"), 0.22);
     const someLuz = Math.max(0, 1 - md * 1.6) * st.opacidade * Math.min(1, st.lo * 1.4);
     luzU.uCor.value.copy(corLuz); luzU.uK.value = fala * 1.15; luzU.uOnda.value = st.onda; luzU.uT.value = t;
     luzU.uBase.value = st.universo === "portal" ? 0.08 : 0.2; luzU.uFade.value = someLuz;
@@ -678,7 +826,10 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
       if (nome === "portal") st.cena = "portal";
       else if (st.cena === "portal") st.cena = "hero";
       if (imediato) { st.mix = nome === "sites" ? 1 : nome === "criativos" ? -1 : 0; fundoU.uPortal.value = nome === "portal" ? 1 : 0; }
+      tomPara(null, imediato);
     },
+    // paleta do capítulo (a cor nova se espalha em círculo a partir da logo)
+    setTom(nome) { tomPara(nome, false); },
     setCena(nome, { imediato = false } = {}) {
       if (!CENAS[nome]) return;
       st.cena = nome;

@@ -19,7 +19,7 @@ const fino = matchMedia("(hover: hover) and (pointer: fine)");
 const gsap = window.gsap, ST = window.ScrollTrigger;
 if (gsap && ST) gsap.registerPlugin(ST);
 
-let mundo = null, lenis = null, navegando = false;
+let mundo = null, lenis = null, navegando = false, capVel = null;
 let limpar = [];                       // funções de limpeza da página atual
 const universoDe = (path) => (/\/sites\/?/.test(path) ? "sites" : /\/criativos\/?/.test(path) ? "criativos" : "portal");
 
@@ -51,9 +51,10 @@ function iniciar() {
   if (gsap && ST && !reduz() && window.Lenis) {
     lenis = new window.Lenis({ duration: 1.05, smoothWheel: true, wheelMultiplier: 1 });
     lenis.on("scroll", ST.update);
-    let vel = 0;
+    let vel = 0, velQ = 0;
     lenis.on("scroll", (l) => { vel = Math.max(-4, Math.min(4, (l.velocity || 0) * 0.14)); });
-    gsap.ticker.add(() => { vel *= 0.9; html.style.setProperty("--vel", vel.toFixed(2)); mundo?.setVel?.(vel); });
+    // a inclinação só vale no capítulo da tela (mexer numa variável do html recalcularia a página inteira)
+    gsap.ticker.add(() => { vel *= 0.9; const q = Math.round(vel * 5) / 5; if (q !== velQ) { velQ = q; capVel?.style.setProperty("--vel", q); } mundo?.setVel?.(vel); });
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
@@ -253,7 +254,14 @@ function cenas() {
     if (en.isIntersecting) mundo.setCena(en.target.dataset.cena);
   }), { rootMargin: "-48% 0px -48% 0px" });
   secs.forEach((s) => io.observe(s));
-  limpar.push(() => io.disconnect());
+  // o desenho do fundo acompanha a seção que cruza o meio da tela (a cor do universo não muda)
+  const io2 = new IntersectionObserver((ents) => ents.forEach((en) => {
+    if (!en.isIntersecting) return;
+    const el = en.target, cap = el.dataset.cap;
+    mundo.setTom(cap === "expande" ? (el.dataset.prox && el.dataset.prox !== "-" ? el.dataset.prox : null) : cap || el.id);
+  }), { rootMargin: "-49% 0px -49% 0px" });
+  $$(".cap, .sec, .hero").forEach((s) => io2.observe(s));
+  limpar.push(() => { io.disconnect(); io2.disconnect(); });
 }
 
 // ---------------------------------------------------------------------------
@@ -300,7 +308,9 @@ function capitulos() {
           const i = +ln.dataset.i, j = +ln.dataset.j, n = +ln.dataset.n, ini = 0.12 + i * 0.14, dur = 0.11;
           const k = (p - ini) / dur * n - j;
           ln.classList.toggle("is-on", k > 0);
-          ln.style.setProperty("--t", Math.max(0, Math.min(1, k)).toFixed(3));
+          // só escreve quando o valor muda (cada escrita obriga o navegador a recalcular o estilo)
+          const tv = Math.max(0, Math.min(1, k)).toFixed(2);
+          if (ln._t !== tv) { ln._t = tv; ln.style.setProperty("--t", tv); }
           if (k > 0 && k < 1) atual = ln;
         });
         linhas.forEach((ln) => ln.classList.toggle("is-atual", ln === atual));
@@ -340,8 +350,8 @@ function capitulos() {
       trigger: cap, start: "top top", end: "bottom bottom",
       onUpdate: (self) => { if (self.isActive) aplicar(self.progress); },
       onToggle: (self) => {
-        if (self.isActive) { ativo = cap; aplicar(self.progress); mundo?.pulsar(1.15); }
-        else { passos.forEach((el) => el.classList.remove("is-on")); passoAtual = -1; if (ativo === cap) { ativo = null; mundo?.setCap(null); mundo?.setMergulho(0); if (veu) veu.style.opacity = "0"; } }
+        if (self.isActive) { ativo = cap; capVel = cap; aplicar(self.progress); mundo?.pulsar(1.15); }
+        else { passos.forEach((el) => el.classList.remove("is-on")); passoAtual = -1; if (capVel === cap) { cap.style.setProperty("--vel", 0); capVel = null; } if (ativo === cap) { ativo = null; mundo?.setCap(null); mundo?.setMergulho(0); if (veu) veu.style.opacity = "0"; } }
       },
     });
     limpar.push(() => st.kill());

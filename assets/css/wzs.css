@@ -841,3 +841,15 @@ html[data-universo="sites"] .planos__cab h2 { font-size: clamp(40px, 5vw, 88px);
   html[data-universo="sites"] .hero--curto h1 { font-size: clamp(34px, 9.6vw, 52px); }
   html[data-universo="sites"] .passo__titulo { font-size: clamp(28px, 8vw, 44px); }
 }
+
+/* =========================================================
+   6ª RODADA: sem faixas escuras entre seções (o escurecimento vive no fundo 3D, preso à tela) e mais leve
+   ========================================================= */
+.hero, .sec--leitura { background: none; }
+.cap__palco::after { display: none; }
+.rodape { background: linear-gradient(to bottom, rgba(10, 18, 32, 0), rgba(10, 18, 32, .92) 180px); border-top: 0; }
+.sem-3d .hero { background: linear-gradient(90deg, rgba(10, 18, 32, .62) 0%, rgba(10, 18, 32, .3) 45%, transparent 70%); }
+/* letras: só transformação e opacidade (largura e desfoque por letra pesavam a cada quadro) */
+@keyframes letra { 0% { opacity: 0; transform: translateY(.5em) scale(1.5, 1.6) skewX(-10deg); } 55% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+.js .passo.is-on .l, .js .entra.is-dentro .l, .js .hero .l { animation-duration: .8s; animation-delay: calc(var(--li, 0) * 18ms + 40ms); }
+.passo.is-on .passo__titulo, .passo.is-on .passo__num { animation: none; }
