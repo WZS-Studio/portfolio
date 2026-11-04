@@ -412,7 +412,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   const coarse = matchMedia("(pointer: coarse)").matches;
   // três níveis: alta (computador), media (celular/máquina modesta), baixa (WebGL por software
   // ou ?qualidade=baixa). A cena é a mesma; muda a densidade da esfera e a resolução.
-  let nivel = coarse || Math.min(innerWidth, innerHeight) < 700 || (navigator.hardwareConcurrency || 8) <= 4 ? "media" : "alta";
+  // o nível vem do aparelho (tela física, ponteiro, núcleos), não da janela: janela estreita no computador continua "alta"
+  let nivel = coarse || Math.min(screen.width, screen.height) < 700 || (navigator.hardwareConcurrency || 8) <= 4 ? "media" : "alta";
   const pedido = new URLSearchParams(location.search).get("qualidade");
   try {
     const sonda = document.createElement("canvas");
@@ -430,7 +431,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: nivel === "alta", alpha: false, powerPreference: "high-performance" });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: nivel !== "baixa", alpha: false, powerPreference: "high-performance" });
   } catch { return null; }
   let dprMax = nivel === "alta" ? 1.5 : nivel === "media" ? 1.25 : 1;
   renderer.setPixelRatio(Math.min(devicePixelRatio, dprMax));
@@ -678,7 +679,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
 
   // ---------- laço ----------
   const clock = new THREE.Clock();
-  let t = 0, raf = 0, frames = 0, acc = 0, pular = false;
+  let t = 0, raf = 0, frames = 0, acc = 0, pular = false, janelas = 0;
   const qId = new THREE.Quaternion();
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), inv = new THREE.Matrix4(), esfera = new THREE.Sphere();
   const ptr3 = new THREE.Vector3(0, 0, 9), ptrAlvo = new THREE.Vector3();
@@ -693,7 +694,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
 
     // auto-ajuste: se os primeiros quadros forem lentos, baixa a resolução
     frames++; acc += dt;
-    if (frames >= 90) { if (acc / frames > 1 / 44 && dprMax > 1) { dprMax = Math.max(1, dprMax - 0.25); renderer.setPixelRatio(Math.min(devicePixelRatio, dprMax)); resize(); } frames = 0; acc = 0; }
+    // a 1ª janela de medida tem shaders compilando e vídeos abrindo: não conta
+    if (frames >= 90) { if (acc / frames > 1 / 40 && janelas++ > 0 && dprMax > 1) { dprMax = Math.max(1, dprMax - 0.25); renderer.setPixelRatio(Math.min(devicePixelRatio, dprMax)); resize(); } frames = 0; acc = 0; }
 
     // portal: no toque (ou mouse parado no centro), a logo respira entre os dois universos
     let alvoMix;

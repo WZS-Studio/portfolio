@@ -853,3 +853,26 @@ html[data-universo="sites"] .planos__cab h2 { font-size: clamp(40px, 5vw, 88px);
 @keyframes letra { 0% { opacity: 0; transform: translateY(.5em) scale(1.5, 1.6) skewX(-10deg); } 55% { opacity: 1; } 100% { opacity: 1; transform: none; } }
 .js .passo.is-on .l, .js .entra.is-dentro .l, .js .hero .l { animation-duration: .8s; animation-delay: calc(var(--li, 0) * 18ms + 40ms); }
 .passo.is-on .passo__titulo, .passo.is-on .passo__num { animation: none; }
+
+/* =========================================================
+   8ª RODADA: números com volume (antes ficavam apagados na cor do fundo)
+   face clara, extrusão na cor do universo escurecendo para trás e sombra no chão; sempre numa linha
+   ========================================================= */
+.cap__texto { container-type: inline-size; }
+.passo__num { --nk: .62; white-space: nowrap; color: #fff; padding-bottom: .1em;
+  font-size: min(clamp(84px, 13vw, 220px), calc(100cqi / (var(--n, 5) * var(--nk))));
+  text-shadow:
+    .006em .01em 0 color-mix(in srgb, var(--acc) 70%, #fff),
+    .012em .02em 0 var(--acc),
+    .018em .03em 0 color-mix(in srgb, var(--acc) 88%, #050a14),
+    .024em .04em 0 color-mix(in srgb, var(--acc) 76%, #050a14),
+    .03em .05em 0 color-mix(in srgb, var(--acc) 64%, #050a14),
+    .036em .06em 0 color-mix(in srgb, var(--acc) 52%, #050a14),
+    .042em .07em 0 color-mix(in srgb, var(--acc) 42%, #050a14),
+    .05em .1em .12em rgba(2, 5, 12, .7),
+    0 0 .45em color-mix(in srgb, var(--acc) 40%, transparent); }
+html[data-universo="criativos"] .passo__num { --nk: .37; font-size: min(clamp(84px, 15.5vw, 230px), calc(100cqi / (var(--n, 5) * var(--nk)))); }
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
+  .passo__num, .cap--invertido .passo__num { font-size: min(clamp(60px, 20vw, 120px), calc(100cqi / (var(--n, 5) * var(--nk)))); }
+  html[data-universo="criativos"] .passo__num, html[data-universo="criativos"] .cap--invertido .passo__num { font-size: min(clamp(64px, 26vw, 150px), calc(100cqi / (var(--n, 5) * var(--nk)))); }
+}

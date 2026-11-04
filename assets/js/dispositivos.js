@@ -64,21 +64,42 @@ const CACO_FRAG = /* glsl */ `
 // café: superfície que gira (redemoinho com creme) e afunda no centro quando mexe
 const CAFE_VERT = /* glsl */ `
   uniform float uMexe; varying vec2 vUv;
-  void main() { vUv = uv; vec3 p = position; float r = length(p.xy) / 0.5; p.z -= (1.0 - smoothstep(0.0, 0.55, r)) * 0.07 * uMexe; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }
+  void main() { vUv = uv; vec3 p = position; float r = length(p.xy) / 0.5; p.z -= (1.0 - smoothstep(0.0, 0.5, r)) * 0.045 * uMexe; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }
 `;
 const CAFE_FRAG = /* glsl */ `
   uniform float uT, uMexe; varying vec2 vUv;
+  float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+  float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }
+  float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * vn(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }
+  vec3 L(vec3 c) { return pow(c, vec3(2.2)); }
   void main() {
     vec2 p = vUv * 2.0 - 1.0; float r = length(p); if (r > 1.0) discard;
-    float a = atan(p.y, p.x), giro = a + uT * 2.4 * (0.25 + uMexe) + r * 7.0 * uMexe;
-    float listra = sin(giro * 3.0 - r * 9.0) * 0.5 + 0.5;
-    vec3 cafe = vec3(0.13, 0.065, 0.03), crema = vec3(0.74, 0.5, 0.29);
-    float k = smoothstep(0.4, 1.0, r) * 0.45 + listra * 0.5 * smoothstep(0.08, 0.85, r) * (0.35 + uMexe * 0.65);
-    vec3 c = mix(cafe, crema, k);
-    c += pow(max(0.0, 1.0 - length(p - vec2(-0.38, 0.4)) * 2.4), 5.0) * 0.55;
-    c *= 1.0 - smoothstep(0.28, 0.0, r) * 0.4 * uMexe;
-    c *= 0.75 + 0.25 * smoothstep(1.0, 0.85, r);
-    gl_FragColor = vec4(c, 1.0);
+    float a = atan(p.y, p.x);
+    // o café gira inteiro e a colher torce o centro (torção limitada: crescendo com o tempo, a textura virava borrão)
+    float w = uT * (0.12 + uMexe * 0.9), rot = w + uMexe * 2.2 * (1.0 - r) * (1.0 - r);
+    vec2 q = mat2(cos(rot), -sin(rot), sin(rot), cos(rot)) * p;
+    // a crema escorre: deformação por ruído antes das manchas
+    vec2 wq = q + 0.2 * vec2(fbm(q * 2.0 + 3.0), fbm(q * 2.0 - 7.0)) - 0.1;
+    float n = fbm(wq * 3.4), f = fbm(wq * 15.0);
+    vec3 escuro = L(vec3(0.13, 0.065, 0.03)), cafe = L(vec3(0.31, 0.165, 0.08)), crema = L(vec3(0.64, 0.41, 0.21)), clara = L(vec3(0.8, 0.6, 0.38));
+    // crema: dourada, com manchas mais escuras (as "listras de tigre") e microbolhas
+    vec3 col = mix(crema, clara, smoothstep(0.48, 0.78, n) * 0.6);
+    col = mix(col, cafe, smoothstep(0.44, 0.2, n) * 0.6);
+    col *= 0.84 + 0.32 * f;
+    // a colher abre fios escuros em espiral, quebrados pelo ruído
+    float fase = a + 4.2 * log(r + 0.06) - n * 2.4 + w * 0.6;
+    float fio = (1.0 - smoothstep(0.0, 0.24, abs(sin(fase * 1.5)))) * smoothstep(0.38, 0.66, fbm(wq * 5.0 + 11.0)) * smoothstep(0.96, 0.5, r) * smoothstep(0.02, 0.18, r);
+    col = mix(col, escuro, fio * uMexe * 0.7);
+    col = mix(col, escuro, uMexe * (1.0 - smoothstep(0.03, 0.22, r)) * 0.75);
+    // borda: menisco claro, bolhinhas presas na louça e sombra no contato
+    col = mix(col, clara, smoothstep(0.86, 0.99, r) * 0.42);
+    col += clara * smoothstep(0.62, 0.82, vn(vec2(a * 18.0, r * 50.0))) * smoothstep(0.8, 0.93, r) * (1.0 - smoothstep(0.97, 1.0, r)) * 0.16;
+    col *= 1.0 - smoothstep(0.95, 1.0, r) * 0.55;
+    // reflexo suave de uma janela distante, que ondula quando a colher passa
+    vec2 rp = p - vec2(-0.28, 0.42); rp.x += sin(r * 24.0 - uT * 4.0) * 0.015 * uMexe;
+    rp *= vec2(3.0, 7.0); col += vec3(1.0, 0.94, 0.86) * exp(-dot(rp, rp)) * 0.15;
+    gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
 `;
@@ -261,23 +282,27 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   {
     const matLouca = new THREE.MeshPhysicalMaterial({ color: "#f4f0ea", roughness: 0.16, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1, side: THREE.DoubleSide });
     const perfil = [[0, 0], [0.36, 0], [0.4, 0.03], [0.45, 0.2], [0.5, 0.5], [0.53, 0.68], [0.535, 0.71], [0.515, 0.71], [0.49, 0.66], [0.46, 0.46], [0.41, 0.2], [0.36, 0.07], [0, 0.07]].map(([x, y]) => new THREE.Vector2(x, y));
-    const xicara = new THREE.Mesh(new THREE.LatheGeometry(perfil, leve ? 40 : 72), matLouca);
-    const alca = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.035, 14, 32, Math.PI * 1.25), matLouca);
+    const xicara = new THREE.Mesh(new THREE.LatheGeometry(perfil, leve ? 64 : 128), matLouca);
+    const alca = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.035, 20, 48, Math.PI * 1.25), matLouca);
     alca.position.set(0.52, 0.38, 0); alca.rotation.set(0, 0, -Math.PI * 0.62);
-    const pires = new THREE.Mesh(new THREE.LatheGeometry([[0, 0], [0.78, 0], [0.9, 0.05], [0.93, 0.08], [0.86, 0.075], [0.58, 0.03], [0, 0.03]].map(([x, y]) => new THREE.Vector2(x, y)), leve ? 40 : 72), matLouca);
+    const pires = new THREE.Mesh(new THREE.LatheGeometry([[0, 0], [0.78, 0], [0.9, 0.05], [0.93, 0.08], [0.86, 0.075], [0.58, 0.03], [0, 0.03]].map(([x, y]) => new THREE.Vector2(x, y)), leve ? 64 : 128), matLouca);
     pires.position.y = -0.03;
-    const liquido = new THREE.Mesh(new THREE.CircleGeometry(0.5, leve ? 48 : 80), new THREE.ShaderMaterial({ uniforms: cafeU, vertexShader: CAFE_VERT, fragmentShader: CAFE_FRAG }));
+    const liquido = new THREE.Mesh(new THREE.CircleGeometry(0.5, leve ? 64 : 128, 0, Math.PI * 2), new THREE.ShaderMaterial({ uniforms: cafeU, vertexShader: CAFE_VERT, fragmentShader: CAFE_FRAG }));
     liquido.rotation.x = -Math.PI / 2; liquido.position.y = 0.6; liquido.scale.setScalar(0.98);
     const matInox = new THREE.MeshPhysicalMaterial({ color: "#d7dbe0", metalness: 1, roughness: 0.15, envMapIntensity: 1.3 });
-    const cabo = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.02, 0.95, 12), matInox); cabo.position.y = 0.47;
-    const concha = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 12), matInox); concha.scale.set(1, 0.4, 1.5);
+    const cabo = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.014, 0.78, 20), matInox); cabo.position.y = 0.4; cabo.scale.set(1.7, 1, 0.5);
+    const concha = new THREE.Mesh(new THREE.SphereGeometry(0.07, 28, 18), matInox); concha.scale.set(1, 0.42, 1.45);
     colher.add(cabo, concha); colher.position.y = 0.58;
-    cafe.add(pires, xicara, alca, liquido, colher);
+    // sombra de contato sob o pires: sem ela a xícara parece flutuar
+    const somb = (() => { const c = canvas(128, 128), x = c.getContext("2d"), g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "rgba(0,0,0,.6)"); g.addColorStop(0.55, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return texCanvas(c); })();
+    const sombra = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.3), new THREE.MeshBasicMaterial({ map: somb, transparent: true, depthWrite: false, toneMapped: false }));
+    sombra.rotation.x = -Math.PI / 2; sombra.position.y = -0.04;
+    cafe.add(sombra, pires, xicara, alca, liquido, colher);
   }
-  const NV = 36, vaporPos = new Float32Array(NV * 3), vaporSem = Array.from({ length: NV }, () => Math.random());
+  const NV = 48, vaporPos = new Float32Array(NV * 3), vaporSem = Array.from({ length: NV }, () => Math.random());
   const vaporGeo = new THREE.BufferGeometry(); vaporGeo.setAttribute("position", new THREE.BufferAttribute(vaporPos, 3));
   const vaporTex = (() => { const c = canvas(64, 64), x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, "rgba(255,255,255,.55)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return texCanvas(c); })();
-  const vapor = new THREE.Points(vaporGeo, new THREE.PointsMaterial({ size: 0.32, map: vaporTex, transparent: true, depthWrite: false, opacity: 0.5 }));
+  const vapor = new THREE.Points(vaporGeo, new THREE.PointsMaterial({ size: 0.46, map: vaporTex, transparent: true, depthWrite: false, opacity: 0.3 }));
   vapor.frustumCulled = false; cafe.add(vapor);
 
   // ---------- dinheiro: moedas e notas ----------
@@ -337,6 +362,12 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     if (o.cta) {
       x.fillStyle = "#0095f6"; rr(x, 28, by - 84, W - 120, 62, 12); x.fill();
       x.fillStyle = "#fff"; x.font = "700 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText(o.cta, 50, by - 43); x.fillText("›", W - 124, by - 43);
+      if (o.toque > 0) {
+        const k = o.toque, tx = W / 2 - 30, ty = by - 53;
+        x.save(); rr(x, 28, by - 84, W - 120, 62, 12); x.clip();
+        x.fillStyle = `rgba(255,255,255,${0.35 * (1 - k)})`; x.beginPath(); x.arc(tx, ty, 30 + k * 300, 0, Math.PI * 2); x.fill(); x.restore();
+        x.fillStyle = `rgba(255,255,255,${0.55 * Math.sin(Math.min(1, k * 1.6) * Math.PI)})`; x.beginPath(); x.arc(tx, ty, 34, 0, Math.PI * 2); x.fill();
+      }
     }
     x.fillStyle = o.corAvatar || "#ff4d2e"; x.beginPath(); x.arc(56, by, 26, 0, Math.PI * 2); x.fill();
     x.fillStyle = "#fff"; x.font = "700 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; const u = o.usuario || "seu.perfil"; x.fillText(u, 96, by + 9);
@@ -489,22 +520,71 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
 
   // conversa no WhatsApp  // conversa no WhatsApp
   const chatC = canvas(432, 936), chx = chatC.getContext("2d"), chatT = texCanvas(chatC);
-  const balao = (x, txt, yy, direita, cor) => {
-    x.font = "26px Schibsted Grotesk, sans-serif"; const linhas = []; let l = "";
-    for (const w of txt.split(" ")) { if (x.measureText(l + w).width > 330) { linhas.push(l.trim()); l = ""; } l += w + " "; }
-    linhas.push(l.trim()); const h = linhas.length * 34 + 28, w = 380, xx = direita ? 540 - w - 24 : 24;
-    x.fillStyle = cor; rr(x, xx, yy, w, h, 18); x.fill(); x.fillStyle = direita ? "#0b1f14" : "#e9edef";
-    linhas.forEach((s, i) => x.fillText(s, xx + 18, yy + 40 + i * 34)); return h;
+  const UIF = "-apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif";
+  // papel de parede do WhatsApp (traços miúdos), desenhado uma vez
+  const papel = (() => {
+    const c = canvas(540, 1170), x = c.getContext("2d"); x.fillStyle = "#0b141a"; x.fillRect(0, 0, 540, 1170);
+    x.strokeStyle = "rgba(255,255,255,.045)"; x.lineWidth = 2.2; x.lineCap = "round";
+    for (let i = 0; i < 170; i++) {
+      const cx = (i * 97.3) % 540, cy = (i * 61.7 + (i % 7) * 13) % 1170, k = i % 4; x.beginPath();
+      if (k === 0) x.arc(cx, cy, 9, 0, Math.PI * 2); else if (k === 1) { x.moveTo(cx - 10, cy); x.lineTo(cx + 10, cy); x.moveTo(cx, cy - 10); x.lineTo(cx, cy + 10); }
+      else if (k === 2) { x.moveTo(cx - 9, cy + 6); x.quadraticCurveTo(cx, cy - 12, cx + 9, cy + 6); } else rr(x, cx - 8, cy - 6, 16, 12, 3);
+      x.stroke();
+    }
+    return c;
+  })();
+  const balao = (x, txt, yy, direita, hora, a = 1) => {
+    x.font = `400 27px ${UIF}`; const linhas = []; let l = "";
+    for (const w of txt.split(" ")) { if (x.measureText(l + w).width > 340) { linhas.push(l.trim()); l = ""; } l += w + " "; }
+    linhas.push(l.trim());
+    const tw = Math.max(...linhas.map((s) => x.measureText(s).width)), w = Math.max(tw + 36, 170) + (direita ? 40 : 0), h = linhas.length * 35 + 44;
+    const xx = direita ? 540 - w - 26 : 26, sc = 0.85 + 0.15 * a;
+    x.save(); x.globalAlpha = a; x.translate(direita ? xx + w : xx, yy); x.scale(sc, sc); x.translate(-(direita ? xx + w : xx), -yy);
+    x.fillStyle = direita ? "#005c4b" : "#202c33"; rr(x, xx, yy, w, h, 16); x.fill();
+    x.beginPath(); if (direita) { x.moveTo(xx + w - 14, yy); x.lineTo(xx + w + 14, yy); x.lineTo(xx + w, yy + 18); } else { x.moveTo(xx + 14, yy); x.lineTo(xx - 14, yy); x.lineTo(xx, yy + 18); } x.fill();
+    x.fillStyle = "#e9edef"; linhas.forEach((s, i) => x.fillText(s, xx + 18, yy + 38 + i * 35));
+    x.fillStyle = "rgba(233,237,239,.6)"; x.font = `400 19px ${UIF}`; x.textAlign = "right"; x.fillText(hora, xx + w - (direita ? 50 : 16), yy + h - 14); x.textAlign = "left";
+    if (direita) { x.strokeStyle = "#53bdeb"; x.lineWidth = 2.6; x.lineCap = "round"; x.beginPath(); for (const d of [0, 9]) { x.moveTo(xx + w - 44 + d, yy + h - 22); x.lineTo(xx + w - 38 + d, yy + h - 16); x.lineTo(xx + w - 27 + d, yy + h - 29); } x.stroke(); }
+    x.restore(); return h;
   };
-  function desenharChat(p) {
-    const x = chx; x.setTransform(0.8, 0, 0, 0.8, 0, 0); x.textAlign = "left"; x.fillStyle = "#0b141a"; x.fillRect(0, 0, 540, 1170); x.fillStyle = "#1f2c34"; x.fillRect(0, 0, 540, 150);
-    x.fillStyle = "#000"; rr(x, 206, 22, 128, 38, 19); x.fill();
-    x.fillStyle = "#3b82f6"; x.beginPath(); x.arc(64, 108, 28, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#e9edef"; x.font = "600 28px Schibsted Grotesk, sans-serif"; x.fillText("Seu negócio", 106, 104); x.fillStyle = "#8696a0"; x.font = "20px Schibsted Grotesk, sans-serif"; x.fillText("online", 106, 132);
-    let y = 190;
-    if (p > 0.15) { x.globalAlpha = faixa(p, 0.15, 0.25); y += balao(x, "Olá! Vim pelo site e quero saber mais.", y, true, "#25d366") + 18; x.globalAlpha = 1; }
-    if (p > 0.45) { x.globalAlpha = faixa(p, 0.45, 0.55); y += balao(x, "Oi! Que bom. Me conta o que você procura?", y, false, "#202c33") + 18; x.globalAlpha = 1; }
-    if (p > 0.7) { x.globalAlpha = faixa(p, 0.7, 0.8); balao(x, "Quero agendar para esta semana.", y, true, "#25d366"); x.globalAlpha = 1; }
+  // q 0–0,22: a mensagem do site já vem escrita na caixa · 0,22: enviada · 0,34–0,56: digitando · 0,56: resposta · 0,78: agendamento
+  const MSG = "Olá! Vim pelo site e quero saber mais.";
+  function desenharChat(q, t) {
+    const x = chx; x.setTransform(0.8, 0, 0, 0.8, 0, 0); x.textAlign = "left"; x.drawImage(papel, 0, 0);
+    // barra de status e cabeçalho
+    x.fillStyle = "#1f2c34"; x.fillRect(0, 0, 540, 172);
+    x.fillStyle = "#e9edef"; x.font = `600 26px ${UIF}`; x.fillText("9:41", 46, 52); x.fillStyle = "#000"; rr(x, 206, 22, 128, 38, 19); x.fill();
+    x.fillStyle = "#e9edef"; rr(x, 448, 34, 44, 20, 5); x.fill(); x.fillRect(494, 40, 4, 8); for (let i = 0; i < 4; i++) x.fillRect(390 + i * 10, 52 - i * 6, 7, 6 + i * 6);
+    x.strokeStyle = "#e9edef"; x.lineWidth = 3.4; x.lineCap = "round"; x.lineJoin = "round"; x.beginPath(); x.moveTo(40, 104); x.lineTo(26, 120); x.lineTo(40, 136); x.stroke();
+    const g = x.createLinearGradient(64, 92, 116, 148); g.addColorStop(0, "#5aa8ff"); g.addColorStop(1, "#1f5fd6"); x.fillStyle = g; x.beginPath(); x.arc(88, 120, 28, 0, Math.PI * 2); x.fill();
+    x.fillStyle = "#fff"; x.font = `700 24px ${UIF}`; x.textAlign = "center"; x.fillText("SN", 88, 129); x.textAlign = "left";
+    const digitando = q > 0.34 && q < 0.56;
+    x.fillStyle = "#e9edef"; x.font = `600 28px ${UIF}`; x.fillText("Seu negócio", 132, 114);
+    x.fillStyle = digitando ? "#25d366" : "#8696a0"; x.font = `400 21px ${UIF}`; x.fillText(digitando ? "digitando…" : "online", 132, 144);
+    x.strokeStyle = "#e9edef"; x.lineWidth = 2.8; rr(x, 398, 108, 34, 24, 6); x.stroke(); x.beginPath(); x.moveTo(432, 120); x.lineTo(446, 110); x.lineTo(446, 130); x.closePath(); x.stroke();
+    x.beginPath(); x.arc(492, 118, 13, Math.PI * 0.6, Math.PI * 1.9); x.stroke();
+    // etiqueta do dia
+    x.fillStyle = "#182229"; rr(x, 220, 196, 100, 38, 10); x.fill(); x.fillStyle = "#8696a0"; x.font = `500 19px ${UIF}`; x.textAlign = "center"; x.fillText("HOJE", 270, 222); x.textAlign = "left";
+    let y = 258;
+    const ap = (a, b) => suave(faixa(q, a, b));
+    if (q > 0.22) y += balao(x, MSG, y, true, "10:42", ap(0.22, 0.28)) + 16;
+    if (digitando) {
+      x.fillStyle = "#202c33"; rr(x, 26, y, 108, 58, 16); x.fill();
+      for (let i = 0; i < 3; i++) { x.fillStyle = `rgba(233,237,239,${0.35 + 0.5 * Math.max(0, Math.sin(t * 7 - i * 0.9))})`; x.beginPath(); x.arc(56 + i * 24, y + 29, 7, 0, Math.PI * 2); x.fill(); }
+    }
+    if (q > 0.56) y += balao(x, "Oi! Que bom que veio. Me conta o que você procura?", y, false, "10:42", ap(0.56, 0.62)) + 16;
+    if (q > 0.78) balao(x, "Quero agendar para esta semana.", y, true, "10:43", ap(0.78, 0.84));
+    // caixa de mensagem: chega preenchida pelo link do site e é enviada
+    x.fillStyle = "#0b141a"; x.fillRect(0, 1046, 540, 124);
+    x.fillStyle = "#1f2c34"; rr(x, 18, 1060, 420, 70, 35); x.fill();
+    const escrito = q < 0.22 ? MSG : "", brilho = q < 0.22 ? 0.5 + 0.5 * Math.sin(t * 6) : 0;
+    x.fillStyle = escrito ? "#e9edef" : "#8696a0"; x.font = `400 25px ${UIF}`;
+    x.save(); rr(x, 18, 1060, 420, 70, 35); x.clip(); x.fillText(escrito ? escrito.slice(0, 30) + "…" : "Mensagem", 40, 1104); x.restore();
+    x.fillStyle = "#00a884"; x.beginPath(); x.arc(486, 1095, 36 + brilho * 4, 0, Math.PI * 2); x.fill();
+    x.fillStyle = "#fff"; x.beginPath();
+    if (escrito) { x.moveTo(472, 1080); x.lineTo(506, 1095); x.lineTo(472, 1110); x.lineTo(478, 1095); x.closePath(); x.fill(); }
+    else { rr(x, 478, 1076, 16, 28, 8); x.fill(); x.strokeStyle = "#fff"; x.lineWidth = 3; x.beginPath(); x.arc(486, 1096, 14, 0, Math.PI); x.moveTo(486, 1110); x.lineTo(486, 1118); x.stroke(); }
+    x.fillStyle = "#fff"; rr(x, 200, 1156, 140, 6, 3); x.fill();
     chatT.needsUpdate = true;
   }
 
@@ -581,14 +661,18 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     obj.position.copy(at.pos); obj.quaternion.copy(at.q); obj.scale.setScalar(Math.max(0.001, at.s)); obj.visible = at.s > 0.02;
   }
   const ig = (o) => { desenharIG(o); porNaTela(celU, "A", igT, CEL_ASP, W / H); };
+  const comPoster = (src, poster) => { const v = tocar(src); return pronto(v) ? v : imgEl(poster) || v; };
 
   function atualizar(dt, t, cap, p, ativo) {
     const { W: VW, H: VH, retrato } = vista();
     raiz.visible = !!cap && ativo;
     if (!raiz.visible) { pararVideos(); return; }
     const k = reduce ? 30 : 7;
-    const px = retrato ? 0 : VW * 0.2, py = retrato ? VH * 0.17 : 0;
-    const escCel = retrato ? 1.24 : 1.72, escNb = retrato ? 0.62 : 1.12;
+    // em pé: o celular ocupa até 50% da altura, logo abaixo da etiqueta (o texto fica no pé); deitado: 74% da altura
+    const escCel = retrato ? Math.min(VH * 0.5 / CEL.h, VW * 0.66 / CEL.w) : Math.min(2.05, VH * 0.74 / CEL.h);
+    const escNb = retrato ? Math.min(VW * 0.86 / NB.w, VH * 0.34 / NB.tampa) : Math.min(1.26, VW * 0.46 / NB.w);
+    const topo = (s) => VH / 2 - 0.62 - CEL.h * s / 2;
+    const px = retrato ? 0 : VW * 0.2, py = retrato ? topo(escCel) : 0;
     const cel = alvo.cel, nb = alvo.nb;
     cel.s = 0; nb.s = 0; celU.uMix.value = 0; nbU.uMix.value = 0; celU.uBordaK.value = 0;
     cacos.visible = false; moedas.visible = notas.visible = false; cafe.visible = false;
@@ -618,7 +702,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       }
     } else if (cap === "c-montagem") {
       celU.uLuz.value = 1;
-      cel.pos.set(retrato ? 0 : VW * 0.27, retrato ? VH * 0.24 : 0.05, 0); cel.rot.set(0.04, -0.28 + p * 0.2, 0); cel.s = retrato ? 0.9 : escCel * 0.86;
+      cel.pos.set(retrato ? 0 : VW * 0.27, retrato ? topo(escCel * 0.78) : 0.05, 0); cel.rot.set(0.04, -0.28 + p * 0.2, 0); cel.s = escCel * (retrato ? 0.78 : 0.86);
       const cam = [0, 1, 2, 3, 4].map((i) => suave(faixa(p, 0.12 + i * 0.14, 0.2 + i * 0.14)));
       const vm = tocar(midia.videoMontagem), fonteV = pronto(vm) ? vm : imgEl(midia.posterMontagem);
       const funde = reduce ? 1 : faixa(p, 0.8, 0.92);
@@ -639,10 +723,10 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       if (!reduce && p > 0.25 && corac.length < 30 && Math.random() < 0.55) corac.push({ x: W - 60 + (Math.random() - 0.5) * 40, y: H - 650, vy: 200 + Math.random() * 180, vx: (Math.random() - 0.5) * 100, s: 30 + Math.random() * 36, a: 1, cor: Math.random() < 0.8 ? "#ff3040" : "#ff7aa2" });
       corac.forEach((c) => { c.y -= c.vy * dt; c.x += c.vx * dt + Math.sin(c.y / 40) * 1.2; c.a -= dt * 0.5; });
       corac = corac.filter((c) => c.a > 0);
-      ig({ fonte: tocar(midia.videoSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar #jesus #deus", curtidas: 82584 * cresce, comentarios: 288 * cresce, envios: 9100 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#ffb547" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar #jesus #deus", curtidas: 82584 * cresce, comentarios: 288 * cresce, envios: 9100 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#ffb547" });
     } else if (cap === "c-dinheiro") {
       cel.pos.set(px, py, 0); cel.rot.set(0.05, -0.3 + p * 0.25, 0.02); cel.s = escCel;
-      ig({ fonte: tocar(midia.videoAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff" });
+      ig({ fonte: comPoster(midia.videoAnuncio, midia.posterAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff" });
       // moedas e notas saem do botão "Saiba mais" e se espalham pela tela
       const jorro = faixa(p, 0.15, 1);
       moedas.visible = notas.visible = jorro > 0;
@@ -659,8 +743,8 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       for (let i = 0; i < NN; i++) bota(notas, i, true);
       moedas.instanceMatrix.needsUpdate = true; notas.instanceMatrix.needsUpdate = true;
     } else if (cap === "c-oportunidade") {
-      cel.pos.set(retrato ? -0.5 : px + VW * 0.16, retrato ? py - 0.3 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = retrato ? 0.66 : escCel * 0.55;
-      ig({ fonte: tocar(midia.videoSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar", curtidas: 82584, comentarios: 288, envios: 9100, curtido: true, seguindo: true, corAvatar: "#ffb547" });
+      cel.pos.set(retrato ? -VW * 0.2 : px + VW * 0.16, retrato ? topo(escCel * 0.6) - 0.2 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = escCel * 0.6;
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar", curtidas: 82584, comentarios: 288, envios: 9100, curtido: true, seguindo: true, corAvatar: "#ffb547" });
     } else if (cap === "s-problema") {
       const e = glide(faixa(p, 0, 0.12));
       nb.pos.set(px, py - 0.35 - (1 - e) * 2.5, 0); nb.rot.set(0.16, -0.34 + p * 0.26, 0); nb.s = escNb;
@@ -683,7 +767,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       if (celV > 0) {
         if (redesenha) desenharObra(kk, t, true);
         cel.pos.set(retrato ? 0.55 : VW * 0.2 + 1.05, retrato ? py - 0.05 : -0.3, 0.9 - (1 - celV) * 1.5);
-        cel.rot.set(0.05, -0.4 + (1 - celV) * 1.2, 0.03); cel.s = escCel * (retrato ? 0.5 : 0.56) * celV;
+        cel.rot.set(0.05, -0.4 + (1 - celV) * 1.2, 0.03); cel.s = escCel * (retrato ? 0.46 : 0.6) * celV;
         porNaTela(celU, "A", obraCelT, CEL_ASP, 540 / 1170); porNaTela(celU, "B", imagem(ch.cel), CEL_ASP, 9 / 19.5); celU.uMix.value = faixa(kk, 5, 5.2);
       }
     } else if (cap === "s-cafe") {
@@ -692,29 +776,32 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       const mexe = 0.3 + 0.7 * suave(faixa(p, 0.1, 0.6));
       cafeU.uT.value = t; cafeU.uMexe.value = reduce ? 0.4 : mexe;
       const ang = reduce ? 0.8 : t * (1.2 + mexe * 2.6);
-      colher.position.set(Math.cos(ang) * 0.24, 0.58, Math.sin(ang) * 0.24); colher.rotation.set(Math.sin(ang) * 0.42, 0, -Math.cos(ang) * 0.42);
+      colher.position.set(Math.cos(ang) * 0.24, 0.58, Math.sin(ang) * 0.24); colher.rotation.set(Math.sin(ang) * 0.58, 0, -Math.cos(ang) * 0.58);
       for (let i = 0; i < NV; i++) {
         const sd = vaporSem[i], vida = (t * (0.12 + sd * 0.1) + sd) % 1;
         vaporPos[i * 3] = Math.sin(sd * 40 + t * 0.8) * 0.18 * (0.4 + vida); vaporPos[i * 3 + 1] = 0.7 + vida * 1.4; vaporPos[i * 3 + 2] = Math.cos(sd * 31 + t * 0.6) * 0.18 * (0.4 + vida);
       }
-      vaporGeo.attributes.position.needsUpdate = true; vapor.material.opacity = 0.45 * (1 - 0.3 * Math.sin(t));
-      const e = glide(faixa(p, 0, 0.12)), esc = retrato ? 0.95 : 1.55;
-      cafe.position.set(retrato ? 0 : VW * 0.22, (retrato ? VH * 0.12 : -0.55) - (1 - e) * 2, 0);
+      vaporGeo.attributes.position.needsUpdate = true; vapor.material.opacity = 0.26 * (1 - 0.3 * Math.sin(t));
+      const e = glide(faixa(p, 0, 0.12)), esc = retrato ? Math.min(1.25, VW * 0.46) : 1.5;
+      cafe.position.set(retrato ? 0 : VW * 0.22, (retrato ? VH * 0.11 - esc * 0.3 : -0.68) - (1 - e) * 2, 0);
       cafe.rotation.set(0.42, -0.5 + p * 0.6, 0); cafe.scale.setScalar(esc * Math.max(0.05, e));
     } else if (cap === "s-medgrind") {
       const cenas = midia.cenas || [], n = cenas.length || 1, tall = midia.cenasTall || [];
       const pos = clamp(p * 1.05) * (n - 1), i = Math.floor(pos), f = suave(pos - i), celEntra = glide(faixa(p, 0.3, 0.5));
-      nb.pos.set(px - celEntra * (retrato ? 0 : 0.35), py - 0.35 + (retrato ? celEntra * 0.25 : 0), -celEntra * 0.4);
+      nb.pos.set(px - celEntra * (retrato ? 0 : 0.35), py + (retrato ? -0.6 + celEntra * 0.2 : -0.35), -celEntra * 0.4);
       nb.rot.set(0.14, -0.25 + celEntra * 0.12, 0); nb.s = escNb;
       porNaTela(nbU, "A", imagem(cenas[i]), NB_ASP, 16 / 9); porNaTela(nbU, "B", imagem(cenas[Math.min(n - 1, i + 1)]), NB_ASP, 16 / 9); nbU.uMix.value = f;
       if (celEntra > 0) {
         cel.pos.set(px + (retrato ? 0.55 : VW * 0.15), py + (retrato ? -0.1 : -0.15), 0.6 - (1 - celEntra) * 2);
-        cel.rot.set(0.05, -0.35 + (1 - celEntra) * 1.5, 0.04); cel.s = escCel * (retrato ? 0.55 : 0.62) * celEntra;
+        cel.rot.set(0.05, -0.35 + (1 - celEntra) * 1.5, 0.04); cel.s = escCel * (retrato ? 0.5 : 0.66) * celEntra;
         porNaTela(celU, "A", imagem(tall[i]), CEL_ASP, 9 / 16); porNaTela(celU, "B", imagem(tall[Math.min(n - 1, i + 1)]), CEL_ASP, 9 / 16); celU.uMix.value = f;
       }
     } else if (cap === "s-oportunidade") {
-      cel.pos.set(px, py, 0); cel.rot.set(0.05, -0.3 + p * 0.25, 0.02); cel.s = escCel;
-      if (redesenha) desenharChat(p); porNaTela(celU, "A", chatT, CEL_ASP, 540 / 1170);
+      const vira = faixa(p, 0.58, 0.72), giro = Math.sin(vira * Math.PI);
+      cel.pos.set(px, py - giro * (retrato ? 0.12 : -0.06), giro * (retrato ? 0.2 : 0.45)); cel.rot.set(0.05 - giro * 0.05, -0.3 + p * 0.22 + suave(vira) * Math.PI * 2, 0.02 - giro * 0.04); cel.s = escCel * 1.02;
+      if (vira < 0.5) ig({ fonte: comPoster(midia.videoAnuncio, midia.posterAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff", toque: faixa(p, 0.5, 0.6) });
+      else { if (redesenha) desenharChat(faixa(p, 0.66, 0.98), t); porNaTela(celU, "A", chatT, CEL_ASP, 540 / 1170); }
+      celU.uBordaK.value = giro * 1.3;
     }
     if (cap !== "c-explode") celU.uLuz.value = 1;
 

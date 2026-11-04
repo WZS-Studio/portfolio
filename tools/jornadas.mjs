@@ -9,7 +9,7 @@ export function criarJornadas(h) {
   const passo = (de, ate, html, cls = "") => `<div class="passo${cls ? " " + cls : ""}" data-de="${de}" data-ate="${ate}">${html}</div>`;
   const faixas = (n, ini = 0, fim = 1) => Array.from({ length: n }, (_, i) => [ini + ((fim - ini) * i) / n, i === n - 1 ? 1.01 : ini + ((fim - ini) * (i + 1)) / n].map((x) => x.toFixed(3)));
   const titulo = (t, texto, tag = "h3", id = "") => `<${tag} class="passo__titulo display"${id ? ` id="${id}"` : ""}>${palavras(t)}</${tag}>${texto ? `<p class="passo__texto">${rico(texto)}</p>` : ""}`;
-  const numero = (x) => `<p class="passo__num display">${esc(x.numero)}</p><p class="passo__texto">${rico(x.texto)}</p>${x.fonte ? `<p class="passo__fonte">${esc(x.fonte)}</p>` : ""}`;
+  const numero = (x) => `<p class="passo__num display" style="--n:${[...String(x.numero)].length}">${esc(x.numero)}</p><p class="passo__texto">${rico(x.texto)}</p>${x.fonte ? `<p class="passo__fonte">${esc(x.fonte)}</p>` : ""}`;
   const passos = (lista_, id) => { const f = faixas(lista_.length); return lista_.map((x, i) => passo(f[i][0], f[i][1], x.numero ? numero(x) : titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : id))).join(""); };
   const camadasPassos = (cm, id) => passo("0", "0.120", `<h2 class="passo__titulo display" id="${id}">${palavras(cm.titulo)}</h2>`)
     + cm.camadas.map((c, i) => passo((0.12 + i * 0.14).toFixed(3), (i === cm.camadas.length - 1 ? 1.01 : 0.26 + i * 0.14).toFixed(3),
@@ -203,7 +203,7 @@ export function criarJornadas(h) {
     secoes.push(capitulo({ id: "cap-sucesso", cap: "c-sucesso", altura: 320, cena: "fundo", cls: "cap--invertido", alt: su.poster, rotuloId: "t-cs", extra: notifSucesso,
       conteudo: passo("0", "0.300", `<h2 class="passo__titulo display" id="t-cs">${palavras(su.titulo)}</h2>`)
         + passo("0.300", "0.640", `<h3 class="passo__titulo display">${palavras(su.meio)}</h3>`)
-        + passo("0.640", "1.010", `<p class="passo__num display"><span data-contador="${su.contador}" data-final="${esc(su.numero)}">${esc(su.numero)}</span></p><p class="passo__texto">${esc(su.rotuloNumero)} · ${esc(su.legenda)}</p><p class="passo__fonte">${esc(su.fonte)}</p>`) }));
+        + passo("0.640", "1.010", `<p class="passo__num display" style="--n:${[...String(su.numero)].length}"><span data-contador="${su.contador}" data-final="${esc(su.numero)}">${esc(su.numero)}</span></p><p class="passo__texto">${esc(su.rotuloNumero)} · ${esc(su.legenda)}</p><p class="passo__fonte">${esc(su.fonte)}</p>`) }));
 
     secoes.push(`<section class="sec fontes" id="numeros" data-cena="leitura" aria-labelledby="t-fontes">
   <div class="sec__in">

@@ -14,6 +14,10 @@ const { marca, whatsapp, medicao, portal, sites, vagas } = C;
 import { criarJornadas } from "./jornadas.mjs";
 const criativos = { ...C.criativos, series: C.criativos.series.filter((s) => s.publicar !== false) };
 const VERSAO = Date.now().toString(36);
+// todo módulo importado sem ?v= (import estático de um módulo para outro) ganha a versão pelo importmap:
+// sem isso o navegador roda uma cópia velha guardada por até um dia (Expires do .htaccess)
+const IMPORTMAP = JSON.stringify({ imports: { three: "/assets/vendor/three.module.min.js",
+  ...Object.fromEntries(["dispositivos", "cursor", "medicao", "logo3d"].map((m) => [`/assets/js/${m}.js`, `/assets/js/${m}.js?v=${VERSAO}`])) } });
 
 // ---------- utilidades ----------
 const esc = (s = "") => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -142,10 +146,11 @@ function doc({ pagina, universo, seo, main, dadosMundo, jsonld = [], zapFixo }) 
 <link href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Schibsted+Grotesk:wght@400..700&family=Martian+Mono:wdth,wght@75..112.5,400..600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/wzs.css?v=${VERSAO}">
 <script>document.documentElement.classList.replace("no-js","js");</script>
-<script type="importmap">{"imports":{"three":"/assets/vendor/three.module.min.js"}}</script>
+<script type="importmap">${IMPORTMAP}</script>
 <script>window.WZS_V="${VERSAO}";</script>
 <link rel="modulepreload" href="/assets/vendor/three.module.min.js">
 <link rel="modulepreload" href="/assets/js/mundo.js?v=${VERSAO}">
+<link rel="modulepreload" href="/assets/js/dispositivos.js?v=${VERSAO}">
 ${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j)}</script>`).join("\n")}
 <script>window.WZS_MEDICAO=${JSON.stringify({ ga4: med.ga4 || "", gtm: med.gtm || "", plausible: med.plausible || "" })};</script>
 </head>
@@ -195,6 +200,8 @@ const dadosMundo = {
     // vídeos das telas 3D: versões leves (360×640, sem som) em /media/tex
     videoMontagem: "/media/tex/montagem.mp4", posterMontagem: criativos.historia?.montagem?.poster,
     videoSucesso: "/media/tex/sucesso.mp4", videoAnuncio: "/media/tex/anuncio.mp4",
+    // quadro parado enquanto o vídeo abre (antes a tela ficava preta)
+    posterSucesso: "/media/tex/sucesso.jpg", posterAnuncio: "/media/tex/anuncio.jpg",
     feed: [
       { v: "/media/tex/feed-1.mp4", poster: "/media/tex/feed-1.jpg", conta: "felipen.med", legenda: "FA × FV", cor: "#3b82f6" },
       { v: "/media/tex/feed-2.mp4", poster: "/media/tex/feed-2.jpg", conta: "felipen.med", legenda: "O último plantão", cor: "#3b82f6" },
