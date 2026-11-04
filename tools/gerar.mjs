@@ -139,7 +139,7 @@ function doc({ pagina, universo, seo, main, dadosMundo, jsonld = [], zapFixo }) 
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,600..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Schibsted+Grotesk:wght@400..700&family=Martian+Mono:wdth,wght@75..112.5,400..600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/wzs.css?v=${VERSAO}">
 <script>document.documentElement.classList.replace("no-js","js");</script>
 <script type="importmap">{"imports":{"three":"/assets/vendor/three.module.min.js"}}</script>

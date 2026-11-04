@@ -51,6 +51,9 @@ function iniciar() {
   if (gsap && ST && !reduz() && window.Lenis) {
     lenis = new window.Lenis({ duration: 1.05, smoothWheel: true, wheelMultiplier: 1 });
     lenis.on("scroll", ST.update);
+    let vel = 0;
+    lenis.on("scroll", (l) => { vel = Math.max(-4, Math.min(4, (l.velocity || 0) * 0.14)); });
+    gsap.ticker.add(() => { vel *= 0.9; html.style.setProperty("--vel", vel.toFixed(2)); mundo?.setVel?.(vel); });
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
@@ -203,6 +206,7 @@ function trocarPagina(texto, caminho, push) {
 // Tudo que pertence à página atual (refeito a cada troca)
 function iniciarPagina() {
   const pag = document.body.dataset.pagina;
+  letreiros();
   revelar();
   cenas();
   pilulaTroca();
@@ -215,6 +219,19 @@ function iniciarPagina() {
   if (pag === "criativos") jornadaCriativos();
   barraFixa();
   requestAnimationFrame(() => ST?.refresh());
+}
+
+// letras soltas nos títulos: cada uma entra esticada (largura 150%) e assenta na largura do universo
+function letreiros() {
+  $$(".passo__titulo, .expande__pergunta, .entra, .hero h1").forEach((t) => {
+    if (t.dataset.letras) return;
+    t.dataset.letras = "1";
+    let i = 0;
+    $$(".pal", t).forEach((p) => {
+      if (p.querySelector(".l")) return;
+      p.innerHTML = [...p.textContent].map((c) => `<span class="l" style="--li:${i++}">${c.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span>`).join("");
+    });
+  });
 }
 
 // textos que entram (palavras com desfoque, blocos que sobem)
@@ -323,8 +340,8 @@ function capitulos() {
       trigger: cap, start: "top top", end: "bottom bottom",
       onUpdate: (self) => { if (self.isActive) aplicar(self.progress); },
       onToggle: (self) => {
-        if (self.isActive) { ativo = cap; aplicar(self.progress); }
-        else if (ativo === cap) { ativo = null; mundo?.setCap(null); mundo?.setMergulho(0); if (veu) veu.style.opacity = "0"; }
+        if (self.isActive) { ativo = cap; aplicar(self.progress); mundo?.pulsar(1.15); }
+        else { passos.forEach((el) => el.classList.remove("is-on")); passoAtual = -1; if (ativo === cap) { ativo = null; mundo?.setCap(null); mundo?.setMergulho(0); if (veu) veu.style.opacity = "0"; } }
       },
     });
     limpar.push(() => st.kill());
@@ -401,14 +418,14 @@ const FORMAS = {
   dinheiro: ['<svg viewBox="0 0 40 20"><rect width="40" height="20" rx="3" fill="#1f9d55"/><rect x="2" y="2" width="36" height="16" rx="2" fill="none" stroke="#bff5cf" stroke-width="1"/><text x="20" y="14.5" font-size="10" font-weight="800" text-anchor="middle" fill="#e9ffe9" font-family="sans-serif">R$</text></svg>', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ffc23a"/><circle cx="12" cy="12" r="8" fill="none" stroke="#b8860b" stroke-width="1.4"/><text x="12" y="16" font-size="9" font-weight="900" text-anchor="middle" fill="#7a5600" font-family="sans-serif">R$</text></svg>'],
   codigo: ['<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#8fd3ff" font-family="monospace">&lt;/&gt;</text></svg>', '<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10" fill="none" stroke="#3ddc97" stroke-width="3" stroke-linecap="round"/></svg>', '<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#ffcb6b" font-family="monospace">{ }</text></svg>'],
 };
-function estourar(el, tipo, qtd = 16) {
-  if (reduz()) return;
+function estourar(el, tipo, qtd = 16, forca = 1) {
+  if (reduz() || !el) return;
   const r = el.getBoundingClientRect(), formas = FORMAS[tipo] || FORMAS.coracoes;
   for (let i = 0; i < qtd; i++) {
     const p = document.createElement("span"); p.className = "estouro"; p.setAttribute("aria-hidden", "true");
     p.innerHTML = formas[i % formas.length];
     const x0 = r.left + r.width * (0.2 + Math.random() * 0.6), y0 = r.top + r.height / 2;
-    const ang = -Math.PI / 2 + (Math.random() - 0.5) * 1.9, dist = 90 + Math.random() * 170, s = 0.7 + Math.random() * 0.9;
+    const ang = -Math.PI / 2 + (Math.random() - 0.5) * 1.5, dist = (110 + Math.random() * 220) * forca, s = 0.7 + Math.random() * 1.1;
     const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist, rot = (Math.random() - 0.5) * 120;
     document.body.appendChild(p);
     p.animate([
@@ -419,15 +436,36 @@ function estourar(el, tipo, qtd = 16) {
   }
 }
 function caixas() {
-  $$(".caixa").forEach((cx) => {
-    const tipo = cx.dataset.efeito, cta = $(".plano__cta", cx), box = $(".caixa__3d", cx);
-    let ultimo = 0;
-    const mover = (e) => { if (!fino.matches || reduz()) return; const r = cx.getBoundingClientRect(); box.style.setProperty("--ry", (((e.clientX - r.left) / r.width - 0.5) * 16).toFixed(1) + "deg"); box.style.setProperty("--rx", ((0.5 - (e.clientY - r.top) / r.height) * 12).toFixed(1) + "deg"); };
-    const sair = () => { box.style.setProperty("--ry", "0deg"); box.style.setProperty("--rx", "0deg"); };
-    const solta = () => { const a = performance.now(); if (a - ultimo < 700) return; ultimo = a; estourar(cta, tipo); };
-    cx.addEventListener("pointermove", mover); cx.addEventListener("pointerleave", sair);
-    cta?.addEventListener("pointerenter", solta); cta?.addEventListener("pointerdown", () => { ultimo = 0; estourar(cta, tipo, 24); });
-    cta?.addEventListener("focus", solta);
+  $$(".caixa").forEach((cx, i) => {
+    const tipo = cx.dataset.efeito, cta = $(".plano__cta", cx), box = $(".caixa__3d", cx), boca = $(".caixa__miolo", cx);
+    let jorro = null;
+    const soltar = (qtd, forca) => estourar(boca, tipo, qtd, forca);
+    // tampa aberta: a luz sobe e o que está dentro (corações, dinheiro, código) não para de sair
+    const abrir = (on) => {
+      if (cx.classList.contains("is-aberta") === on) return;
+      cx.classList.toggle("is-aberta", on);
+      clearInterval(jorro); jorro = null;
+      if (on && !reduz()) { setTimeout(() => soltar(16, 1.1), 180); jorro = setInterval(() => soltar(2, 0.9), 240); mundo?.pulsar(0.8); }
+    };
+    const mover = (e) => { if (!fino.matches || reduz()) return; const r = cx.getBoundingClientRect(); box.style.setProperty("--ry", (((e.clientX - r.left) / r.width - 0.5) * 18).toFixed(1) + "deg"); box.style.setProperty("--rx", ((0.5 - (e.clientY - r.top) / r.height) * 10).toFixed(1) + "deg"); };
+    cx.addEventListener("pointermove", mover);
+    cx.addEventListener("pointerenter", () => { if (fino.matches) cx.classList.add("is-espia"); });
+    cx.addEventListener("pointerleave", () => { box.style.setProperty("--ry", "0deg"); box.style.setProperty("--rx", "0deg"); cx.classList.remove("is-espia"); abrir(false); });
+    cta?.addEventListener("pointerenter", () => abrir(true));
+    cta?.addEventListener("focus", () => abrir(true));
+    cta?.addEventListener("blur", () => abrir(false));
+    cta?.addEventListener("pointerdown", () => soltar(30, 1.5));
+    // ao aparecer, a tampa dá uma piscada e escapa um pouco do que tem dentro;
+    // no celular (sem mouse) a caixa abre sozinha quando chega ao meio da tela
+    const io = new IntersectionObserver((ents) => ents.forEach((en) => {
+      if (!en.isIntersecting || cx.dataset.piscou) return;
+      cx.dataset.piscou = "1";
+      setTimeout(() => { if (reduz()) return; cx.classList.add("is-espia"); soltar(8, 0.8); setTimeout(() => { if (!cx.matches(":hover")) cx.classList.remove("is-espia"); }, 950); }, 420 + i * 320);
+    }), { threshold: 0.45 });
+    io.observe(cx);
+    let io2 = null;
+    if (!fino.matches) { io2 = new IntersectionObserver((ents) => ents.forEach((en) => abrir(en.isIntersecting)), { rootMargin: "-32% 0px -32% 0px" }); io2.observe(cx); }
+    limpar.push(() => { clearInterval(jorro); io.disconnect(); io2?.disconnect(); });
   });
 }
 
@@ -449,14 +487,17 @@ function barraFixa() {
   const barra = $("#zapfixo"), hero = $(".hero"), contato = $("#contato");
   if (!barra || !hero) return;
   let passouHero = false, noContato = false;
-  const at = () => barra.classList.toggle("is-on", passouHero && !noContato);
+  const cheios = new Set();
+  const at = () => barra.classList.toggle("is-on", passouHero && !noContato && !cheios.size);
   const io = new IntersectionObserver((ents) => ents.forEach((en) => {
     if (en.target === hero) passouHero = !en.isIntersecting;
     if (en.target === contato) noContato = en.isIntersecting;
     at();
   }), { threshold: 0.05 });
   io.observe(hero); if (contato) io.observe(contato);
-  limpar.push(() => io.disconnect());
+  const io2 = new IntersectionObserver((ents) => { ents.forEach((en) => (en.isIntersecting ? cheios.add(en.target) : cheios.delete(en.target))); at(); }, { rootMargin: "0px" });
+  $$(".cap, .carrossel, #planos").forEach((el) => io2.observe(el));
+  limpar.push(() => { io.disconnect(); io2.disconnect(); });
 }
 
 // ---------------------------------------------------------------------------

@@ -115,8 +115,8 @@ export function criarJornadas(h) {
   <div class="sec__in">
     <header class="planos__cab"><p class="rotulo sobe"><b>Planos</b></p><h2 class="display entra" id="t-planos">${palavras(pl.titulo)}</h2>${vagaSelo(v)}</header>
     <div class="planos__grade planos__grade--${pl.itens.length}">${lista(pl.itens, (it, i) => `
-      <article class="caixa sobe" style="--d:${i * 90}ms" id="plano-${it.slug}" data-efeito="${efeito(it)}">
-        <div class="caixa__3d">
+      <article class="caixa sobe" style="--d:${i * 90}ms;--i:${i}" id="plano-${it.slug}" data-efeito="${efeito(it)}">
+        <div class="caixa__palco"><div class="caixa__3d">
           <div class="caixa__face caixa__face--frente">
             <p class="plano__n">${n2(i + 1)}</p>
             <h3 class="plano__nome display">${esc(it.nome)}</h3>
@@ -125,9 +125,18 @@ export function criarJornadas(h) {
             ${it.metrica ? `<p class="plano__metrica">${esc(it.metrica)}</p>` : ""}
             <a class="btn plano__cta" href="${zap(msg(it.interesse))}" target="_blank" rel="noopener" data-zap="${jornada}|${esc(it.interesse)}|plano">${ico("zap")} ${esc(it.cta)}</a>
           </div>
-          <span class="caixa__face caixa__face--topo" aria-hidden="true"></span>
-          <span class="caixa__face caixa__face--lado" aria-hidden="true"></span>
-        </div>
+          <span class="caixa__face caixa__face--tras" aria-hidden="true"></span>
+          <span class="caixa__face caixa__face--esq" aria-hidden="true"><i>WZS STUDIO</i></span>
+          <span class="caixa__face caixa__face--dir" aria-hidden="true"><i>${n2(i + 1)} · ${esc(it.nome)}</i></span>
+          <span class="caixa__face caixa__face--base" aria-hidden="true"></span>
+          <span class="caixa__miolo" aria-hidden="true"></span>
+          <span class="caixa__feixe" aria-hidden="true"></span>
+          <span class="caixa__tampa" aria-hidden="true">
+            <span class="tampa tampa--topo"><svg viewBox="0 0 424 422"><use href="#wzs-mark"/></svg></span>
+            <span class="tampa tampa--frente"></span><span class="tampa tampa--tras"></span><span class="tampa tampa--esq"></span><span class="tampa tampa--dir"></span>
+          </span>
+        </div></div>
+        <span class="caixa__sombra" aria-hidden="true"></span>
       </article>`)}
     </div>
     ${pl.nota ? `<p class="planos__nota">${rico(pl.nota)}</p>` : ""}

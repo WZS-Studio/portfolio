@@ -287,7 +287,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     const c = canvas(256, 120), x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 256, 120);
     g.addColorStop(0, "#1f9d55"); g.addColorStop(1, "#0f6b39"); x.fillStyle = g; rr(x, 0, 0, 256, 120, 10); x.fill();
     x.strokeStyle = "rgba(255,255,255,.55)"; x.lineWidth = 4; rr(x, 8, 8, 240, 104, 8); x.stroke();
-    x.fillStyle = "#e9ffe9"; x.font = "800 46px Geist, sans-serif"; x.textAlign = "center"; x.fillText("R$ 100", 128, 76);
+    x.fillStyle = "#e9ffe9"; x.font = "800 46px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("R$ 100", 128, 76);
     return texCanvas(c);
   })();
   const notas = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.3, 0.14), new THREE.MeshStandardMaterial({ map: notaTex, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.05 }), NN);
@@ -321,13 +321,13 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     let g = x.createLinearGradient(0, 0, 0, 190); g.addColorStop(0, "rgba(0,0,0,.55)"); g.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = g; x.fillRect(0, 0, W, 190);
     g = x.createLinearGradient(0, H - 470, 0, H); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.72)"); x.fillStyle = g; x.fillRect(0, H - 470, W, 470);
     x.textAlign = "left";
-    x.fillStyle = "#fff"; x.font = "600 26px Geist, system-ui, sans-serif"; x.fillText("9:41", 46, 52);
+    x.fillStyle = "#fff"; x.font = "600 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText("9:41", 46, 52);
     x.fillStyle = "#000"; rr(x, W / 2 - 64, 22, 128, 38, 19); x.fill();
     x.fillStyle = "#fff"; rr(x, W - 92, 34, 44, 20, 5); x.fill(); x.fillRect(W - 46, 40, 4, 8);
     for (let i = 0; i < 4; i++) x.fillRect(W - 150 + i * 10, 52 - i * 6, 7, 6 + i * 6);
-    x.font = "700 40px Geist, system-ui, sans-serif"; x.fillText("Reels", 36, 128); ICO.camera(x, W - 52, 116);
+    x.font = "700 40px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText("Reels", 36, 128); ICO.camera(x, W - 52, 116);
     const cx = W - 52; let y = H - 640;
-    const cont = (txt) => { x.fillStyle = "#fff"; x.font = "600 22px Geist, system-ui, sans-serif"; x.textAlign = "center"; x.fillText(txt, cx, y + 44); x.textAlign = "left"; };
+    const cont = (txt) => { x.fillStyle = "#fff"; x.font = "600 22px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.textAlign = "center"; x.fillText(txt, cx, y + 44); x.textAlign = "left"; };
     ICO.coracao(x, cx, y, 46, o.curtido, "#ff3040"); if (o.curtidas != null) cont(fmt(o.curtidas)); y += 112;
     ICO.comentario(x, cx, y, 44); if (o.comentarios != null) cont(fmt(o.comentarios)); y += 112;
     ICO.enviar(x, cx, y, 44); if (o.envios != null) cont(fmt(o.envios)); y += 100;
@@ -336,15 +336,15 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     const by = H - 300;
     if (o.cta) {
       x.fillStyle = "#0095f6"; rr(x, 28, by - 84, W - 120, 62, 12); x.fill();
-      x.fillStyle = "#fff"; x.font = "700 26px Geist, system-ui, sans-serif"; x.fillText(o.cta, 50, by - 43); x.fillText("›", W - 124, by - 43);
+      x.fillStyle = "#fff"; x.font = "700 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText(o.cta, 50, by - 43); x.fillText("›", W - 124, by - 43);
     }
     x.fillStyle = o.corAvatar || "#ff4d2e"; x.beginPath(); x.arc(56, by, 26, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#fff"; x.font = "700 26px Geist, system-ui, sans-serif"; const u = o.usuario || "seu.perfil"; x.fillText(u, 96, by + 9);
+    x.fillStyle = "#fff"; x.font = "700 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; const u = o.usuario || "seu.perfil"; x.fillText(u, 96, by + 9);
     const wu = x.measureText(u).width;
-    if (!o.patrocinado) { x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, 110 + wu, by - 20, 112, 40, 9); x.stroke(); x.font = "600 22px Geist, sans-serif"; x.fillText(o.seguindo ? "Seguindo" : "Seguir", 124 + wu, by + 8); }
-    else { x.font = "400 20px Geist, sans-serif"; x.fillStyle = "rgba(255,255,255,.85)"; x.fillText("Patrocinado", 96, by + 36); }
-    x.fillStyle = "#fff"; x.font = "400 24px Geist, system-ui, sans-serif"; x.fillText((o.legenda || "").slice(0, 34), 36, by + 74);
-    x.font = "400 22px Geist, system-ui, sans-serif"; x.fillText("♫  " + (o.audio || "Áudio original"), 36, by + 116);
+    if (!o.patrocinado) { x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, 110 + wu, by - 20, 112, 40, 9); x.stroke(); x.font = "600 22px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText(o.seguindo ? "Seguindo" : "Seguir", 124 + wu, by + 8); }
+    else { x.font = "400 20px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillStyle = "rgba(255,255,255,.85)"; x.fillText("Patrocinado", 96, by + 36); }
+    x.fillStyle = "#fff"; x.font = "400 24px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText((o.legenda || "").slice(0, 34), 36, by + 74);
+    x.font = "400 22px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText("♫  " + (o.audio || "Áudio original"), 36, by + 116);
     x.fillStyle = "#000"; x.fillRect(0, H - 104, W, 104);
     x.strokeStyle = "#fff"; x.lineWidth = 3;
     const ab = [W * 0.1, W * 0.3, W * 0.5, W * 0.7, W * 0.9], ay = H - 58;
@@ -355,7 +355,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     x.beginPath(); x.arc(ab[4], ay, 15, 0, Math.PI * 2); x.stroke();
     x.fillStyle = "#fff"; rr(x, W / 2 - 70, H - 14, 140, 6, 3); x.fill();
     (o.coracoes || []).forEach((c) => { x.globalAlpha = Math.max(0, c.a); ICO.coracao(x, c.x, c.y, c.s, true, c.cor || "#ff3040"); x.globalAlpha = 1; });
-    if (o.selo) { x.globalAlpha = o.selo.a; x.fillStyle = "#ff3040"; rr(x, W / 2 - 92, 300, 184, 54, 27); x.fill(); x.fillStyle = "#fff"; x.font = "800 26px Geist, sans-serif"; x.textAlign = "center"; x.fillText(o.selo.txt, W / 2, 336); x.textAlign = "left"; x.globalAlpha = 1; }
+    if (o.selo) { x.globalAlpha = o.selo.a; x.fillStyle = "#ff3040"; rr(x, W / 2 - 92, 300, 184, 54, 27); x.fill(); x.fillStyle = "#fff"; x.font = "800 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.textAlign = "center"; x.fillText(o.selo.txt, W / 2, 336); x.textAlign = "left"; x.globalAlpha = 1; }
     igT.needsUpdate = true;
   }
 
@@ -381,15 +381,16 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   function desenharEdicao(p, cam, el) {
     const x = igx; x.setTransform(0.8, 0, 0, 0.8, 0, 0); x.fillStyle = "#050608"; x.fillRect(0, 0, W, H); x.textAlign = "left";
     if (cam[0] > 0) { x.globalAlpha = cam[0]; cobrir(x, el, 0, 0, W, H, [0.27, 0.6]); x.globalAlpha = 1; }
-    else { x.fillStyle = "rgba(255,255,255,.35)"; x.font = "500 28px Geist, sans-serif"; x.textAlign = "center"; x.fillText("linha do tempo vazia", W / 2, H / 2); x.textAlign = "left"; }
+    else if (p < 0.12) { x.fillStyle = "rgba(255,255,255,.35)"; x.font = "500 28px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("linha do tempo vazia", W / 2, H / 2); x.textAlign = "left"; }
+    else { x.strokeStyle = "rgba(143,211,255,.12)"; x.lineWidth = 1; for (let i = 1; i < 6; i++) { x.beginPath(); x.moveTo((i * W) / 6, 0); x.lineTo((i * W) / 6, H); x.stroke(); } for (let i = 1; i < 12; i++) { x.beginPath(); x.moveTo(0, (i * H) / 12); x.lineTo(W, (i * H) / 12); x.stroke(); } }
     if (cam[1] > 0) {
       x.globalAlpha = cam[1]; x.textAlign = "center"; x.lineJoin = "round";
-      ["ESSE SANGUE", "NÃO DEVERIA", "VOLTAR."].forEach((l, i) => { x.font = `800 62px "Bricolage Grotesque", Geist, sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, W / 2, 230 + i * 72); x.fillStyle = i === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, W / 2, 230 + i * 72); });
+      ["ESSE SANGUE", "NÃO DEVERIA", "VOLTAR."].forEach((l, i) => { x.font = `800 62px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, W / 2, 230 + i * 72); x.fillStyle = i === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, W / 2, 230 + i * 72); });
       x.textAlign = "left"; x.globalAlpha = 1;
     }
     if (cam[2] > 0) {
       x.globalAlpha = cam[2]; const k = Math.floor(p * 40) % LEG.length, frase = LEG.slice(Math.max(0, k - 2), k + 1);
-      x.font = "800 44px Geist, sans-serif"; const tw = x.measureText(frase.join(" ")).width;
+      x.font = "800 44px Schibsted Grotesk, sans-serif"; const tw = x.measureText(frase.join(" ")).width;
       x.fillStyle = "rgba(0,0,0,.55)"; rr(x, W / 2 - tw / 2 - 22, H - 470, tw + 44, 70, 14); x.fill();
       let c0 = W / 2 - tw / 2;
       frase.forEach((w, i) => { x.fillStyle = i === frase.length - 1 ? "#ffe14d" : "#fff"; x.fillText(w, c0, H - 422); c0 += x.measureText(w + " ").width; });
@@ -398,14 +399,14 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     if (cam[3] > 0) {
       x.globalAlpha = cam[3]; const b = Math.abs(Math.sin(p * 60));
       for (let i = 0; i < 18; i++) { const h = 8 + Math.abs(Math.sin(i * 1.7 + p * 50)) * 40 * (0.5 + b * 0.5); x.fillStyle = "#ffb547"; x.fillRect(40 + i * 12, H - 180 - h / 2, 6, h); }
-      x.fillStyle = "#fff"; x.font = "600 24px Geist, sans-serif"; x.fillText("♫ trilha + efeitos", 270, H - 172); x.globalAlpha = 1;
+      x.fillStyle = "#fff"; x.font = "600 24px Schibsted Grotesk, sans-serif"; x.fillText("♫ trilha + efeitos", 270, H - 172); x.globalAlpha = 1;
     }
     if (cam[4] > 0) {
       x.globalAlpha = cam[4]; x.fillStyle = "#ff4d2e"; rr(x, 70, H - 330, W - 140, 86, 43); x.fill();
-      x.fillStyle = "#0a1220"; x.font = "800 34px Geist, sans-serif"; x.textAlign = "center"; x.fillText("Comenta A ou B 👇", W / 2, H - 274); x.textAlign = "left"; x.globalAlpha = 1;
+      x.fillStyle = "#0a1220"; x.font = "800 34px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("Comenta A ou B 👇", W / 2, H - 274); x.textAlign = "left"; x.globalAlpha = 1;
     }
     x.fillStyle = "rgba(255,77,46,.95)"; x.beginPath(); x.arc(46, 52, 9, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#fff"; x.font = "600 22px Geist, sans-serif"; x.fillText("PRÉVIA", 64, 60);
+    x.fillStyle = "#fff"; x.font = "600 22px Schibsted Grotesk, sans-serif"; x.fillText("PRÉVIA", 64, 60);
     igT.needsUpdate = true;
   }
 
@@ -415,25 +416,25 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     const x = sx, w = siteC.width, h = siteC.height;
     x.textAlign = "left";
     x.fillStyle = "#e9ebef"; x.fillRect(0, 0, w, h); x.fillStyle = "#cfd3da"; x.fillRect(0, 0, w, 30);
-    x.fillStyle = "#fff"; rr(x, 90, 6, 520, 18, 9); x.fill(); x.fillStyle = "#8a909b"; x.font = "11px Geist, sans-serif"; x.fillText("www.seunegocio.com.br", 104, 19);
+    x.fillStyle = "#fff"; rr(x, 90, 6, 520, 18, 9); x.fill(); x.fillStyle = "#8a909b"; x.font = "11px Schibsted Grotesk, sans-serif"; x.fillText("www.seunegocio.com.br", 104, 19);
     if (p < 0.25) {
       const a = t * 5; x.strokeStyle = "#9aa1ad"; x.lineWidth = 6; x.beginPath(); x.arc(w / 2, h / 2, 34, a, a + 4.2); x.stroke();
-      x.fillStyle = "#9aa1ad"; x.font = "600 18px Geist, sans-serif"; x.textAlign = "center"; x.fillText("Carregando…", w / 2, h / 2 + 72); x.textAlign = "left";
+      x.fillStyle = "#9aa1ad"; x.font = "600 18px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("Carregando…", w / 2, h / 2 + 72); x.textAlign = "left";
       x.fillStyle = "#7f8794"; x.fillRect(0, h - 6, w * (0.12 + p * 2), 6);
     } else {
       x.fillStyle = "#3d4250"; x.fillRect(0, 30, w, 46);
       for (let i = 0; i < 9; i++) { x.fillStyle = "#aab0bb"; x.fillRect(260 + i * 74, 49, 52, 7); }
-      x.fillStyle = "#c3c8d0"; x.fillRect(30, 96, w - 60, 200); x.fillStyle = "#a9afb9"; x.font = "700 20px Geist, sans-serif"; x.textAlign = "center"; x.fillText("BEM-VINDO AO NOSSO SITE", w / 2, 190); x.textAlign = "left";
+      x.fillStyle = "#c3c8d0"; x.fillRect(30, 96, w - 60, 200); x.fillStyle = "#a9afb9"; x.font = "700 20px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("BEM-VINDO AO NOSSO SITE", w / 2, 190); x.textAlign = "left";
       for (let c = 0; c < 3; c++) for (let l = 0; l < 9; l++) { x.fillStyle = "#c5cad2"; x.fillRect(40 + c * 300, 320 + l * 16, 240 - (l % 3) * 30, 6); }
-      x.fillStyle = "rgba(20,24,32,.88)"; rr(x, w - 300, h - 150, 270, 120, 10); x.fill(); x.fillStyle = "#fff"; x.font = "12px Geist, sans-serif"; x.fillText("Usamos cookies para melhorar…", w - 284, h - 118);
+      x.fillStyle = "rgba(20,24,32,.88)"; rr(x, w - 300, h - 150, 270, 120, 10); x.fill(); x.fillStyle = "#fff"; x.font = "12px Schibsted Grotesk, sans-serif"; x.fillText("Usamos cookies para melhorar…", w - 284, h - 118);
       x.fillStyle = "#5b6070"; rr(x, 40, h - 110, 210, 70, 10); x.fill(); x.fillStyle = "#fff"; x.fillText("Assine nossa newsletter!", 56, h - 72);
       if (p > 0.5) {
         const q = faixa(p, 0.52, 0.78), cx = w * 0.5 + (w * 0.47 - w * 0.5) * q, cy = h * 0.6 + (14 - h * 0.6) * q;
         x.fillStyle = "#111"; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + 14, cy + 36); x.lineTo(cx + 22, cy + 22); x.lineTo(cx + 38, cy + 18); x.closePath(); x.fill();
         if (p > 0.8) {
           x.globalAlpha = faixa(p, 0.8, 0.9); x.fillStyle = "#fff"; x.fillRect(0, 30, w, h - 30);
-          x.fillStyle = "#1a0dab"; x.font = "600 20px Geist, sans-serif"; x.fillText("Concorrente · o que você procura", 60, 120);
-          x.fillStyle = "#4d5156"; x.font = "14px Geist, sans-serif"; x.fillText("concorrente.com.br — Fale com a gente pelo WhatsApp", 60, 146);
+          x.fillStyle = "#1a0dab"; x.font = "600 20px Schibsted Grotesk, sans-serif"; x.fillText("Concorrente · o que você procura", 60, 120);
+          x.fillStyle = "#4d5156"; x.font = "14px Schibsted Grotesk, sans-serif"; x.fillText("concorrente.com.br — Fale com a gente pelo WhatsApp", 60, 146);
           for (let l = 0; l < 4; l++) { x.fillStyle = "#dfe1e5"; x.fillRect(60, 200 + l * 70, 600, 10); x.fillRect(60, 220 + l * 70, 420, 8); }
           x.globalAlpha = 1;
         }
@@ -445,7 +446,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   // o site da CrossHard sendo construído (k de 0 a 5): mensagem → design → conteúdo → celular → ação
   const obraC = canvas(1008, 630), ox = obraC.getContext("2d"), obraT = texCanvas(obraC);
   const obraCelC = canvas(432, 936), ocx = obraCelC.getContext("2d"), obraCelT = texCanvas(obraCelC);
-  const FONTE = '"Roboto Flex", "Arial Black", "Bricolage Grotesque", sans-serif';
+  const FONTE = '"Roboto Flex", "Arial Black", Anybody, sans-serif';
   function desenharObra(k, t, ehCel) {
     const x = ehCel ? ocx : ox, w = ehCel ? 540 : 1008, h = ehCel ? 1170 : 630;
     if (ehCel) x.setTransform(0.8, 0, 0, 0.8, 0, 0);
@@ -471,7 +472,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     if (design > 0.5) { x.font = `italic 900 ${tam}px ${FONTE}`; x.fillStyle = "#ffffff"; x.fillText(ta.toUpperCase(), cx, ty); x.fillText(tb.toUpperCase(), cx, ty + tam * 0.95); x.font = `italic 700 ${tam * 0.4}px ${FONTE}`; x.fillStyle = "#1e6bff"; x.fillText("build your body", cx, ty + tam * 1.5); }
     else { x.font = `400 ${tam * 0.6}px "Times New Roman", serif`; x.fillStyle = "#000"; x.fillText(ta, 40, ty); x.fillText(tb, 40, ty + tam * 0.65); if (Math.floor(t * 2) % 2 && k < 1) { const ww = x.measureText(n > linhaA.length ? tb : ta).width; x.fillRect(44 + ww, (n > linhaA.length ? ty + tam * 0.65 : ty) - tam * 0.45, 4, tam * 0.55); } }
     x.textAlign = "center";
-    if (conteudo > 0) { x.globalAlpha = conteudo; x.fillStyle = "rgba(255,255,255,.86)"; x.font = `400 ${ehCel ? 26 : 18}px Geist, sans-serif`; x.fillText("Sete modalidades, uma equipe que sabe o seu nome.", cx, ty + tam * (ehCel ? 2.05 : 1.95)); x.globalAlpha = 1; }
+    if (conteudo > 0) { x.globalAlpha = conteudo; x.fillStyle = "rgba(255,255,255,.86)"; x.font = `400 ${ehCel ? 26 : 18}px Schibsted Grotesk, sans-serif`; x.fillText("Sete modalidades, uma equipe que sabe o seu nome.", cx, ty + tam * (ehCel ? 2.05 : 1.95)); x.globalAlpha = 1; }
     // ação: os dois botões, o principal pulsando, e o cursor que clica
     if (acao > 0) {
       const bw = ehCel ? 380 : 300, bh = ehCel ? 84 : 54, by = ty + tam * (ehCel ? 2.4 : 2.25), pul = 1 + Math.sin(t * 6) * 0.04 * acao;
@@ -489,7 +490,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   // conversa no WhatsApp  // conversa no WhatsApp
   const chatC = canvas(432, 936), chx = chatC.getContext("2d"), chatT = texCanvas(chatC);
   const balao = (x, txt, yy, direita, cor) => {
-    x.font = "26px Geist, sans-serif"; const linhas = []; let l = "";
+    x.font = "26px Schibsted Grotesk, sans-serif"; const linhas = []; let l = "";
     for (const w of txt.split(" ")) { if (x.measureText(l + w).width > 330) { linhas.push(l.trim()); l = ""; } l += w + " "; }
     linhas.push(l.trim()); const h = linhas.length * 34 + 28, w = 380, xx = direita ? 540 - w - 24 : 24;
     x.fillStyle = cor; rr(x, xx, yy, w, h, 18); x.fill(); x.fillStyle = direita ? "#0b1f14" : "#e9edef";
@@ -499,7 +500,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     const x = chx; x.setTransform(0.8, 0, 0, 0.8, 0, 0); x.textAlign = "left"; x.fillStyle = "#0b141a"; x.fillRect(0, 0, 540, 1170); x.fillStyle = "#1f2c34"; x.fillRect(0, 0, 540, 150);
     x.fillStyle = "#000"; rr(x, 206, 22, 128, 38, 19); x.fill();
     x.fillStyle = "#3b82f6"; x.beginPath(); x.arc(64, 108, 28, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#e9edef"; x.font = "600 28px Geist, sans-serif"; x.fillText("Seu negócio", 106, 104); x.fillStyle = "#8696a0"; x.font = "20px Geist, sans-serif"; x.fillText("online", 106, 132);
+    x.fillStyle = "#e9edef"; x.font = "600 28px Schibsted Grotesk, sans-serif"; x.fillText("Seu negócio", 106, 104); x.fillStyle = "#8696a0"; x.font = "20px Schibsted Grotesk, sans-serif"; x.fillText("online", 106, 132);
     let y = 190;
     if (p > 0.15) { x.globalAlpha = faixa(p, 0.15, 0.25); y += balao(x, "Olá! Vim pelo site e quero saber mais.", y, true, "#25d366") + 18; x.globalAlpha = 1; }
     if (p > 0.45) { x.globalAlpha = faixa(p, 0.45, 0.55); y += balao(x, "Oi! Que bom. Me conta o que você procura?", y, false, "#202c33") + 18; x.globalAlpha = 1; }
@@ -508,6 +509,68 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   }
 
   // ---------- poses ----------
+  // ---------- vista explodida: cada camada é uma placa com borda e etiqueta, presa à tela do aparelho ----------
+  const placa = (cw, ch, w, h, cor, rotulo, nivel = 0) => {
+    const c = canvas(cw, ch), x = c.getContext("2d"), t = texCanvas(c);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false, opacity: 0 }));
+    m.visible = false;
+    const moldura = () => {
+      x.save(); x.setTransform(1, 0, 0, 1, 0, 0);
+      x.strokeStyle = cor; x.lineWidth = 4; x.globalAlpha = 0.95; rr(x, 2, 2, cw - 4, ch - 4, 14); x.stroke();
+      x.font = "700 " + Math.round(cw * 0.05) + "px Martian Mono, monospace"; const tw = x.measureText(rotulo).width;
+      x.fillStyle = cor; const ly = 14 + nivel * cw * 0.1; rr(x, 14, ly, tw + 28, cw * 0.085, cw * 0.02); x.fill(); x.fillStyle = "#06090f"; x.textBaseline = "middle"; x.fillText(rotulo, 28, ly + cw * 0.0425); x.textBaseline = "alphabetic";
+      x.restore();
+    };
+    return { c, x, t, m, moldura, cw, ch };
+  };
+  // reel: V1 vídeo · T1 título · TXT legenda · A1 som · FX chamada
+  const RC = [["#3b82f6", "V1 · VÍDEO"], ["#ffb547", "T1 · TÍTULO"], ["#ffe14d", "TXT · LEGENDA"], ["#3ddc97", "A1 · SOM"], ["#ff4d2e", "FX · CHAMADA"]];
+  const camReel = RC.map(([cor, r], i) => placa(270, 585, TELA.w, TELA.h, cor, r, i));
+  const telaZ = CEL.d / 2 + 0.0135;
+  camReel.forEach((k, i) => { k.m.renderOrder = 30 + i; celular.add(k.m); });
+  function desenharCamadaReel(i, p, el) {
+    const k = camReel[i], x = k.x, w = 540, h = 1170;
+    x.setTransform(0.5, 0, 0, 0.5, 0, 0); x.clearRect(0, 0, w, h); x.textAlign = "center"; x.lineJoin = "round";
+    if (i === 0) { if (el) cobrir(x, el, 0, 0, w, h, [0.27, 0.6]); else { x.fillStyle = "#0b1426"; x.fillRect(0, 0, w, h); } }
+    if (i === 1) ["ESSE SANGUE", "NÃO DEVERIA", "VOLTAR."].forEach((l, j) => { x.font = `900 64px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, w / 2, 230 + j * 74); x.fillStyle = j === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, w / 2, 230 + j * 74); });
+    if (i === 2) { const n = Math.floor(p * 40) % LEG.length, fr = LEG.slice(Math.max(0, n - 2), n + 1).join(" "); x.font = "800 46px Schibsted Grotesk, sans-serif"; const tw = x.measureText(fr).width; x.fillStyle = "rgba(0,0,0,.6)"; rr(x, w / 2 - tw / 2 - 22, h - 470, tw + 44, 72, 14); x.fill(); x.fillStyle = "#ffe14d"; x.fillText(fr, w / 2, h - 420); }
+    if (i === 3) { for (let j = 0; j < 22; j++) { const hh = 14 + Math.abs(Math.sin(j * 1.7 + p * 50)) * 70; x.fillStyle = "#3ddc97"; x.fillRect(60 + j * 19, h / 2 - hh / 2, 10, hh); } x.fillStyle = "#fff"; x.font = "700 30px Schibsted Grotesk, sans-serif"; x.fillText("♫ trilha + efeitos", w / 2, h / 2 + 110); }
+    if (i === 4) { x.fillStyle = "#ff4d2e"; rr(x, 70, h - 330, w - 140, 90, 45); x.fill(); x.fillStyle = "#0a1220"; x.font = "800 36px Schibsted Grotesk, sans-serif"; x.fillText("Comenta A ou B 👇", w / 2, h - 272); }
+    x.textAlign = "left"; k.moldura(); k.t.needsUpdate = true;
+  }
+  // site: fundo e faixa · foto e texto · título · botões
+  const SC = [["#1e6bff", "DESIGN"], ["#8fd3ff", "CONTEÚDO"], ["#ffffff", "MENSAGEM"], ["#3ddc97", "AÇÃO"]];
+  const camSite = SC.map(([cor, r], i) => placa(504, 315, NB_TELA.w, NB_TELA.h, cor, r, i * 0.75));
+  const nbTelaPos = new THREE.Vector3(0, NB.tampa / 2 + 0.01, 0.0155);
+  camSite.forEach((k, i) => { k.m.renderOrder = 30 + i; dobradica.add(k.m); });
+  const siteDesenhado = [false, false, false, false];
+  function desenharCamadaSite(i, t) {
+    const k = camSite[i], x = k.x, w = 1008, h = 630, ch = midia.ch || {}, F2 = FONTE;
+    x.setTransform(0.5, 0, 0, 0.5, 0, 0); x.clearRect(0, 0, w, h); x.textAlign = "center";
+    if (i === 0) { x.fillStyle = "#0b0f14"; x.fillRect(0, 0, w, h); x.save(); x.translate(w / 2, 70); x.rotate(-0.06); x.fillStyle = "#1e6bff"; x.fillRect(-w, -26, w * 2, 52); x.fillStyle = "#fff"; x.font = `italic 900 28px ${F2}`; x.fillText("BUILD YOUR BODY  •  BUILD YOUR BODY  •  BUILD YOUR BODY", -((t * 40) % 120), 10); x.restore(); const lg = imgEl(ch.logo); if (pronto(lg)) x.drawImage(lg, 28, 18, 120, 80); }
+    if (i === 1) { x.globalAlpha = 0.9; cobrir(x, imgEl(ch.foto), 0, 0, w, h); x.fillStyle = "rgba(6,9,14,.55)"; x.fillRect(0, 0, w, h); x.globalAlpha = 1; x.fillStyle = "rgba(255,255,255,.9)"; x.font = "400 20px Schibsted Grotesk, sans-serif"; x.fillText("Sete modalidades, uma equipe que sabe o seu nome.", w / 2, h * 0.44 + 92 * 1.95); }
+    if (i === 2) { const ty = h * 0.44; x.font = `italic 900 92px ${F2}`; x.fillStyle = "#fff"; x.fillText("CONSTRUA", w / 2, ty); x.fillText("SEU CORPO", w / 2, ty + 87); x.font = `italic 700 37px ${F2}`; x.fillStyle = "#1e6bff"; x.fillText("build your body", w / 2, ty + 138); }
+    if (i === 3) { const by = h * 0.44 + 92 * 2.25; x.shadowColor = "rgba(30,107,255,.85)"; x.shadowBlur = 30; x.fillStyle = "#1e6bff"; rr(x, w / 2 - 300 * 0.55 - 150, by, 300, 54, 27); x.fill(); x.shadowBlur = 0; x.fillStyle = "#fff"; x.font = `900 19px ${F2}`; x.fillText("AGENDAR MINHA VISITA", w / 2 - 165, by + 34); x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, w / 2 + 20, by, 220, 54, 27); x.stroke(); x.font = `900 17px ${F2}`; x.fillText("VER MODALIDADES", w / 2 + 130, by + 34); }
+    x.textAlign = "left"; k.moldura(); k.t.needsUpdate = true;
+  }
+  // grade escura: a "tela em branco" do notebook enquanto as camadas estão no ar
+  const gradeC = canvas(504, 315), gx = gradeC.getContext("2d"), gradeT = texCanvas(gradeC);
+  gx.fillStyle = "#0b0f14"; gx.fillRect(0, 0, 504, 315); gx.strokeStyle = "rgba(95,184,255,.16)"; gx.lineWidth = 1;
+  for (let i = 1; i < 12; i++) { gx.beginPath(); gx.moveTo((i * 504) / 12, 0); gx.lineTo((i * 504) / 12, 315); gx.stroke(); }
+  for (let i = 1; i < 8; i++) { gx.beginPath(); gx.moveTo(0, (i * 315) / 8); gx.lineTo(504, (i * 315) / 8); gx.stroke(); }
+  gradeT.needsUpdate = true;
+  // posição de cada placa: entra voando de longe, fica no ar em leque e, no fim, encaixa na tela
+  function voar(k, i, base, chega, funde, t, esc) {
+    const on = chega > 0.001 && funde < 0.999;
+    k.m.visible = on; if (!on) return;
+    const e = glide(chega), f = glide(funde);
+    const xe = (i - 1.5) * 0.07 * esc, ye = 0.015 * i * esc + Math.sin(t * 1.3 + i) * 0.006 * esc, ze = (0.1 + i * 0.15) * esc;
+    const x0 = xe + 0.9 * esc, y0 = ye + 0.35 * esc, z0 = ze + 1.8 * esc;
+    k.m.position.set(base.x + (x0 + (xe - x0) * e) * (1 - f), base.y + (y0 + (ye - y0) * e) * (1 - f), base.z + 0.002 + (z0 + (ze - z0) * e) * (1 - f) + i * 0.0006);
+    k.m.rotation.set(0, (1 - e) * 0.7 * (1 - f), (1 - e) * -0.2);
+    k.m.material.opacity = Math.min(1, e * 1.4) * (1 - f) * 0.96;
+  }
+
   const tmpQ = new THREE.Quaternion();
   const alvo = { cel: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0 }, nb: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0 } };
   const atual = { cel: { pos: new THREE.Vector3(0, -6, 0), q: new THREE.Quaternion(), s: 0.001 }, nb: { pos: new THREE.Vector3(0, -6, 0), q: new THREE.Quaternion(), s: 0.001, tampa: 1.55 } };
@@ -524,11 +587,13 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     raiz.visible = !!cap && ativo;
     if (!raiz.visible) { pararVideos(); return; }
     const k = reduce ? 30 : 7;
-    const px = retrato ? 0 : VW * 0.2, py = retrato ? VH * 0.16 : 0;
-    const escCel = retrato ? 0.98 : 1.36, escNb = retrato ? 0.6 : 1.02;
+    const px = retrato ? 0 : VW * 0.2, py = retrato ? VH * 0.17 : 0;
+    const escCel = retrato ? 1.24 : 1.72, escNb = retrato ? 0.62 : 1.12;
     const cel = alvo.cel, nb = alvo.nb;
     cel.s = 0; nb.s = 0; celU.uMix.value = 0; nbU.uMix.value = 0; celU.uBordaK.value = 0;
     cacos.visible = false; moedas.visible = notas.visible = false; cafe.visible = false;
+    if (cap !== "c-montagem") camReel.forEach((k) => (k.m.visible = false));
+    if (cap !== "s-montagem") camSite.forEach((k) => (k.m.visible = false));
     quadro++; const redesenha = reduce || quadro % 2 === 0;
     if (cap !== ultimoCap) { corac = []; ultimoCap = cap; }
 
@@ -553,11 +618,17 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       }
     } else if (cap === "c-montagem") {
       celU.uLuz.value = 1;
-      cel.pos.set(retrato ? 0 : VW * 0.27, retrato ? VH * 0.21 : 0.05, 0); cel.rot.set(0.04, -0.28 + p * 0.2, 0); cel.s = retrato ? 0.54 : escCel * 0.95;
+      cel.pos.set(retrato ? 0 : VW * 0.27, retrato ? VH * 0.24 : 0.05, 0); cel.rot.set(0.04, -0.28 + p * 0.2, 0); cel.s = retrato ? 0.9 : escCel * 0.86;
       const cam = [0, 1, 2, 3, 4].map((i) => suave(faixa(p, 0.12 + i * 0.14, 0.2 + i * 0.14)));
-      const vm = tocar(midia.videoMontagem);
-      if (p > 0.9) ig({ fonte: vm, usuario: "felipen.med", legenda: "Estenose × insuficiência aórtica", corAvatar: "#3b82f6" });
-      else { if (redesenha) desenharEdicao(p, cam, pronto(vm) ? vm : imgEl(midia.posterMontagem)); porNaTela(celU, "A", igT, CEL_ASP, W / H); }
+      const vm = tocar(midia.videoMontagem), fonteV = pronto(vm) ? vm : imgEl(midia.posterMontagem);
+      const funde = reduce ? 1 : faixa(p, 0.8, 0.92);
+      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", legenda: "Estenose × insuficiência aórtica", corAvatar: "#3b82f6" });
+      else { if (redesenha) desenharEdicao(p, cam.map((v) => v * funde), fonteV); porNaTela(celU, "A", igT, CEL_ASP, W / H); }
+      if (!reduce) camReel.forEach((k, i) => {
+        const chega = faixa(p, 0.08 + i * 0.14, 0.2 + i * 0.14);
+        if (chega > 0 && funde < 1 && (redesenha || i === 0) && (i === 0 || i === 2 || i === 3 || !k.feito)) { desenharCamadaReel(i, p, fonteV); k.feito = true; }
+        voar(k, i, { x: 0, y: 0, z: telaZ }, chega, funde, t, 1);
+      });
       celU.uBordaK.value = Math.sin(faixa(p, 0.86, 0.96) * Math.PI) * 1.4;
     } else if (cap === "c-sucesso") {
       // troca de lado e viraliza: contadores sobem e os corações sobem por dentro da tela
@@ -588,7 +659,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       for (let i = 0; i < NN; i++) bota(notas, i, true);
       moedas.instanceMatrix.needsUpdate = true; notas.instanceMatrix.needsUpdate = true;
     } else if (cap === "c-oportunidade") {
-      cel.pos.set(retrato ? -0.5 : px + VW * 0.16, retrato ? py - 0.3 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = retrato ? 0.5 : escCel * 0.62;
+      cel.pos.set(retrato ? -0.5 : px + VW * 0.16, retrato ? py - 0.3 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = retrato ? 0.66 : escCel * 0.55;
       ig({ fonte: tocar(midia.videoSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar", curtidas: 82584, comentarios: 288, envios: 9100, curtido: true, seguindo: true, corAvatar: "#ffb547" });
     } else if (cap === "s-problema") {
       const e = glide(faixa(p, 0, 0.12));
@@ -597,14 +668,22 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     } else if (cap === "s-montagem") {
       // o site da CrossHard sendo escrito; no fim vira a captura real (computador e celular)
       const kk = clamp(p * 1.08 - 0.02) * 5.2, ch = midia.ch || {};
-      nb.pos.set(retrato ? 0 : VW * 0.25, py - 0.2, 0); nb.rot.set(0.12, -0.28 + p * 0.14, 0); nb.s = retrato ? escNb : escNb * 0.95;
-      if (redesenha) desenharObra(kk, t, false);
-      porNaTela(nbU, "A", obraT, NB_ASP, 1.6); porNaTela(nbU, "B", imagem(ch.desk), NB_ASP, 1.6); nbU.uMix.value = faixa(kk, 5, 5.2);
+      nb.pos.set(retrato ? 0 : VW * 0.2, py - 0.2, 0); nb.rot.set(0.12, -0.3 + p * 0.14, 0); nb.s = retrato ? escNb : escNb * 0.84;
+      const fundeS = reduce ? 1 : faixa(kk, 4.45, 4.95);
+      if (redesenha && fundeS > 0) desenharObra(kk, t, false);
+      if (kk < 5) { porNaTela(nbU, "A", gradeT, NB_ASP, 1.6); porNaTela(nbU, "B", obraT, NB_ASP, 1.6); nbU.uMix.value = fundeS; }
+      else { porNaTela(nbU, "A", obraT, NB_ASP, 1.6); porNaTela(nbU, "B", imagem(ch.desk), NB_ASP, 1.6); nbU.uMix.value = faixa(kk, 5, 5.2); }
+      // ordem de chegada: mensagem (0–1), design (1–2), conteúdo (2–3), ação (4–5); a pilha vai do fundo (design) à frente (ação)
+      if (!reduce) [[1, 1], [2, 2], [0, 0], [4, 3]].forEach(([ini, i]) => {
+        const k = camSite[i], chega = faixa(kk, ini + 0.15, ini + 0.85);
+        if (chega > 0 && fundeS < 1 && (!siteDesenhado[i] || (i === 0 && redesenha))) { desenharCamadaSite(i, t); siteDesenhado[i] = true; }
+        voar(k, i, nbTelaPos, chega, fundeS, t, 1.9);
+      });
       const celV = glide(faixa(kk, 3, 3.6));
       if (celV > 0) {
         if (redesenha) desenharObra(kk, t, true);
-        cel.pos.set(retrato ? 0.55 : VW * 0.25 + 1.2, retrato ? py - 0.05 : -0.18, 0.6 - (1 - celV) * 1.5);
-        cel.rot.set(0.05, -0.4 + (1 - celV) * 1.2, 0.03); cel.s = escCel * 0.7 * celV;
+        cel.pos.set(retrato ? 0.55 : VW * 0.2 + 1.05, retrato ? py - 0.05 : -0.3, 0.9 - (1 - celV) * 1.5);
+        cel.rot.set(0.05, -0.4 + (1 - celV) * 1.2, 0.03); cel.s = escCel * (retrato ? 0.5 : 0.56) * celV;
         porNaTela(celU, "A", obraCelT, CEL_ASP, 540 / 1170); porNaTela(celU, "B", imagem(ch.cel), CEL_ASP, 9 / 19.5); celU.uMix.value = faixa(kk, 5, 5.2);
       }
     } else if (cap === "s-cafe") {
@@ -622,7 +701,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       const e = glide(faixa(p, 0, 0.12)), esc = retrato ? 0.95 : 1.55;
       cafe.position.set(retrato ? 0 : VW * 0.22, (retrato ? VH * 0.12 : -0.55) - (1 - e) * 2, 0);
       cafe.rotation.set(0.42, -0.5 + p * 0.6, 0); cafe.scale.setScalar(esc * Math.max(0.05, e));
-    } else if (cap === "s-medgrind") {    } else if (cap === "s-medgrind") {
+    } else if (cap === "s-medgrind") {
       const cenas = midia.cenas || [], n = cenas.length || 1, tall = midia.cenasTall || [];
       const pos = clamp(p * 1.05) * (n - 1), i = Math.floor(pos), f = suave(pos - i), celEntra = glide(faixa(p, 0.3, 0.5));
       nb.pos.set(px - celEntra * (retrato ? 0 : 0.35), py - 0.35 + (retrato ? celEntra * 0.25 : 0), -celEntra * 0.4);
@@ -630,7 +709,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       porNaTela(nbU, "A", imagem(cenas[i]), NB_ASP, 16 / 9); porNaTela(nbU, "B", imagem(cenas[Math.min(n - 1, i + 1)]), NB_ASP, 16 / 9); nbU.uMix.value = f;
       if (celEntra > 0) {
         cel.pos.set(px + (retrato ? 0.55 : VW * 0.15), py + (retrato ? -0.1 : -0.15), 0.6 - (1 - celEntra) * 2);
-        cel.rot.set(0.05, -0.35 + (1 - celEntra) * 1.5, 0.04); cel.s = escCel * 0.78 * celEntra;
+        cel.rot.set(0.05, -0.35 + (1 - celEntra) * 1.5, 0.04); cel.s = escCel * (retrato ? 0.55 : 0.62) * celEntra;
         porNaTela(celU, "A", imagem(tall[i]), CEL_ASP, 9 / 16); porNaTela(celU, "B", imagem(tall[Math.min(n - 1, i + 1)]), CEL_ASP, 9 / 16); celU.uMix.value = f;
       }
     } else if (cap === "s-oportunidade") {

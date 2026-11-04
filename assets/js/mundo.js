@@ -163,8 +163,8 @@ const FUNDO_VERT = /* glsl */ `
   void main() { vUv = position.xy * 0.5 + 0.5; gl_Position = vec4(position.xy, 0.999, 1.0); }
 `;
 const FUNDO_FRAG = /* glsl */ `
-  uniform vec2 uRes, uFoco; uniform float uTime, uMix, uPortal, uPortrait, uDim, uSplitK;
-  uniform vec3 uDeep, uNavy, uRec, uAmber, uBlue, uCyan;
+  uniform vec2 uRes, uFoco; uniform float uTime, uMix, uPortal, uPortrait, uDim, uSplitK, uLuz, uOnda, uVelT;
+  uniform vec3 uDeep, uNavy, uRec, uAmber, uBlue, uCyan, uCorLuz;
   varying vec2 vUv;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   void main() {
@@ -194,7 +194,7 @@ const FUNDO_FRAG = /* glsl */ `
     float g1 = exp(-dot(p - b1, p - b1) * mix(3.2, 7.0, jr));
     float g2 = exp(-dot(p - b2, p - b2) * mix(4.5, 9.0, jr));
     vec3 warm = uRec * g1 * mix(0.85, 0.62, jr) + uAmber * g2 * mix(0.55, 0.4, jr);
-    float streak = smoothstep(0.985, 1.0, sin((p.x * 0.8 + p.y) * 26.0 - t * 2.4)) * 0.06;
+    float streak = smoothstep(0.985, 1.0, sin((p.x * 0.8 + p.y) * 26.0 - t * 2.4 - uVelT * 7.0)) * 0.06;
     warm += uAmber * streak * (g1 + g2 + mix(0.25, 0.04, jr));
     col += warm * wC;
 
@@ -205,7 +205,7 @@ const FUNDO_FRAG = /* glsl */ `
     float hz = -0.12;
     if (p.y < hz) {
       float z = 0.45 / (hz - p.y);
-      vec2 gp = vec2(p.x * z, z + t * 0.12);
+      vec2 gp = vec2(p.x * z, z + t * 0.12 + uVelT * 0.9);
       vec2 gl = abs(fract(gp * 1.2) - 0.5) / fwidth(gp * 1.2);
       float line = 1.0 - min(min(gl.x, gl.y), 1.0);
       float fade = smoothstep(9.0, 1.2, z) * smoothstep(hz, hz - 0.08, p.y);
@@ -215,6 +215,14 @@ const FUNDO_FRAG = /* glsl */ `
     cool += uCyan * scan;
     col += cool * wS;
 
+    // luz que a logo emite quando "fala": clarão no foco e uma onda circular que atravessa a tela
+    float rl = length(p - f);
+    col += uCorLuz * exp(-rl * rl * 5.0) * uLuz * 0.42;
+    if (uOnda > 0.0) {
+      float R = uOnda * 2.1;
+      col += uCorLuz * exp(-pow((rl - R) / (0.035 + uOnda * 0.09), 2.0)) * pow(1.0 - uOnda, 1.6) * 0.34;
+      col += uCorLuz * smoothstep(R, R - 0.6, rl) * pow(1.0 - uOnda, 3.0) * 0.07;
+    }
     col += (hash(uv * uRes + fract(t) * 37.0) - 0.5) * (0.018 + 0.03 * wC);
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
@@ -254,6 +262,25 @@ const CARD_FRAG = /* glsl */ `
     col += smoothstep(0.07, 0.0, abs((vUv.x * 0.6 + vUv.y * 0.4) - (sweep * 1.6 - 0.3))) * 0.09;
     gl_FragColor = vec4(col, inside * uOpacity);
     #include <colorspace_fragment>
+  }
+`;
+
+// clarão da logo: aura constante, raios e uma onda que sai da esfera a cada pulso (mistura aditiva)
+const LUZ_VERT = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const LUZ_FRAG = /* glsl */ `
+  uniform vec3 uCor; uniform float uK, uOnda, uT, uBase, uFade;
+  varying vec2 vUv;
+  void main() {
+    vec2 p = (vUv - 0.5) * 8.0;
+    float r = length(p), a = atan(p.y, p.x);
+    float k = uBase + uK;
+    float halo = exp(-max(r - 1.0, 0.0) * 2.0) * smoothstep(0.7, 1.05, r);
+    float nucleo = exp(-r * r * 0.8);
+    float raios = pow(0.5 + 0.5 * sin(a * 7.0 + uT * 0.7) * sin(a * 3.0 - uT * 0.45), 5.0) * exp(-max(r - 1.0, 0.0) * 0.9) * smoothstep(0.9, 1.3, r);
+    float onda = 0.0;
+    if (uOnda > 0.0) { float R = 1.05 + uOnda * 2.8; onda = exp(-pow((r - R) / (0.05 + uOnda * 0.16), 2.0)) * pow(1.0 - uOnda, 1.4); }
+    vec3 col = uCor * (halo * 0.6 * k + nucleo * 0.3 * uK + raios * 0.8 * uK + onda * 1.4) + vec3(1.0) * (halo * 0.18 * uK + onda * 0.3);
+    gl_FragColor = vec4(col * smoothstep(4.0, 3.0, r) * uFade, 1.0);
   }
 `;
 
@@ -319,6 +346,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     uPortrait: { value: 0 }, uDim: { value: 0 }, uSplitK: { value: 0.12 }, uFoco: { value: new THREE.Vector2(0.5, 0.5) },
     uDeep: { value: C(CORES.deep) }, uNavy: { value: C(CORES.navy) }, uRec: { value: C(CORES.rec) },
     uAmber: { value: C(CORES.amber) }, uBlue: { value: C(CORES.blue) }, uCyan: { value: C(CORES.cyan) },
+    uLuz: { value: 0 }, uOnda: { value: 0 }, uVelT: { value: 0 }, uCorLuz: { value: C(CORES.ice) },
   };
   const triGeo = new THREE.BufferGeometry();
   triGeo.setAttribute("position", new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
@@ -357,6 +385,13 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   const front = new THREE.Mesh(geo, mat(frontU, THREE.FrontSide)); front.renderOrder = 5;
   spin.add(back, innerG, front);
   const logoUs = [frontU, backU, innerU];
+  // clarão atrás da esfera + uma luz pontual que acende celular e notebook quando a logo fala
+  const luzU = { uCor: { value: C(CORES.ice) }, uK: { value: 0 }, uOnda: { value: 0 }, uT: { value: 0 }, uBase: { value: 0.15 }, uFade: { value: 1 } };
+  const luz = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.ShaderMaterial({
+    uniforms: luzU, vertexShader: LUZ_VERT, fragmentShader: LUZ_FRAG, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+  }));
+  luz.position.z = -0.6; luz.renderOrder = -2; logoPos.add(luz);
+  const luzP = new THREE.PointLight("#ffffff", 0, 9, 1.4); luzP.position.z = 0.8; logoPos.add(luzP);
   // matcaps: carregam depois da primeira imagem; até lá a logo usa a luz calculada no shader
   {
     const tl = new THREE.TextureLoader(); let n = 0;
@@ -402,7 +437,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   const cReels = reels.slice(0, 7).map((src, i) => cartao(src, 9 / 16, "reel", i));
 
   // ---------- estado ----------
-  const st = {
+  const st = { onda: 0, vel: 0, velT: 0,
     universo: "portal",              // portal | sites | criativos
     lean: 0, mix: 0,                 // lean = alvo no portal; mix = valor suavizado
     cena: "portal", dim: 0,
@@ -558,7 +593,9 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     camera.updateProjectionMatrix();
     camera.lookAt(st.lp.x * md * 0.9, st.lp.y * md * 0.9, 0);
 
-    st.pulso = damp(st.pulso, 0, reduce ? 12 : 3.2, dt);
+    st.pulso = damp(st.pulso, 0, reduce ? 12 : 2.6, dt);
+    if (st.onda > 0) { st.onda += dt * 0.7; if (st.onda >= 1) st.onda = 0; }
+    st.velT = (st.velT || 0) + dt * Math.abs(st.vel || 0) * 0.6;
     const fala = Math.sin(Math.min(1, st.pulso) * Math.PI * 0.5);
     logoPos.position.copy(st.lp);
     logoPos.scale.setScalar(st.ls * (1 + md * 0.4) * (1 + fala * 0.07));
@@ -607,6 +644,14 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     innerU.uLineA.value = c * 0.7 * kF; inner.visible = c * kF > 0.02;
     innerU.uColA.value.set(CORES.amber); innerU.uColB.value.set(CORES.rec);
 
+    // luz emitida: cor do universo, mais forte quando a logo fala
+    const corLuz = tmpCol5.set(CORES.ice).lerp(tmpCol2.set("#ff7a3d"), c).lerp(tmpCol2.set("#5aa8ff"), s);
+    const someLuz = Math.max(0, 1 - md * 1.6) * st.opacidade * Math.min(1, st.lo * 1.4);
+    luzU.uCor.value.copy(corLuz); luzU.uK.value = fala * 1.15; luzU.uOnda.value = st.onda; luzU.uT.value = t;
+    luzU.uBase.value = st.universo === "portal" ? 0.08 : 0.2; luzU.uFade.value = someLuz;
+    luzP.color.copy(corLuz); luzP.intensity = (0.4 + fala * 9) * someLuz;
+    fundoU.uCorLuz.value.copy(corLuz); fundoU.uLuz.value = fala * someLuz; fundoU.uOnda.value = st.onda * (someLuz > 0.05 ? 1 : 0); fundoU.uVelT.value = st.velT;
+
     // fundo
     fundoU.uTime.value = t; fundoU.uMix.value = st.mix;
     fundoU.uPortal.value = damp(fundoU.uPortal.value, st.universo === "portal" ? 1 : 0, 3, dt);
@@ -621,7 +666,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     if (st.dim > 0.7 && st.mergulho === 0 && st.chegada === 0 && pular) return;
     renderer.render(scene, camera);
   }
-  const tmpCol = new THREE.Color(), tmpCol2 = new THREE.Color(), tmpCol3 = new THREE.Color(), tmpCol4 = new THREE.Color();
+  const tmpCol = new THREE.Color(), tmpCol2 = new THREE.Color(), tmpCol3 = new THREE.Color(), tmpCol4 = new THREE.Color(), tmpCol5 = new THREE.Color();
 
   // ---------- API ----------
   const api = {
@@ -644,7 +689,9 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     },
     setOpacidade(o) { st.opacidade = o; },
     // a logo pulsa como se estivesse falando (cada frase nova)
-    pulsar(forca = 1) { st.pulso = Math.max(st.pulso, forca); },
+    pulsar(forca = 1) { st.pulso = Math.max(st.pulso, Math.min(1, forca)); if (forca >= 0.6 && !reduce && (st.onda === 0 || st.onda > 0.45)) st.onda = 0.001; },
+    // velocidade da rolagem (acelera os riscos de luz e a grade do fundo)
+    setVel(v) { st.vel = v; },
     // capítulo da história (celular/notebook) e o progresso dele na rolagem
     setCap(nome, p = 0) { st.cap = nome; st.capP = p; if (!nome) disp.pararVideos(); },
     // mergulho controlado pela rolagem (a logo expande e a câmera entra nela)
