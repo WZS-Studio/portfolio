@@ -148,10 +148,18 @@ export const sites = {
       passos: [
         { titulo: "E para manter o site no ar?" },
         { numero: "R$ 0,11", texto: "por dia é o custo do domínio .com.br: R$ 40 por ano no Registro.br.", fonte: "Registro.br / NIC.br, valor anual do domínio .com.br, consultado em 04/11/2026." },
-        { titulo: "Menos que um cafezinho.", texto: "E a hospedagem pode sair de graça, em serviços como Cloudflare Pages, quando o projeto permite." },
+        { titulo: "Menos que um cafezinho.", texto: "A hospedagem é paga à parte e sai 10% mais barata pela parceria com a MasterSite.", parceria: true },
       ],
     },
     convite: "Vamos construir o seu?",
+  },
+
+  // parceria de hospedagem (o selo aparece no capítulo do café e abaixo dos planos)
+  parceria: {
+    nome: "MasterSite", desconto: "10%", rotulo: "Parceria de hospedagem",
+    titulo: "de desconto na hospedagem.",   // vem logo depois do número do desconto
+    texto: "A hospedagem do site é paga à parte. Pela parceria da WZS Studio com a MasterSite, clientes WZS economizam 10% nela.",
+    cta: "Quero o desconto na hospedagem", interesse: "um site com a hospedagem MasterSite com 10% de desconto",
   },
 
   planos: {
@@ -288,11 +296,54 @@ export const sites = {
       resultados: [],
       nota: "Proposta: o site ainda não foi publicado.",
     },
+    {
+      slug: "dolce", nome: "Dolce Migliavaca", peso: "compacto", interesse: "site do zero",
+      tipo: "Site · confeitaria caseira",
+      linha: "Um site de uma página com cheesecake em 3D para girar e encomenda pelo WhatsApp.",
+      url: "https://dolce-migliavaca.pages.dev", urlRotulo: "dolce-migliavaca.pages.dev",
+      oQueE: "Dolce Migliavaca faz tortas e docinhos caseiros, à mão e sob encomenda, com tele-entrega em Vila Flores, Veranópolis e Nova Prata.",
+      paraQuem: "Quem quer encomendar uma torta ou docinhos para a mesa de casa, um aniversário ou um presente nessas três cidades.",
+      feito: "Site de uma página com um cheesecake em 3D no topo para girar com o mouse ou o dedo, a história da casa, cardápio em carrossel com botão de encomenda em cada item, galeria de fotos, o passo a passo da encomenda e contato por WhatsApp e telefone.",
+      decisoes: [
+        "Turquesa com pinceladas, fundo creme estampado, bordas onduladas entre as seções e títulos manuscritos.",
+        "Cada item do cardápio abre o WhatsApp com o nome do doce já escrito na mensagem.",
+        "O 3D carrega só quando chega perto da tela e, sem WebGL, aparece uma foto no lugar.",
+        "No celular o giro fica no gesto horizontal e a rolagem da página continua livre.",
+      ],
+      stack: ["HTML", "CSS", "JavaScript", "Three.js", "Cloudflare Pages"],
+      capturas: {
+        desktop: ["/media/sites/dolce/desk-1.webp", "/media/sites/dolce/desk-2.webp", "/media/sites/dolce/desk-3.webp", "/media/sites/dolce/desk-4.webp"],
+        celular: ["/media/sites/dolce/cel-1.webp", "/media/sites/dolce/cel-2.webp"],
+      },
+      resultados: [],
+      nota: "Modelo 3D do cheesecake: “Cheese Cake”, de rebuilderai (Sketchfab), licença CC BY 4.0, com crédito no site.",
+    },
+    {
+      slug: "valter", nome: "Dr. Valter Dias", peso: "compacto", interesse: "site do zero",
+      tipo: "Site · farmácia clínica e estética",
+      linha: "Um site de 32 páginas para um farmacêutico clínico e esteta de Adamantina-SP, com a avaliação individual como ponto de partida.",
+      oQueE: "Consultório do Dr. Valter Dias, farmacêutico clínico e esteta em Adamantina-SP: estética facial e corporal e farmácia clínica, com atendimento particular e hora marcada.",
+      paraQuem: "Quem procura estética facial ou corporal em Adamantina e quer que a avaliação considere a saúde e os remédios em uso, e quem precisa revisar medicamentos e suplementos.",
+      feito: "Início com mármore animado, apresentação do Dr. Valter, as três frentes (Rosto, Corpo, Farmácia clínica) em painéis que se abrem, oito queixas para começar, processo em cinco passos, artigos, perguntas frequentes e localização; 16 páginas de tratamento e agendamento que monta a mensagem pronta no WhatsApp.",
+      decisoes: [
+        "Mármore com veios dourados gerado em WebGL no lugar de um vídeo, com botão de pausa e parado quando o sistema pede menos movimento.",
+        "Creme e dourado, Fraunces nos títulos e Inter no texto.",
+        "Registro profissional e responsável técnico no rodapé, e em cada tratamento o aviso de que a indicação e os resultados variam de pessoa para pessoa.",
+        "O mapa só carrega depois de um clique (LGPD), e o agendamento só monta a mensagem para o WhatsApp.",
+      ],
+      stack: ["HTML", "CSS", "JavaScript", "WebGL"],
+      capturaNota: "versão pronta, ainda não publicada",
+      capturas: {
+        desktop: ["/media/sites/valter/desk-1.webp", "/media/sites/valter/desk-3.webp", "/media/sites/valter/desk-4.webp"],
+        celular: ["/media/sites/valter/cel-1.webp", "/media/sites/valter/cel-2.webp"],
+      },
+      resultados: [],
+      nota: "Site pronto e ainda não publicado: o domínio ainda não foi definido.",
+    },
   ],
 
   // lista curta no fim da seção de projetos (some se ficar vazia)
   maisProjetos: [
-    { nome: "Dolce Migliavaca", desc: "Site de confeitaria com cheesecake em 3D e pedido pelo WhatsApp.", url: "https://dolce-migliavaca.pages.dev", rotulo: "no ar ↗" },
     { nome: "JurisConta", desc: "Sistema web para escritórios de advocacia: intimações pela OAB, calculadoras e modelos de documento.", rotulo: "sistema" },
     { nome: "App de treino", desc: "Aplicativo instalável (PWA) com registro de cargas, evolução por exercício e ranking entre amigos.", rotulo: "PWA" },
   ],
@@ -405,7 +456,7 @@ export const sites = {
       { p: "Você usa template?", r: "Não. Cada site é escrito do zero em HTML, CSS e JavaScript, com o visual e as funções que o seu negócio pede." },
       { p: "O site funciona bem no celular?", r: "Sim. Todo projeto começa pela tela do celular, porque é de lá que vem a maior parte das visitas de um negócio local." },
       { p: "Vou aparecer no Google?", r: "O site sai com títulos, descrições, velocidade e estrutura que o Google lê bem. Ninguém pode garantir a primeira posição, mas a base fica certa." },
-      { p: "Preciso ter domínio e hospedagem?", r: "Não precisa chegar com nada. Eu ajudo a registrar o domínio e publico o site." },
+      { p: "Preciso ter domínio e hospedagem?", r: "Não precisa chegar com nada. Eu ajudo a registrar o domínio e publico o site. A hospedagem é paga à parte e, pela parceria da WZS com a MasterSite, sai 10% mais barata." },
       { p: "Consigo mudar textos e fotos depois?", r: "Sim. Combinamos no orçamento se eu faço as atualizações ou se o site ganha um jeito simples de você mesmo editar." },
       { p: "Atende fora de Vila Flores?", r: "Sim. O atendimento acontece pelo WhatsApp e pelo e-mail, então a distância não muda nada." },
     ],
@@ -462,7 +513,7 @@ export const criativos = {
     montagem: {
       rotulo: "Como eu monto",
       titulo: "Um reel que segura, camada por camada.",
-      arquivo: "reel_estenose.mp4",
+      arquivo: "reel_fa_x_fv.mp4",
       camadas: [
         { nome: "Corte", trilha: "V1", texto: "Escolho os melhores trechos e corto no ritmo." },
         { nome: "Gancho", trilha: "T1", texto: "Uma frase forte nos primeiros segundos." },
@@ -470,8 +521,8 @@ export const criativos = {
         { nome: "Som", trilha: "A1", texto: "Trilha e efeitos no tempo dos cortes." },
         { nome: "Chamada", trilha: "FX", texto: "Um pedido claro no final: comentar, salvar ou chamar." },
       ],
-      quadros: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `/media/criativos/quadros/est-${i}.jpg`),
-      video: "/media/criativos/estenose-insuficiencia.mp4", poster: "/media/criativos/estenose-insuficiencia.jpg",
+      quadros: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `/media/criativos/quadros/fa-${i}.jpg`),
+      video: "/media/criativos/fa-x-fv.mp4", poster: "/media/criativos/fa-x-fv.jpg",
     },
     sucesso: {
       titulo: "Publicado. Agora ele roda sozinho.",

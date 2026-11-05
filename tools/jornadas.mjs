@@ -10,7 +10,13 @@ export function criarJornadas(h) {
   const faixas = (n, ini = 0, fim = 1) => Array.from({ length: n }, (_, i) => [ini + ((fim - ini) * i) / n, i === n - 1 ? 1.01 : ini + ((fim - ini) * (i + 1)) / n].map((x) => x.toFixed(3)));
   const titulo = (t, texto, tag = "h3", id = "") => `<${tag} class="passo__titulo display"${id ? ` id="${id}"` : ""}>${palavras(t)}</${tag}>${texto ? `<p class="passo__texto">${rico(texto)}</p>` : ""}`;
   const numero = (x) => `<p class="passo__num display" style="--n:${[...String(x.numero)].length}">${esc(x.numero)}</p><p class="passo__texto">${rico(x.texto)}</p>${x.fonte ? `<p class="passo__fonte">${esc(x.fonte)}</p>` : ""}`;
-  const passos = (lista_, id) => { const f = faixas(lista_.length); return lista_.map((x, i) => passo(f[i][0], f[i][1], x.numero ? numero(x) : titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : id))).join(""); };
+  // selo da parceria de hospedagem: "mini" dentro de um capítulo, completo (com texto e botão) abaixo dos planos
+  const selo = (pc, mini) => !pc ? "" : `<aside class="parceria${mini ? " parceria--mini" : " sobe"}" aria-label="${esc(pc.rotulo)}: WZS Studio e ${esc(pc.nome)}">
+  <span class="parceria__selo" aria-hidden="true"><svg viewBox="0 0 424 422"><use href="#wzs-mark"/></svg><span class="parceria__x">×</span><span class="parceria__ms">${esc(pc.nome.replace(/Site$/, ""))}<b>Site</b></span></span>
+  ${mini ? `<span class="parceria__txt"><span class="parceria__rotulo mono">${esc(pc.rotulo)}</span><b class="parceria__mini">${esc(pc.desconto)} de desconto para clientes WZS</b></span>`
+    : `<div class="parceria__txt"><p class="parceria__rotulo mono">${esc(pc.rotulo)}</p><p class="parceria__titulo display"><span class="parceria__pct">${esc(pc.desconto)}</span> ${esc(pc.titulo)}</p><p class="parceria__texto">${rico(pc.texto)}</p><a class="btn btn--linha" href="${zap(whatsapp.mensagens.sites(pc.interesse))}" target="_blank" rel="noopener" data-zap="sites|hospedagem|parceria">${ico("zap")} ${esc(pc.cta)}</a></div>`}
+</aside>`;
+  const passos = (lista_, id) => { const f = faixas(lista_.length); return lista_.map((x, i) => passo(f[i][0], f[i][1], (x.numero ? numero(x) : titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : id)) + (x.parceria ? selo(sites.parceria, true) : ""))).join(""); };
   const camadasPassos = (cm, id) => passo("0", "0.120", `<h2 class="passo__titulo display" id="${id}">${palavras(cm.titulo)}</h2>`)
     + cm.camadas.map((c, i) => passo((0.12 + i * 0.14).toFixed(3), (i === cm.camadas.length - 1 ? 1.01 : 0.26 + i * 0.14).toFixed(3),
       `<p class="passo__n mono">${n2(i + 1)} / ${n2(cm.camadas.length)}${c.trilha ? ` · trilha ${esc(c.trilha)}` : c.arquivo ? ` · ${esc(c.arquivo)}` : ""}</p><h3 class="passo__titulo display">${esc(c.nome)}</h3><p class="passo__texto">${rico(c.texto)}</p>`)).join("");
@@ -42,8 +48,8 @@ export function criarJornadas(h) {
     <div class="editor__regua">${["0s", "3s", "10s", "20s", "30s", "40s"].map((t, i) => `<span style="left:${[0, 7.5, 25, 50, 75, 100][i]}%">${t}</span>`).join("")}</div>
     <div class="editor__trilhas">
       <div class="trilha" data-i="0"><span class="trilha__n">V1</span><div class="trilha__pista"><div class="clip clip--v">${lista(cm.quadros, (q) => `<i style="background-image:url(${esc(q)})"></i>`)}</div></div></div>
-      <div class="trilha" data-i="1"><span class="trilha__n">T1</span><div class="trilha__pista"><div class="clip clip--t" style="--x:0%;--w:16%"><b>T</b>ESSE SANGUE NÃO DEVERIA VOLTAR.</div></div></div>
-      <div class="trilha" data-i="2"><span class="trilha__n">TXT</span><div class="trilha__pista">${["o jato", "e o refluxo", "saem", "da física", "comenta", "A ou B"].map((w, i) => `<div class="clip clip--l" style="--x:${8 + i * 13}%;--w:11%">${w}</div>`).join("")}</div></div>
+      <div class="trilha" data-i="1"><span class="trilha__n">T1</span><div class="trilha__pista"><div class="clip clip--t" style="--x:0%;--w:16%"><b>T</b>FA: DÁ PRA VIVER ANOS. FV: MINUTOS.</div></div></div>
+      <div class="trilha" data-i="2"><span class="trilha__n">TXT</span><div class="trilha__pista">${["ele se mexe…", "mas não", "bombeia", "sangue", "comenta", "A ou B"].map((w, i) => `<div class="clip clip--l" style="--x:${8 + i * 13}%;--w:11%">${w}</div>`).join("")}</div></div>
       <div class="trilha" data-i="3"><span class="trilha__n">A1</span><div class="trilha__pista"><div class="clip clip--a"><span class="ondas">${ondas}</span><b>trilha + efeitos</b></div></div></div>
       <div class="trilha" data-i="4"><span class="trilha__n">FX</span><div class="trilha__pista"><div class="clip clip--fx" style="--x:82%;--w:18%">Comenta A ou B 👇</div></div></div>
     </div>
@@ -140,6 +146,7 @@ export function criarJornadas(h) {
       </article>`)}
     </div>
     ${pl.nota ? `<p class="planos__nota">${rico(pl.nota)}</p>` : ""}
+    ${jornada === "sites" ? selo(sites.parceria, false) : ""}
     <p class="contato__alt sobe">Prefere escrever do seu jeito? <a href="${zap(whatsapp.mensagens.geral)}" target="_blank" rel="noopener" data-zap="${jornada}|geral|planos">${esc(whatsapp.exibicao)}</a> <a href="mailto:${esc(marca.email)}">${esc(marca.email)}</a></p>
   </div>
 </section>`;
@@ -152,8 +159,7 @@ export function criarJornadas(h) {
     ${h.linha ? `<p class="hero__linha sobe" style="--d:250ms">${rico(h.linha)}</p>` : ""}
     <div class="hero__cta sobe" style="--d:350ms"><a class="btn" href="${zap(msgZap)}" target="_blank" rel="noopener" data-zap="${track}|geral|hero">${ico("zap")} ${esc(h.cta)}</a>${sec}</div>
     ${h.prova?.length ? `<div class="hero__prova sobe" style="--d:500ms">${lista(h.prova, (p) => `<div><strong>${esc(p.valor)}</strong><span>${esc(p.rotulo)}</span></div>`)}</div>` : ""}
-  </div></div>
-  <p class="hero__rolar mono" aria-hidden="true">role</p>
+  </div></div>
 </section>`;
 
   // ======================================================== SITES

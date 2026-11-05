@@ -5,6 +5,7 @@
 // WhatsApp) fica em conteudo/site.mjs. Este arquivo só monta o HTML.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -17,7 +18,7 @@ const VERSAO = Date.now().toString(36);
 // todo módulo importado sem ?v= (import estático de um módulo para outro) ganha a versão pelo importmap:
 // sem isso o navegador roda uma cópia velha guardada por até um dia (Expires do .htaccess)
 const IMPORTMAP = JSON.stringify({ imports: { three: "/assets/vendor/three.module.min.js",
-  ...Object.fromEntries(["dispositivos", "cursor", "medicao", "logo3d"].map((m) => [`/assets/js/${m}.js`, `/assets/js/${m}.js?v=${VERSAO}`])) } });
+  ...Object.fromEntries(["dispositivos", "cafe-forma", "cursor", "medicao", "logo3d"].map((m) => [`/assets/js/${m}.js`, `/assets/js/${m}.js?v=${VERSAO}`])) } });
 
 // ---------- utilidades ----------
 const esc = (s = "") => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -192,27 +193,39 @@ const orgLd = () => ({
 });
 
 // ---------- dados do mundo 3D ----------
+// endereço com a marca do conteúdo (soma o arquivo e a versão -leve, se houver): só muda quando o arquivo muda
+const hv = (p) => {
+  const h = createHash("md5");
+  for (const f of [p, p.replace(/.mp4$/, "-leve.mp4")]) if (existsSync(join(RAIZ, f))) h.update(readFileSync(join(RAIZ, f)));
+  return `${p}?v=${h.digest("hex").slice(0, 8)}`;
+};
 const CENAS_MG = ["abertura", "revelacao", "construcao", "plantonista", "questoes", "amigos"];
 const dadosMundo = {
   // miniaturas leves para os quadros que orbitam a logo (geradas em media/tex/cards)
   ...JSON.parse(readFileSync(join(RAIZ, "media/tex/cards/lista.json"), "utf8")),
   midia: {
-    // vídeos das telas 3D: versões leves (360×640, sem som) em /media/tex
-    videoMontagem: "/media/tex/montagem.mp4", posterMontagem: criativos.historia?.montagem?.poster,
-    videoSucesso: "/media/tex/sucesso.mp4", videoAnuncio: "/media/tex/anuncio.mp4",
+    // vídeos das telas 3D, sem som, em /media/tex: 720×1280 para telas grandes e "-leve" (540×960) para as demais
+    videoMontagem: hv("/media/tex/montagem.mp4"), posterMontagem: hv("/media/tex/montagem.jpg"),
+    videoSucesso: hv("/media/tex/sucesso.mp4"), videoAnuncio: hv("/media/tex/anuncio.mp4"),
     // quadro parado enquanto o vídeo abre (antes a tela ficava preta)
-    posterSucesso: "/media/tex/sucesso.jpg", posterAnuncio: "/media/tex/anuncio.jpg",
+    posterSucesso: hv("/media/tex/sucesso.jpg"), posterAnuncio: hv("/media/tex/anuncio.jpg"),
+    // frente e verso das cédulas de R$ 100 e R$ 50 (imagens do Banco Central) numa folha só, para as notas 3D do anúncio
+    cedulas: hv("/media/tex/cedulas.webp"),
+    // xícara do capítulo do café: luz e sombra assadas no Blender (tools/blender/cafe_assar.py)
+    cafe: Object.fromEntries(["xicara", "pires", "alca", "liquido", "chao"].map((n) => [n, hv(`/media/tex/cafe/${n}.webp`)])),
     feed: [
-      { v: "/media/tex/feed-1.mp4", poster: "/media/tex/feed-1.jpg", conta: "felipen.med", legenda: "FA × FV", cor: "#3b82f6" },
-      { v: "/media/tex/feed-2.mp4", poster: "/media/tex/feed-2.jpg", conta: "felipen.med", legenda: "O último plantão", cor: "#3b82f6" },
-      { v: "/media/tex/feed-3.mp4", poster: "/media/tex/feed-3.jpg", conta: "wzs_studio", legenda: "Ninguém sabe que ele existe", cor: "#1f5fd6" },
-      { v: "/media/tex/feed-4.mp4", poster: "/media/tex/feed-4.jpg", conta: "felipen.med", legenda: "DPP × placenta prévia", cor: "#3b82f6" },
-      { v: "/media/tex/feed-5.mp4", poster: "/media/tex/feed-5.jpg", conta: "medgrind_oficial", legenda: "Bora atender", cor: "#14a2ff" },
-      { v: "/media/tex/feed-6.mp4", poster: "/media/tex/feed-6.jpg", conta: "felipen.med", legenda: "Soro no traumatismo craniano", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-1.mp4"), poster: hv("/media/tex/feed-1.jpg"), conta: "felipen.med", legenda: "Estenose × insuficiência aórtica", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-2.mp4"), poster: hv("/media/tex/feed-2.jpg"), conta: "felipen.med", legenda: "O último plantão", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-3.mp4"), poster: hv("/media/tex/feed-3.jpg"), conta: "wzs_studio", legenda: "Ninguém sabe que ele existe", cor: "#1f5fd6" },
+      { v: hv("/media/tex/feed-4.mp4"), poster: hv("/media/tex/feed-4.jpg"), conta: "felipen.med", legenda: "DPP × placenta prévia", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-5.mp4"), poster: hv("/media/tex/feed-5.jpg"), conta: "medgrind_oficial", legenda: "Bora atender", cor: "#14a2ff" },
+      { v: hv("/media/tex/feed-6.mp4"), poster: hv("/media/tex/feed-6.jpg"), conta: "felipen.med", legenda: "Soro no traumatismo craniano", cor: "#3b82f6" },
     ],
     ch: { foto: "/media/sites/crosshard/foto-musculacao.webp", logo: "/media/sites/crosshard/logo-branco.png", desk: "/media/sites/crosshard/desk-1.webp", cel: "/media/sites/crosshard/cel-1.webp" },
     cenas: CENAS_MG.map((c) => `/media/sites/medgrind/cenas/${c}-wide.webp`),
     cenasTall: CENAS_MG.map((c) => `/media/sites/medgrind/cenas/${c}-tall.webp`),
+    // a landing do MedGrind gravada rolando (computador e celular), arrastada pela rolagem do capítulo
+    vooMg: hv("/media/sites/medgrind/voo.mp4"), vooMgCel: hv("/media/sites/medgrind/voo-cel.mp4"),
   },
 };
 

@@ -8,9 +8,10 @@
 //   c-oportunidade  o vídeo chega a quem não segue
 //   s-problema    um site genérico que perde o visitante
 //   s-montagem    o site sendo construído: mensagem, design, conteúdo, celular, ação
-//   s-medgrind    o caso MedGrind no notebook e no celular
+//   s-medgrind    o caso MedGrind: o notebook abre e a landing de verdade voa pela rolagem; o celular sobe pela frente
 //   s-oportunidade  do anúncio no celular até a conversa no WhatsApp
 import * as THREE from "three";
+import { FORMA_CAFE, geometriasCafe } from "./cafe-forma.js";
 
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const faixa = (p, a, b) => clamp((p - a) / (b - a));
@@ -67,7 +68,7 @@ const CAFE_VERT = /* glsl */ `
   void main() { vUv = uv; vec3 p = position; float r = length(p.xy) / 0.5; p.z -= (1.0 - smoothstep(0.0, 0.5, r)) * 0.045 * uMexe; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }
 `;
 const CAFE_FRAG = /* glsl */ `
-  uniform float uT, uMexe; varying vec2 vUv;
+  uniform float uT, uMexe, uTemSombra; uniform sampler2D uSombra; varying vec2 vUv;
   float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
   float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }
@@ -99,6 +100,8 @@ const CAFE_FRAG = /* glsl */ `
     // reflexo suave de uma janela distante, que ondula quando a colher passa
     vec2 rp = p - vec2(-0.28, 0.42); rp.x += sin(r * 24.0 - uT * 4.0) * 0.015 * uMexe;
     rp *= vec2(3.0, 7.0); col += vec3(1.0, 0.94, 0.86) * exp(-dot(rp, rp)) * 0.15;
+    // luz assada no Blender: a borda da xícara faz sombra num lado do café
+    col *= mix(1.0, 0.3 + 0.8 * texture2D(uSombra, vUv).r, uTemSombra);
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
@@ -135,6 +138,8 @@ const ICO = {
 
 export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   const leve = nivel !== "alta";
+  // tela grande (1440p, retina): vídeo 720×1280 e canvas do celular em 540×1170; nas demais, 540×960 e 432×936
+  const grande = !leve && Math.min(screen.width, screen.height) * devicePixelRatio >= 1300, ESC = grande ? 1 : 0.8;
   const raiz = new THREE.Group(); raiz.visible = false; scene.add(raiz);
   const loader = new THREE.TextureLoader();
   const cacheImg = new Map(), cacheEl = new Map();
@@ -150,7 +155,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     if (!src) return null;
     if (!cacheVid.has(src)) {
       const v = document.createElement("video");
-      Object.assign(v, { src, muted: true, loop: true, playsInline: true, preload: "auto", crossOrigin: "anonymous" });
+      Object.assign(v, { src: grande ? src : src.replace(/\.mp4(?=\?|$)/, "-leve.mp4"), muted: true, loop: true, playsInline: true, preload: "auto", crossOrigin: "anonymous" });
       v.setAttribute("muted", ""); v.setAttribute("playsinline", "");
       cacheVid.set(src, v);
     }
@@ -165,6 +170,16 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     if (v.readyState >= 1 && v.duration && !v.seeking) { const tt = frac * (v.duration - 0.1); if (Math.abs(v.currentTime - tt) > 0.08) v.currentTime = tt; }
     return v;
   };
+  const cacheTexV = new Map();
+  const texVideo = (v) => {
+    if (!cacheTexV.has(v)) {
+      const t = new THREE.VideoTexture(v); t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
+      v.addEventListener("seeked", () => (t.needsUpdate = true)); // parado e arrastado: cada busca precisa subir o quadro novo
+      if (v.readyState >= 2) t.needsUpdate = true; // o quadro que já está pronto (a busca anterior pode ter terminado antes desta textura existir)
+      cacheTexV.set(v, t);
+    }
+    return cacheTexV.get(v);
+  };
   const pronto = (el) => !!el && ((el.readyState !== undefined && el.readyState >= 2) || (el.complete && el.naturalWidth > 0));
 
   // materiais (a luz de estúdio vem do scene.environment)
@@ -173,7 +188,6 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   const matTraseira = new THREE.MeshPhysicalMaterial({ color: "#1c2230", metalness: 0.3, roughness: 0.45, clearcoat: 0.6, envMapIntensity: 0.9 });
   const matAlu = new THREE.MeshPhysicalMaterial({ color: "#6b7280", metalness: 1, roughness: 0.3, envMapIntensity: 1.1 });
   const matTecla = new THREE.MeshStandardMaterial({ color: "#10141c", metalness: 0.2, roughness: 0.7 });
-  const matOuro = new THREE.MeshPhysicalMaterial({ color: "#ffc23a", metalness: 1, roughness: 0.22, envMapIntensity: 1.4, clearcoat: 0.6 });
 
   const telaMat = (aspect, raio) => new THREE.ShaderMaterial({
     uniforms: {
@@ -239,7 +253,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   const NB = { w: 2.6, d: 1.76, base: 0.045, tampa: 1.66 };
   const NB_TELA = { w: 2.46, h: 1.5375 }, NB_ASP = NB_TELA.w / NB_TELA.h;
   const notebook = new THREE.Group(), dobradica = new THREE.Group();
-  const nbTelaMat = telaMat(NB_ASP, 0.02), nbU = nbTelaMat.uniforms;
+  const nbTelaMat = telaMat(NB_ASP, 0.02), nbU = nbTelaMat.uniforms; nbU.uBorda.value.set("#8fd3ff");
   const matAluClaro = new THREE.MeshPhysicalMaterial({ color: "#c8cdd5", metalness: 1, roughness: 0.34, envMapIntensity: 1.15, clearcoat: 0.2 });
   {
     const teclas = (() => {
@@ -277,27 +291,32 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
 
   // ---------- café: xícara, pires, líquido girando, colher mexendo e vapor ----------
   const cafe = new THREE.Group(); cafe.visible = false; raiz.add(cafe);
-  const cafeU = { uT: { value: 0 }, uMexe: { value: 0 } };
+  const cafeU = { uT: { value: 0 }, uMexe: { value: 0 }, uSombra: { value: null }, uTemSombra: { value: 0 } };
   const colher = new THREE.Group();
+  // porcelana com a luz, as sombras e a oclusão assadas no Blender (tools/blender/cafe_assar.py) na mesma malha de cafe-forma.js;
+  // o brilho do esmalte vem do ambiente da cena (verniz), então a cor difusa fica preta e a textura entra como emissão,
+  // sem a curva de tom da cena (ela achatava os brancos e apagava as sombras assadas)
+  const matsLouca = {}, louca = (k) => (matsLouca[k] = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#f4f0ea", emissiveIntensity: 1, roughness: 0.14, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 0.9, side: THREE.DoubleSide, toneMapped: false }));
+  let sombraChao = null, cafeTexturas = false;
+  const texturasCafe = () => {
+    if (cafeTexturas || !midia.cafe) return; cafeTexturas = true;
+    const carregar = (src, ok) => loader.load(src, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; ok(t); });
+    ["xicara", "pires", "alca"].forEach((k) => carregar(midia.cafe[k], (t) => { const m = matsLouca[k]; m.emissiveMap = t; m.emissive.set("#ffffff"); m.needsUpdate = true; }));
+    carregar(midia.cafe.chao, (t) => { sombraChao.material.map = t; sombraChao.material.opacity = 1; sombraChao.material.needsUpdate = true; });
+    loader.load(midia.cafe.liquido, (t) => { cafeU.uSombra.value = t; cafeU.uTemSombra.value = 1; });
+  };
   {
-    const matLouca = new THREE.MeshPhysicalMaterial({ color: "#f4f0ea", roughness: 0.16, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1, side: THREE.DoubleSide });
-    const perfil = [[0, 0], [0.36, 0], [0.4, 0.03], [0.45, 0.2], [0.5, 0.5], [0.53, 0.68], [0.535, 0.71], [0.515, 0.71], [0.49, 0.66], [0.46, 0.46], [0.41, 0.2], [0.36, 0.07], [0, 0.07]].map(([x, y]) => new THREE.Vector2(x, y));
-    const xicara = new THREE.Mesh(new THREE.LatheGeometry(perfil, leve ? 64 : 128), matLouca);
-    const alca = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.035, 20, 48, Math.PI * 1.25), matLouca);
-    alca.position.set(0.52, 0.38, 0); alca.rotation.set(0, 0, -Math.PI * 0.62);
-    const pires = new THREE.Mesh(new THREE.LatheGeometry([[0, 0], [0.78, 0], [0.9, 0.05], [0.93, 0.08], [0.86, 0.075], [0.58, 0.03], [0, 0.03]].map(([x, y]) => new THREE.Vector2(x, y)), leve ? 64 : 128), matLouca);
-    pires.position.y = -0.03;
-    const liquido = new THREE.Mesh(new THREE.CircleGeometry(0.5, leve ? 64 : 128, 0, Math.PI * 2), new THREE.ShaderMaterial({ uniforms: cafeU, vertexShader: CAFE_VERT, fragmentShader: CAFE_FRAG }));
-    liquido.rotation.x = -Math.PI / 2; liquido.position.y = 0.6; liquido.scale.setScalar(0.98);
+    const g = geometriasCafe(THREE, leve ? 64 : 128);
+    const xicara = new THREE.Mesh(g.xicara, louca("xicara")), alca = new THREE.Mesh(g.alca, louca("alca")), pires = new THREE.Mesh(g.pires, louca("pires"));
+    const liquido = new THREE.Mesh(new THREE.CircleGeometry(FORMA_CAFE.liquido.raio, leve ? 64 : 128), new THREE.ShaderMaterial({ uniforms: cafeU, vertexShader: CAFE_VERT, fragmentShader: CAFE_FRAG }));
+    liquido.rotation.x = -Math.PI / 2; liquido.position.y = FORMA_CAFE.liquido.y;
     const matInox = new THREE.MeshPhysicalMaterial({ color: "#d7dbe0", metalness: 1, roughness: 0.15, envMapIntensity: 1.3 });
     const cabo = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.014, 0.78, 20), matInox); cabo.position.y = 0.4; cabo.scale.set(1.7, 1, 0.5);
     const concha = new THREE.Mesh(new THREE.SphereGeometry(0.07, 28, 18), matInox); concha.scale.set(1, 0.42, 1.45);
     colher.add(cabo, concha); colher.position.y = 0.58;
-    // sombra de contato sob o pires: sem ela a xícara parece flutuar
-    const somb = (() => { const c = canvas(128, 128), x = c.getContext("2d"), g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "rgba(0,0,0,.6)"); g.addColorStop(0.55, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return texCanvas(c); })();
-    const sombra = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.3), new THREE.MeshBasicMaterial({ map: somb, transparent: true, depthWrite: false, toneMapped: false }));
-    sombra.rotation.x = -Math.PI / 2; sombra.position.y = -0.04;
-    cafe.add(sombra, pires, xicara, alca, liquido, colher);
+    // sombra no chão assada no Blender (preta, com transparência): sem ela a xícara parece flutuar
+    sombraChao = new THREE.Mesh(g.chao, new THREE.MeshBasicMaterial({ color: "#000000", transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+    cafe.add(sombraChao, pires, xicara, alca, liquido, colher);
   }
   const NV = 48, vaporPos = new Float32Array(NV * 3), vaporSem = Array.from({ length: NV }, () => Math.random());
   const vaporGeo = new THREE.BufferGeometry(); vaporGeo.setAttribute("position", new THREE.BufferAttribute(vaporPos, 3));
@@ -305,25 +324,40 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   const vapor = new THREE.Points(vaporGeo, new THREE.PointsMaterial({ size: 0.46, map: vaporTex, transparent: true, depthWrite: false, opacity: 0.3 }));
   vapor.frustumCulled = false; cafe.add(vapor);
 
-  // ---------- dinheiro: moedas e notas ----------
-  const NM = leve ? 34 : 60, NN = leve ? 22 : 40;
-  const moedas = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.075, 0.075, 0.014, 28), matOuro, NM);
-  const notaTex = (() => {
-    const c = canvas(256, 120), x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 256, 120);
-    g.addColorStop(0, "#1f9d55"); g.addColorStop(1, "#0f6b39"); x.fillStyle = g; rr(x, 0, 0, 256, 120, 10); x.fill();
-    x.strokeStyle = "rgba(255,255,255,.55)"; x.lineWidth = 4; rr(x, 8, 8, 240, 104, 8); x.stroke();
-    x.fillStyle = "#e9ffe9"; x.font = "800 46px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("R$ 100", 128, 76);
-    return texCanvas(c);
-  })();
-  const notas = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.3, 0.14), new THREE.MeshStandardMaterial({ map: notaTex, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.05 }), NN);
-  moedas.visible = notas.visible = false; moedas.frustumCulled = notas.frustumCulled = false;
-  raiz.add(moedas, notas);
-  const semente = Array.from({ length: Math.max(NM, NN) }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
+  // ---------- dinheiro: cédulas de verdade (R$ 100 e R$ 50, frente e verso, imagens do Banco Central) ----------
+  // uma malha instanciada; o shader dobra cada nota como papel ao vento e escolhe a face certa da folha de cédulas.
+  // Só é criada (e a imagem baixada) quando o capítulo do anúncio aparece.
+  const NN = leve ? 26 : 46, notasU = { uT: { value: 0 } }, aNota = new Float32Array(NN), aFase = new Float32Array(NN);
+  for (let i = 0; i < NN; i++) { aNota[i] = i % 3 === 2 ? 1 : 0; aFase[i] = Math.random() * 6.283; }
+  const semente = Array.from({ length: NN }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
+  let notas = null;
+  const criarNotas = () => {
+    const g = new THREE.PlaneGeometry(0.34, 0.153, 12, 2);
+    g.setAttribute("aNota", new THREE.InstancedBufferAttribute(aNota, 1)); g.setAttribute("aFase", new THREE.InstancedBufferAttribute(aFase, 1));
+    const m = new THREE.MeshStandardMaterial({ map: imagem(midia.cedulas), side: THREE.DoubleSide, roughness: 0.8, metalness: 0, envMapIntensity: 0.95 });
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uT = notasU.uT;
+      sh.vertexShader = sh.vertexShader
+        .replace("#include <common>", `#include <common>
+attribute float aNota; attribute float aFase; uniform float uT; varying float vNota;`)
+        .replace("#include <beginnormal_vertex>", `float fl = position.x * 11.0 + uT * 6.5 + aFase, cu = sin(uT * 2.3 + aFase * 1.7);
+vec3 objectNormal = normalize(vec3(-(cos(fl) * 0.176 + position.x * 2.6 * cu), 0.0, 1.0));`)
+        .replace("#include <begin_vertex>", `vec3 transformed = vec3(position.xy, position.z + sin(fl) * 0.016 + position.x * position.x * 1.3 * cu); vNota = aNota;`);
+      sh.fragmentShader = sh.fragmentShader
+        .replace("#include <common>", `#include <common>
+varying float vNota;`)
+        .replace("#include <map_fragment>", `{ // folha 1024×512: em cima a de R$ 100 (226 px de altura), embaixo a de R$ 50 (240 px); frente à esquerda, verso à direita
+  vec2 q = vMapUv; if (!gl_FrontFacing) q.x = 1.0 - q.x;
+  float alt = vNota < 0.5 ? 226.0 / 512.0 : 240.0 / 512.0, topo = vNota < 0.5 ? 1.0 : 0.5;
+  diffuseColor *= texture2D(map, vec2((gl_FrontFacing ? 0.0 : 0.5) + q.x * 0.5, topo - alt + q.y * alt)); }`);
+    };
+    notas = new THREE.InstancedMesh(g, m, NN); notas.frustumCulled = false; notas.visible = false; raiz.add(notas);
+  };
   const mtx = new THREE.Matrix4(), qq = new THREE.Quaternion(), ee = new THREE.Euler(), vv = new THREE.Vector3(), ss = new THREE.Vector3();
 
   // ---------- telas desenhadas em canvas ----------
-  // tela do celular: desenhada em 432×936 (80%) com coordenadas lógicas 540×1170
-  const IG = canvas(432, 936), igx = IG.getContext("2d"), igT = texCanvas(IG);
+  // tela do celular: coordenadas lógicas 540×1170, desenhadas em ESC (80% ou 100%)
+  const IG = canvas(540 * ESC, 1170 * ESC), igx = IG.getContext("2d"), igT = texCanvas(IG);
   const W = 540, H = 1170;
   let quadro = 0;
   function cobrir(x, el, dx, dy, dw, dh, recorte) {
@@ -339,7 +373,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   // interface do Reels: barra de status, título, coluna de ações, usuário, legenda, áudio, abas
   function desenharIG(o) {
     const x = igx;
-    x.setTransform(0.8, 0, 0, 0.8, 0, 0);
+    x.setTransform(ESC, 0, 0, ESC, 0, 0);
     x.fillStyle = "#000"; x.fillRect(0, 0, W, H);
     if (o.fundo) o.fundo(x);
     else if (!cobrir(x, o.fonte, 0, 0, W, H, o.recorte)) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#26282e"); g.addColorStop(1, "#0c0d10"); x.fillStyle = g; x.fillRect(0, 0, W, H); }
@@ -394,7 +428,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   function desenharFeed(off) {
     const lista = midia.feed || [], n = lista.length || 1;
     const i0 = Math.floor(off), f = suave(off - i0), a = lista[((i0 % n) + n) % n] || {}, b = lista[(((i0 + 1) % n) + n) % n] || {};
-    const va = tocar(a.v);
+    const va = tocar(a.v); video(b.v); // o próximo já vai carregando, para não entrar parado
     desenharIG({
       usuario: a.conta || "seu.perfil", legenda: a.legenda || "", corAvatar: a.cor || "#6b7280",
       fundo: (x) => {
@@ -407,16 +441,17 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     });
   }
 
-  // prévia do editor:  // prévia do editor: as camadas entram por cima de um clipe cru (o vídeo é arrastado pela rolagem)
-  const LEG = ["o", "jato", "e", "o", "refluxo", "saem", "da", "física"];
+  // prévia do editor: as camadas entram por cima de um clipe cru (o vídeo é arrastado pela rolagem)
+  const LEG = ["ele", "se", "mexe…", "mas", "não", "bombeia", "sangue"];
+  const GANCHO = ["FA: DÁ PRA", "VIVER ANOS.", "FV: MINUTOS."];
   function desenharEdicao(p, cam, el) {
-    const x = igx; x.setTransform(0.8, 0, 0, 0.8, 0, 0); x.fillStyle = "#050608"; x.fillRect(0, 0, W, H); x.textAlign = "left";
-    if (cam[0] > 0) { x.globalAlpha = cam[0]; cobrir(x, el, 0, 0, W, H, [0.27, 0.6]); x.globalAlpha = 1; }
+    const x = igx; x.setTransform(ESC, 0, 0, ESC, 0, 0); x.fillStyle = "#050608"; x.fillRect(0, 0, W, H); x.textAlign = "left";
+    if (cam[0] > 0) { x.globalAlpha = cam[0]; cobrir(x, el, 0, 0, W, H, [0.18, 0.76]); x.globalAlpha = 1; }
     else if (p < 0.12) { x.fillStyle = "rgba(255,255,255,.35)"; x.font = "500 28px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("linha do tempo vazia", W / 2, H / 2); x.textAlign = "left"; }
     else { x.strokeStyle = "rgba(143,211,255,.12)"; x.lineWidth = 1; for (let i = 1; i < 6; i++) { x.beginPath(); x.moveTo((i * W) / 6, 0); x.lineTo((i * W) / 6, H); x.stroke(); } for (let i = 1; i < 12; i++) { x.beginPath(); x.moveTo(0, (i * H) / 12); x.lineTo(W, (i * H) / 12); x.stroke(); } }
     if (cam[1] > 0) {
       x.globalAlpha = cam[1]; x.textAlign = "center"; x.lineJoin = "round";
-      ["ESSE SANGUE", "NÃO DEVERIA", "VOLTAR."].forEach((l, i) => { x.font = `800 62px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, W / 2, 230 + i * 72); x.fillStyle = i === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, W / 2, 230 + i * 72); });
+      GANCHO.forEach((l, i) => { x.font = `800 62px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, W / 2, 230 + i * 72); x.fillStyle = i === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, W / 2, 230 + i * 72); });
       x.textAlign = "left"; x.globalAlpha = 1;
     }
     if (cam[2] > 0) {
@@ -476,11 +511,11 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
 
   // o site da CrossHard sendo construído (k de 0 a 5): mensagem → design → conteúdo → celular → ação
   const obraC = canvas(1008, 630), ox = obraC.getContext("2d"), obraT = texCanvas(obraC);
-  const obraCelC = canvas(432, 936), ocx = obraCelC.getContext("2d"), obraCelT = texCanvas(obraCelC);
+  const obraCelC = canvas(540 * ESC, 1170 * ESC), ocx = obraCelC.getContext("2d"), obraCelT = texCanvas(obraCelC);
   const FONTE = '"Roboto Flex", "Arial Black", Anybody, sans-serif';
   function desenharObra(k, t, ehCel) {
     const x = ehCel ? ocx : ox, w = ehCel ? 540 : 1008, h = ehCel ? 1170 : 630;
-    if (ehCel) x.setTransform(0.8, 0, 0, 0.8, 0, 0);
+    if (ehCel) x.setTransform(ESC, 0, 0, ESC, 0, 0);
     const design = clamp(k - 1), conteudo = clamp(k - 2), acao = clamp(k - 4);
     x.textAlign = "left";
     x.fillStyle = "#ffffff"; x.fillRect(0, 0, w, h);
@@ -518,8 +553,8 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     (ehCel ? obraCelT : obraT).needsUpdate = true;
   }
 
-  // conversa no WhatsApp  // conversa no WhatsApp
-  const chatC = canvas(432, 936), chx = chatC.getContext("2d"), chatT = texCanvas(chatC);
+  // conversa no WhatsApp
+  const chatC = canvas(540 * ESC, 1170 * ESC), chx = chatC.getContext("2d"), chatT = texCanvas(chatC);
   const UIF = "-apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif";
   // papel de parede do WhatsApp (traços miúdos), desenhado uma vez
   const papel = (() => {
@@ -550,7 +585,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   // q 0–0,22: a mensagem do site já vem escrita na caixa · 0,22: enviada · 0,34–0,56: digitando · 0,56: resposta · 0,78: agendamento
   const MSG = "Olá! Vim pelo site e quero saber mais.";
   function desenharChat(q, t) {
-    const x = chx; x.setTransform(0.8, 0, 0, 0.8, 0, 0); x.textAlign = "left"; x.drawImage(papel, 0, 0);
+    const x = chx; x.setTransform(ESC, 0, 0, ESC, 0, 0); x.textAlign = "left"; x.drawImage(papel, 0, 0);
     // barra de status e cabeçalho
     x.fillStyle = "#1f2c34"; x.fillRect(0, 0, 540, 172);
     x.fillStyle = "#e9edef"; x.font = `600 26px ${UIF}`; x.fillText("9:41", 46, 52); x.fillStyle = "#000"; rr(x, 206, 22, 128, 38, 19); x.fill();
@@ -611,8 +646,8 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   function desenharCamadaReel(i, p, el) {
     const k = camReel[i], x = k.x, w = 540, h = 1170;
     x.setTransform(0.5, 0, 0, 0.5, 0, 0); x.clearRect(0, 0, w, h); x.textAlign = "center"; x.lineJoin = "round";
-    if (i === 0) { if (el) cobrir(x, el, 0, 0, w, h, [0.27, 0.6]); else { x.fillStyle = "#0b1426"; x.fillRect(0, 0, w, h); } }
-    if (i === 1) ["ESSE SANGUE", "NÃO DEVERIA", "VOLTAR."].forEach((l, j) => { x.font = `900 64px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, w / 2, 230 + j * 74); x.fillStyle = j === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, w / 2, 230 + j * 74); });
+    if (i === 0) { if (el) cobrir(x, el, 0, 0, w, h, [0.18, 0.76]); else { x.fillStyle = "#0b1426"; x.fillRect(0, 0, w, h); } }
+    if (i === 1) GANCHO.forEach((l, j) => { x.font = `900 64px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, w / 2, 230 + j * 74); x.fillStyle = j === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, w / 2, 230 + j * 74); });
     if (i === 2) { const n = Math.floor(p * 40) % LEG.length, fr = LEG.slice(Math.max(0, n - 2), n + 1).join(" "); x.font = "800 46px Schibsted Grotesk, sans-serif"; const tw = x.measureText(fr).width; x.fillStyle = "rgba(0,0,0,.6)"; rr(x, w / 2 - tw / 2 - 22, h - 470, tw + 44, 72, 14); x.fill(); x.fillStyle = "#ffe14d"; x.fillText(fr, w / 2, h - 420); }
     if (i === 3) { for (let j = 0; j < 22; j++) { const hh = 14 + Math.abs(Math.sin(j * 1.7 + p * 50)) * 70; x.fillStyle = "#3ddc97"; x.fillRect(60 + j * 19, h / 2 - hh / 2, 10, hh); } x.fillStyle = "#fff"; x.font = "700 30px Schibsted Grotesk, sans-serif"; x.fillText("♫ trilha + efeitos", w / 2, h / 2 + 110); }
     if (i === 4) { x.fillStyle = "#ff4d2e"; rr(x, 70, h - 330, w - 140, 90, 45); x.fill(); x.fillStyle = "#0a1220"; x.font = "800 36px Schibsted Grotesk, sans-serif"; x.fillText("Comenta A ou B 👇", w / 2, h - 272); }
@@ -652,15 +687,18 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   }
 
   const tmpQ = new THREE.Quaternion();
-  const alvo = { cel: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0 }, nb: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0 } };
+  const alvo = { cel: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0 }, nb: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0, tampa: -0.2 } };
   const atual = { cel: { pos: new THREE.Vector3(0, -6, 0), q: new THREE.Quaternion(), s: 0.001 }, nb: { pos: new THREE.Vector3(0, -6, 0), q: new THREE.Quaternion(), s: 0.001, tampa: 1.55 } };
   let corac = [], ultimoCap = null;
   function aplicar(obj, a, at, dt, k) {
+    if (at.s < 0.03) at.pos.copy(a.pos);
     at.pos.x = damp(at.pos.x, a.pos.x, k, dt); at.pos.y = damp(at.pos.y, a.pos.y, k, dt); at.pos.z = damp(at.pos.z, a.pos.z, k, dt);
     tmpQ.setFromEuler(a.rot); at.q.slerp(tmpQ, 1 - Math.exp(-k * dt)); at.s = damp(at.s, a.s, k, dt);
     obj.position.copy(at.pos); obj.quaternion.copy(at.q); obj.scale.setScalar(Math.max(0.001, at.s)); obj.visible = at.s > 0.02;
   }
-  const ig = (o) => { desenharIG(o); porNaTela(celU, "A", igT, CEL_ASP, W / H); };
+  // a tela do celular é redesenhada a cada 2 quadros (3 no nível leve): o vídeo tem 30 q/s e a placa de vídeo integrada não aguenta subir a tela inteira a cada quadro
+  let redesenha = true;
+  const ig = (o) => { if (redesenha) desenharIG(o); porNaTela(celU, "A", igT, CEL_ASP, W / H); };
   const comPoster = (src, poster) => { const v = tocar(src); return pronto(v) ? v : imgEl(poster) || v; };
 
   function atualizar(dt, t, cap, p, ativo) {
@@ -674,11 +712,11 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     const topo = (s) => VH / 2 - 0.62 - CEL.h * s / 2;
     const px = retrato ? 0 : VW * 0.2, py = retrato ? topo(escCel) : 0;
     const cel = alvo.cel, nb = alvo.nb;
-    cel.s = 0; nb.s = 0; celU.uMix.value = 0; nbU.uMix.value = 0; celU.uBordaK.value = 0;
-    cacos.visible = false; moedas.visible = notas.visible = false; cafe.visible = false;
+    cel.s = 0; nb.s = 0; nb.tampa = -0.2; celU.uMix.value = 0; nbU.uMix.value = 0; celU.uBordaK.value = 0; nbU.uBordaK.value = 0; nbU.uLuz.value = 1;
+    cacos.visible = false; cafe.visible = false; if (notas) notas.visible = false;
     if (cap !== "c-montagem") camReel.forEach((k) => (k.m.visible = false));
     if (cap !== "s-montagem") camSite.forEach((k) => (k.m.visible = false));
-    quadro++; const redesenha = reduce || quadro % (leve ? 3 : 2) === 0;
+    quadro++; redesenha = reduce || cap !== ultimoCap || quadro % (leve ? 3 : 2) === 0;
     if (cap !== ultimoCap) { corac = []; ultimoCap = cap; }
 
     if (cap === "c-problema") {
@@ -697,7 +735,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
         celU.uLuz.value = 1;
         cel.pos.set(px, py, -2.4 * (1 - volta)); cel.rot.set(0.05, -0.25 + (1 - volta) * Math.PI * 1.5, 0); cel.s = escCel * Math.max(0.05, volta);
         const v = tocar(midia.videoMontagem);
-        ig({ fonte: pronto(v) ? v : imgEl(midia.posterMontagem), usuario: "felipen.med", legenda: "Estenose × insuficiência aórtica", corAvatar: "#3b82f6" });
+        ig({ fonte: pronto(v) ? v : imgEl(midia.posterMontagem), usuario: "felipen.med", legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
         celU.uBordaK.value = Math.sin(volta * Math.PI) * 1.2;
       }
     } else if (cap === "c-montagem") {
@@ -706,11 +744,13 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       const cam = [0, 1, 2, 3, 4].map((i) => suave(faixa(p, 0.12 + i * 0.14, 0.2 + i * 0.14)));
       const vm = tocar(midia.videoMontagem), fonteV = pronto(vm) ? vm : imgEl(midia.posterMontagem);
       const funde = reduce ? 1 : faixa(p, 0.8, 0.92);
-      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", legenda: "Estenose × insuficiência aórtica", corAvatar: "#3b82f6" });
+      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
       else { if (redesenha) desenharEdicao(p, cam.map((v) => v * funde), fonteV); porNaTela(celU, "A", igT, CEL_ASP, W / H); }
       if (!reduce) camReel.forEach((k, i) => {
         const chega = faixa(p, 0.08 + i * 0.14, 0.2 + i * 0.14);
-        if (chega > 0 && funde < 1 && (redesenha || i === 0) && (i === 0 || i === 2 || i === 3 || !k.feito)) { desenharCamadaReel(i, p, fonteV); k.feito = true; }
+        // só redesenha o que mudou: o vídeo (V1) a cada 2 quadros; legenda e som quando a rolagem anda; título e chamada uma vez
+        const muda = i === 0 ? redesenha : (i === 2 || i === 3) ? redesenha && Math.abs(p - (k.pUlt ?? -1)) > 0.002 : !k.feito;
+        if (chega > 0 && funde < 1 && muda) { desenharCamadaReel(i, p, fonteV); k.feito = true; k.pUlt = p; }
         voar(k, i, { x: 0, y: 0, z: telaZ }, chega, funde, t, 1);
       });
       celU.uBordaK.value = Math.sin(faixa(p, 0.86, 0.96) * Math.PI) * 1.4;
@@ -727,21 +767,23 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     } else if (cap === "c-dinheiro") {
       cel.pos.set(px, py, 0); cel.rot.set(0.05, -0.3 + p * 0.25, 0.02); cel.s = escCel;
       ig({ fonte: comPoster(midia.videoAnuncio, midia.posterAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff" });
-      // moedas e notas saem do botão "Saiba mais" e se espalham pela tela
+      // as cédulas saem do botão "Saiba mais", abrem em leque (o ar freia) e caem devagar, balançando como papel
+      if (!notas) criarNotas();
       const jorro = faixa(p, 0.15, 1);
-      moedas.visible = notas.visible = jorro > 0;
+      notas.visible = jorro > 0; notasU.uT.value = t;
       const ox0 = atual.cel.pos.x - 0.05 * escCel, oy0 = atual.cel.pos.y - 0.36 * escCel, oz0 = atual.cel.pos.z + 0.1;
-      const bota = (im, i, nota) => {
-        const sd = semente[i], vida = ((t * (0.22 + sd[0] * 0.25) + sd[1]) % 1) * clamp(jorro * 1.6);
-        const ang = sd[2] * Math.PI * 2, alc = (0.8 + sd[3] * 2.2) * (0.4 + jorro);
-        vv.set(ox0 + Math.cos(ang) * alc * vida * 1.6, oy0 + Math.sin(ang * 0.5 + 0.4) * alc * vida * 1.1 + vida * 1.2 - vida * vida * 1.6, oz0 + vida * (0.4 + sd[0]));
-        ee.set(t * (2 + sd[1] * 4) + i, t * (1 + sd[2] * 3), sd[3] * 6); qq.setFromEuler(ee);
-        const esc = (nota ? 1.1 : 1) * escCel * (vida > 0.02 ? 1 : 0) * clamp(1 - Math.max(0, vida - 0.85) * 6);
-        ss.setScalar(Math.max(0.0001, esc)); mtx.compose(vv, qq, ss); im.setMatrixAt(i, mtx);
-      };
-      for (let i = 0; i < NM; i++) bota(moedas, i, false);
-      for (let i = 0; i < NN; i++) bota(notas, i, true);
-      moedas.instanceMatrix.needsUpdate = true; notas.instanceMatrix.needsUpdate = true;
+      for (let i = 0; i < NN; i++) {
+        const sd = semente[i], dur = 2.6 + sd[0] * 1.6, tau = (t + sd[1] * dur) % dur, ativa = sd[3] < 0.3 + jorro * 0.7;
+        const ang = 0.12 + sd[2] * (Math.PI - 0.24), vel = (1.8 + sd[3] * 2.4) * escCel * 0.5, sai = (1 - Math.exp(-2.4 * tau)) / 2.4;
+        const bal = Math.sin(tau * (2.2 + sd[0]) + sd[1] * 6);
+        vv.set(ox0 + Math.cos(ang) * vel * sai * 1.25 + bal * 0.3 * escCel * (1 - Math.exp(-tau * 1.5)),
+          oy0 + Math.sin(ang) * vel * sai - (tau * 0.2 + tau * tau * 0.035) * escCel,
+          oz0 + (0.2 + sd[0] * 1.6) * sai * escCel * 0.7 + Math.cos(tau * 2 + sd[2] * 6) * 0.12);
+        ee.set(0.35 + Math.sin(tau * 2.4 + sd[1] * 6) * 0.75, tau * (0.8 + sd[2] * 1.6) + sd[3] * 6, bal * 0.7); qq.setFromEuler(ee);
+        const esc = escCel * 1.05 * clamp(tau / 0.18) * clamp((dur - tau) / 0.35) * (ativa ? 1 : 0);
+        ss.set(Math.max(0.0001, esc * (aNota[i] ? 0.955 : 1)), Math.max(0.0001, esc), Math.max(0.0001, esc)); mtx.compose(vv, qq, ss); notas.setMatrixAt(i, mtx);
+      }
+      notas.instanceMatrix.needsUpdate = true;
     } else if (cap === "c-oportunidade") {
       cel.pos.set(retrato ? -VW * 0.2 : px + VW * 0.16, retrato ? topo(escCel * 0.6) - 0.2 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = escCel * 0.6;
       ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar", curtidas: 82584, comentarios: 288, envios: 9100, curtido: true, seguindo: true, corAvatar: "#ffb547" });
@@ -763,16 +805,18 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
         if (chega > 0 && fundeS < 1 && (!siteDesenhado[i] || (i === 0 && redesenha))) { desenharCamadaSite(i, t); siteDesenhado[i] = true; }
         voar(k, i, nbTelaPos, chega, fundeS, t, 1.9);
       });
+      if (kk > 3.5) { video(midia.vooMg); video(midia.vooMgCel); } // o voo do MedGrind (próximo capítulo) já começa a baixar
       const celV = glide(faixa(kk, 3, 3.6));
       if (celV > 0) {
         if (redesenha) desenharObra(kk, t, true);
-        cel.pos.set(retrato ? 0.55 : VW * 0.2 + 1.05, retrato ? py - 0.05 : -0.3, 0.9 - (1 - celV) * 1.5);
-        cel.rot.set(0.05, -0.4 + (1 - celV) * 1.2, 0.03); cel.s = escCel * (retrato ? 0.46 : 0.6) * celV;
+        const sai = 1 - celV;
+        cel.pos.set((retrato ? 0.55 : VW * 0.2 + 1.2) + sai * (retrato ? 1.2 : 1.6), (retrato ? py - 0.05 : -0.42) - sai * 0.6, retrato ? 0.9 : 1.55);
+        cel.rot.set(0.05, -0.4 - sai * 0.9, 0.03 - sai * 0.2); cel.s = escCel * (retrato ? 0.46 : 0.5) * Math.max(0.05, celV);
         porNaTela(celU, "A", obraCelT, CEL_ASP, 540 / 1170); porNaTela(celU, "B", imagem(ch.cel), CEL_ASP, 9 / 19.5); celU.uMix.value = faixa(kk, 5, 5.2);
       }
     } else if (cap === "s-cafe") {
       // menos que um cafezinho: a colher mexe, o redemoinho gira e o vapor sobe
-      cafe.visible = true;
+      cafe.visible = true; texturasCafe();
       const mexe = 0.3 + 0.7 * suave(faixa(p, 0.1, 0.6));
       cafeU.uT.value = t; cafeU.uMexe.value = reduce ? 0.4 : mexe;
       const ang = reduce ? 0.8 : t * (1.2 + mexe * 2.6);
@@ -786,17 +830,30 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
       cafe.position.set(retrato ? 0 : VW * 0.22, (retrato ? VH * 0.11 - esc * 0.3 : -0.68) - (1 - e) * 2, 0);
       cafe.rotation.set(0.42, -0.5 + p * 0.6, 0); cafe.scale.setScalar(esc * Math.max(0.05, e));
     } else if (cap === "s-medgrind") {
-      const cenas = midia.cenas || [], n = cenas.length || 1, tall = midia.cenasTall || [];
-      const pos = clamp(p * 1.05) * (n - 1), i = Math.floor(pos), f = suave(pos - i), celEntra = glide(faixa(p, 0.3, 0.5));
-      nb.pos.set(px - celEntra * (retrato ? 0 : 0.35), py + (retrato ? -0.6 + celEntra * 0.2 : -0.35), -celEntra * 0.4);
-      nb.rot.set(0.14, -0.25 + celEntra * 0.12, 0); nb.s = escNb;
-      porNaTela(nbU, "A", imagem(cenas[i]), NB_ASP, 16 / 9); porNaTela(nbU, "B", imagem(cenas[Math.min(n - 1, i + 1)]), NB_ASP, 16 / 9); nbU.uMix.value = f;
+      // o notebook chega fechado, gira e abre; na tela, a landing de verdade voa pelos capítulos no ritmo da rolagem.
+      // No meio, o celular sobe pela frente (nunca por dentro do notebook) com a versão em pé, no mesmo ponto do voo.
+      const chega = glide(faixa(p, 0, 0.12)), abre = glide(faixa(p, 0.05, 0.19)), celEntra = glide(faixa(p, 0.4, 0.54)), gira = suave(faixa(p, 0.06, 1));
+      const voo = faixa(p, 0.13, 0.86), fora = 1 - chega; // no último passo a landing para na cena final (avaliações e "Saiba mais")
+      nb.pos.set(px - celEntra * (retrato ? 0 : 0.5) + fora * 1.4, py + (retrato ? -0.6 + celEntra * 0.25 : -0.45) - fora * 0.9, -1.6 * fora - celEntra * 0.55);
+      nb.rot.set(0.2 - abre * 0.06, -0.8 + gira * 0.9, fora * 0.1); nb.s = escNb * (retrato ? 1 : 0.94 + 0.1 * (1 - celEntra));
+      nb.tampa = 1.55 - 1.75 * abre; nbU.uLuz.value = faixa(p, 0.1, 0.19); nbU.uBordaK.value = Math.sin(faixa(p, 0.12, 0.26) * Math.PI) * 1.3;
+      const vNb = arrastar(midia.vooMg, voo);
+      if (pronto(vNb)) porNaTela(nbU, "A", texVideo(vNb), NB_ASP, 16 / 9);
+      else { // enquanto o vídeo abre: as cenas paradas, em sequência
+        const cenas = midia.cenas || [], n = cenas.length || 1, pos = voo * (n - 1), i = Math.floor(pos);
+        porNaTela(nbU, "A", imagem(cenas[i]), NB_ASP, 16 / 9); porNaTela(nbU, "B", imagem(cenas[Math.min(n - 1, i + 1)]), NB_ASP, 16 / 9); nbU.uMix.value = suave(pos - i);
+      }
       if (celEntra > 0) {
-        cel.pos.set(px + (retrato ? 0.55 : VW * 0.15), py + (retrato ? -0.1 : -0.15), 0.6 - (1 - celEntra) * 2);
-        cel.rot.set(0.05, -0.35 + (1 - celEntra) * 1.5, 0.04); cel.s = escCel * (retrato ? 0.5 : 0.66) * celEntra;
-        porNaTela(celU, "A", imagem(tall[i]), CEL_ASP, 9 / 16); porNaTela(celU, "B", imagem(tall[Math.min(n - 1, i + 1)]), CEL_ASP, 9 / 16); celU.uMix.value = f;
+        const sai = 1 - celEntra;
+        cel.pos.set((retrato ? 0.5 : px + VW * 0.1) + sai * (retrato ? 1.1 : 1.5), (retrato ? py - 0.1 : -0.4) - sai * 0.9, retrato ? 0.95 : 1.5);
+        cel.rot.set(0.05, -0.36 - sai * 0.8, 0.04 - sai * 0.15); cel.s = escCel * (retrato ? 0.5 : 0.56) * Math.max(0.05, celEntra);
+        const vCel = arrastar(midia.vooMgCel, voo);
+        if (pronto(vCel)) porNaTela(celU, "A", texVideo(vCel), CEL_ASP, 540 / 1168);
+        else { const tall = midia.cenasTall || [], n = tall.length || 1; porNaTela(celU, "A", imagem(tall[Math.min(n - 1, Math.round(voo * (n - 1)))]), CEL_ASP, 9 / 16); }
+        celU.uBordaK.value = Math.sin(celEntra * Math.PI) * 1.1;
       }
     } else if (cap === "s-oportunidade") {
+      if (p > 0.3) texturasCafe();
       const vira = faixa(p, 0.58, 0.72), giro = Math.sin(vira * Math.PI);
       cel.pos.set(px, py - giro * (retrato ? 0.12 : -0.06), giro * (retrato ? 0.2 : 0.45)); cel.rot.set(0.05 - giro * 0.05, -0.3 + p * 0.22 + suave(vira) * Math.PI * 2, 0.02 - giro * 0.04); cel.s = escCel * 1.02;
       if (vira < 0.5) ig({ fonte: comPoster(midia.videoAnuncio, midia.posterAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff", toque: faixa(p, 0.5, 0.6) });
@@ -805,7 +862,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     }
     if (cap !== "c-explode") celU.uLuz.value = 1;
 
-    atual.nb.tampa = damp(atual.nb.tampa, nb.s > 0 ? -0.2 : 1.55, k * 0.7, dt);
+    atual.nb.tampa = damp(atual.nb.tampa, nb.s > 0 ? nb.tampa : 1.55, k * 0.7, dt);
     dobradica.rotation.x = atual.nb.tampa;
     aplicar(celular, cel, atual.cel, dt, cap === "c-explode" ? k * 1.6 : k);
     aplicar(notebook, nb, atual.nb, dt, k);

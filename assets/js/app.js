@@ -219,7 +219,39 @@ function iniciarPagina() {
   if (pag === "sites") jornadaSites();
   if (pag === "criativos") jornadaCriativos();
   barraFixa();
+  avisoRolar();
   requestAnimationFrame(() => ST?.refresh());
+}
+
+// aviso de rolar: aparece logo na abertura e volta quando a pessoa para no meio de um capítulo; some assim que ela rola
+function avisoRolar() {
+  const pag = document.body.dataset.pagina;
+  if (pag !== "sites" && pag !== "criativos") return;
+  let el = $("#aviso-rolar");
+  if (!el) {
+    el = document.createElement("div"); el.id = "aviso-rolar"; el.className = "rolar"; el.setAttribute("aria-hidden", "true");
+    el.innerHTML = '<span class="rolar__icone"><i></i></span><span class="rolar__txt"></span>';
+    document.body.appendChild(el);
+  }
+  const txt = $(".rolar__txt", el), toque = matchMedia("(hover: none)").matches;
+  el.classList.toggle("rolar--toque", toque);
+  let parado = null, ultimoY = scrollY;
+  const esconder = () => el.classList.remove("is-on");
+  const noFim = () => { const p = $("#planos"); return !!p && p.getBoundingClientRect().top < innerHeight * 0.9; };
+  const noMeioDeCapitulo = () => $$(".cap").some((c) => { const r = c.getBoundingClientRect(); return r.top <= 1 && r.bottom > innerHeight + 60; });
+  const agendar = () => {
+    clearTimeout(parado);
+    const topo = scrollY < 40;
+    parado = setTimeout(() => {
+      if (noFim() || (!topo && !noMeioDeCapitulo())) return;
+      txt.textContent = topo ? (toque ? "Deslize para começar" : "Role para começar") : (toque ? "Deslize para continuar" : "Continue rolando");
+      el.classList.add("is-on");
+    }, topo ? 1400 : 4200);
+  };
+  const aoRolar = () => { if (Math.abs(scrollY - ultimoY) < 4) return; ultimoY = scrollY; esconder(); agendar(); };
+  addEventListener("scroll", aoRolar, { passive: true });
+  agendar();
+  limpar.push(() => { removeEventListener("scroll", aoRolar); clearTimeout(parado); esconder(); });
 }
 
 // letras soltas nos títulos: cada uma entra esticada (largura 150%) e assenta na largura do universo
@@ -331,9 +363,10 @@ function capitulos() {
         const prox = cap.dataset.prox;
         if (p < 0.5) { mundo?.setCena("hero"); mundo?.setCap(null); mundo?.setMergulho(glide(p / 0.5) * 0.92); }
         else {
+          // a luz se abre já no fundo do próximo capítulo, mas sem os aparelhos: eles só entram quando o capítulo começa
           mundo?.setMergulho(0);
-          if (prox && prox !== "-") { mundo?.setCena(/oportunidade/.test(prox) ? "globo" : "fundo"); mundo?.setCap(prox, 0); }
-          else { mundo?.setCena("leitura"); mundo?.setCap(null); }
+          mundo?.setCena(prox && prox !== "-" ? (/oportunidade/.test(prox) ? "globo" : "fundo") : "leitura");
+          mundo?.setCap(null);
         }
         if (veu) veu.style.opacity = p < 0.5 ? faixa(p, 0.22, 0.5).toFixed(3) : (1 - faixa(p, 0.58, 0.96)).toFixed(3);
       } else {
@@ -425,7 +458,8 @@ function contarNumeros() {
 // caixas 3D dos planos: inclinam com o mouse e o botão solta corações, dinheiro ou código
 const FORMAS = {
   coracoes: ['<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff3040"/></svg>', '<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff7aa2"/></svg>'],
-  dinheiro: ['<svg viewBox="0 0 40 20"><rect width="40" height="20" rx="3" fill="#1f9d55"/><rect x="2" y="2" width="36" height="16" rx="2" fill="none" stroke="#bff5cf" stroke-width="1"/><text x="20" y="14.5" font-size="10" font-weight="800" text-anchor="middle" fill="#e9ffe9" font-family="sans-serif">R$</text></svg>', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ffc23a"/><circle cx="12" cy="12" r="8" fill="none" stroke="#b8860b" stroke-width="1.4"/><text x="12" y="16" font-size="9" font-weight="900" text-anchor="middle" fill="#7a5600" font-family="sans-serif">R$</text></svg>'],
+  // cédulas de verdade (frente das notas de R$ 100 e R$ 50, imagens do Banco Central)
+  dinheiro: ['<img class="estouro__nota" src="/media/tex/cedula-100.jpg" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-50.jpg" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-100.jpg" alt="">'],
   codigo: ['<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#8fd3ff" font-family="monospace">&lt;/&gt;</text></svg>', '<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10" fill="none" stroke="#3ddc97" stroke-width="3" stroke-linecap="round"/></svg>', '<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#ffcb6b" font-family="monospace">{ }</text></svg>'],
 };
 function estourar(el, tipo, qtd = 16, forca = 1) {
