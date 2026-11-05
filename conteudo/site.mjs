@@ -592,14 +592,20 @@ export const criativos = {
   planos: {
     titulo: "Escolha o objetivo.",
     itens: [
-      { slug: "anunciar", nome: "Para anunciar", interesse: "anunciar", cta: "Quero anunciar",
+      { slug: "anunciar", nome: "Para anunciar", rotulo: "Tráfego pago", interesse: "anunciar", cta: "Quero anunciar",
         resumo: "Criativos para campanhas pagas: vender uma oferta e testar ganchos.",
         inclui: ["Roteiro com variações de gancho", "Edição em 9:16, 4:5 e 1:1", "Versão para o público de cada campanha"],
-        metrica: "Medido por CTR, custo por resultado e conversão." },
-      { slug: "viralizar", nome: "Para viralizar", interesse: "viralizar", cta: "Quero viralizar",
+        metrica: { rotulo: "Medido por", itens: ["CTR", "Custo por resultado", "Conversão"] },
+        // celular atrás da caixa: o criativo Plantão rodando como anúncio (números do Gerenciador de Anúncios, 08 a 20/10/2026)
+        vitrine: { video: "/media/tex/anuncio-leve.mp4", poster: "/media/tex/anuncio.jpg", conta: "medgrind_oficial", cor: "#14a2ff",
+          legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", selo: { rotulo: "CTR do anúncio", valor: "4,56%", nota: "R$ 0,15 por visita" } } },
+      { slug: "viralizar", nome: "Para viralizar", rotulo: "Orgânico", interesse: "viralizar", cta: "Quero viralizar",
         resumo: "Vídeos para crescer no orgânico: alcance, comentários e seguidores.",
         inclui: ["Ideia e roteiro em formato de série", "Edição com legenda e som", "Pergunta no final para puxar comentários"],
-        metrica: "Medido por visualizações, retenção e seguidores." },
+        metrica: { rotulo: "Medido por", itens: ["Visualizações", "Retenção", "Seguidores"] },
+        // celular atrás da caixa: o reel “Medo de voltar” do @niloeoinfinito (contador público do Instagram, 03/11/2026)
+        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "niloeoinfinito", cor: "#ffb547",
+          legenda: "Medo de voltar", curtidas: "82,5 mil", comentarios: "288", envios: "9,1 mil", selo: { rotulo: "Visualizações", valor: "481 mil", nota: "em um único reel" } } },
     ],
     nota: "Ninguém controla o algoritmo: não existe garantia de viralização nem de vendas.",
   },

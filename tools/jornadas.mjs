@@ -3,7 +3,7 @@
 // Cada capítulo (.cap) fica preso na tela enquanto a pessoa rola; os passos (.passo) trocam por faixa de
 // rolagem (data-de / data-ate) e o mundo 3D recebe o mesmo progresso (data-cap).
 export function criarJornadas(h) {
-  const { esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, doc, orgLd, faqLd, dadosMundo } = h;
+  const { esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, doc, orgLd, faqLd, dadosMundo, hv } = h;
   const n2 = (k) => String(k).padStart(2, "0");
 
   const passo = (de, ate, html, cls = "") => `<div class="passo${cls ? " " + cls : ""}" data-de="${de}" data-ate="${ate}">${html}</div>`;
@@ -116,19 +116,40 @@ export function criarJornadas(h) {
   const vagaSelo = (v) => !v ? "" : v.abertas > 0
     ? `<p class="vagas"><span class="vagas__ponto" aria-hidden="true"></span><b>${v.abertas} de ${v.total} vagas abertas</b> para ${esc(vagas.mes)}</p>`
     : `<p class="vagas vagas--fechada"><b>Agenda de ${esc(vagas.mes)} completa.</b> Chame para entrar na fila do próximo mês.</p>`;
+  // celular atrás da caixa (Criativos): o anúncio ou o reel de verdade rodando na interface do Instagram
+  const IG = {
+    curtir: '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.6-4.7-7.6-10.4A4.3 4.3 0 0 1 12 7.5a4.3 4.3 0 0 1 7.6 2.6c0 5.7-7.6 10.4-7.6 10.4z"/></svg>',
+    comentar: '<svg viewBox="0 0 24 24"><path d="M20.2 11.6a8.1 8.1 0 0 1-11.8 7.2L3.8 20l1.3-4.2a8.1 8.1 0 1 1 15.1-4.2z"/></svg>',
+    enviar: '<svg viewBox="0 0 24 24"><path d="M21 3 3.2 10.4l7.3 2.9L13.4 21z"/><path d="m21 3-10.5 10.3"/></svg>',
+  };
+  const vitrine = (vt) => !vt ? "" : `<div class="vitrine${vt.patrocinado ? " vitrine--anuncio" : ""}" style="--av:${vt.cor}" aria-hidden="true">
+          <div class="vitrine__cel"><div class="vitrine__tela">
+            <video muted loop playsinline preload="none" poster="${hv(vt.poster)}" data-src="${hv(vt.video)}"></video>
+            <span class="vitrine__ig">
+              ${vt.patrocinado ? "" : '<b class="vitrine__reels">Reels</b>'}
+              <span class="vitrine__acoes">${[["curtir", vt.curtidas], ["comentar", vt.comentarios], ["enviar", vt.envios]].map(([k, n]) => `<i>${IG[k]}${n ? `<small>${esc(n)}</small>` : ""}</i>`).join("")}</span>
+              <span class="vitrine__pe">
+                <span class="vitrine__conta"><span class="vitrine__av">${esc(vt.conta[0].toUpperCase())}</span><span><b>${esc(vt.conta)}</b>${vt.patrocinado ? "<small>Patrocinado</small>" : ""}</span>${vt.patrocinado ? "" : "<em>Seguir</em>"}</span>
+                <span class="vitrine__leg">${esc(vt.legenda)}</span>
+                ${vt.cta ? `<span class="vitrine__cta">${esc(vt.cta)}<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>` : ""}
+              </span>
+            </span>
+          </div></div>
+          <p class="vitrine__selo"><small>${esc(vt.selo.rotulo)}</small><b>${esc(vt.selo.valor)}</b>${vt.selo.nota ? `<span>${esc(vt.selo.nota)}</span>` : ""}</p>
+        </div>`;
   const planosHtml = (pl, v, jornada, msg, efeito) => `
 <section class="sec planos" id="planos" data-cena="leitura" aria-labelledby="t-planos">
   <div class="sec__in">
     <header class="planos__cab"><p class="rotulo sobe"><b>Planos</b></p><h2 class="display entra" id="t-planos">${palavras(pl.titulo)}</h2>${vagaSelo(v)}</header>
     <div class="planos__grade planos__grade--${pl.itens.length}">${lista(pl.itens, (it, i) => `
       <article class="caixa sobe" style="--d:${i * 90}ms;--i:${i}" id="plano-${it.slug}" data-efeito="${efeito(it)}">
-        <div class="caixa__palco"><div class="caixa__3d">
+        <div class="caixa__palco">${vitrine(it.vitrine)}<div class="caixa__3d">
           <div class="caixa__face caixa__face--frente">
-            <p class="plano__n">${n2(i + 1)}</p>
+            <p class="plano__n">${n2(i + 1)}${it.rotulo ? `<span>${esc(it.rotulo)}</span>` : ""}</p>
             <h3 class="plano__nome display">${esc(it.nome)}</h3>
             <p class="plano__resumo">${rico(it.resumo)}</p>
             <ul class="plano__inclui">${lista(it.inclui, (x) => `<li>${rico(x)}</li>`)}</ul>
-            ${it.metrica ? `<p class="plano__metrica">${esc(it.metrica)}</p>` : ""}
+            ${it.metrica ? `<div class="plano__metrica"><span>${esc(it.metrica.rotulo)}</span><ul>${lista(it.metrica.itens, (x) => `<li>${esc(x)}</li>`)}</ul></div>` : ""}
             <a class="btn plano__cta" href="${zap(msg(it.interesse))}" target="_blank" rel="noopener" data-zap="${jornada}|${esc(it.interesse)}|plano">${ico("zap")} ${esc(it.cta)}</a>
           </div>
           <span class="caixa__face caixa__face--tras" aria-hidden="true"></span>

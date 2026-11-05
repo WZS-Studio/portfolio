@@ -215,6 +215,7 @@ function iniciarPagina() {
   carrosseis();
   contarNumeros();
   caixas();
+  vitrines();
   if (pag === "portal") portal();
   if (pag === "sites") jornadaSites();
   if (pag === "criativos") jornadaCriativos();
@@ -510,6 +511,19 @@ function caixas() {
     let io2 = null;
     if (!fino.matches) { io2 = new IntersectionObserver((ents) => ents.forEach((en) => abrir(en.isIntersecting)), { rootMargin: "-32% 0px -32% 0px" }); io2.observe(cx); }
     limpar.push(() => { clearInterval(jorro); io.disconnect(); io2?.disconnect(); });
+  });
+}
+
+// celulares atrás das caixas (Criativos): o vídeo só carrega perto da tela e pausa quando sai dela
+function vitrines() {
+  $$(".vitrine video").forEach((v) => {
+    const io = new IntersectionObserver(([en]) => {
+      if (!en.isIntersecting) { v.pause(); return; }
+      if (!v.src) v.src = v.dataset.src;
+      if (!reduz()) v.play().catch(() => {});
+    }, { rootMargin: "240px 0px" });
+    io.observe(v);
+    limpar.push(() => { io.disconnect(); v.pause(); });
   });
 }
 

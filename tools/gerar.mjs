@@ -336,7 +336,7 @@ function escrever(rel, html) {
   console.log("  ✓", rel, (html.length / 1024).toFixed(1) + " KB");
 }
 escrever("index.html", paginaPortal());
-const J = criarJornadas({ esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, serieHtml, doc, orgLd, faqLd, dadosMundo });
+const J = criarJornadas({ esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, serieHtml, doc, orgLd, faqLd, dadosMundo, hv });
 escrever("sites/index.html", J.paginaSites());
 escrever("criativos/index.html", J.paginaCriativos());
 const hoje = new Date().toISOString().slice(0, 10);
