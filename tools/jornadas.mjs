@@ -12,9 +12,9 @@ export function criarJornadas(h) {
   const numero = (x) => `<p class="passo__num display" style="--n:${[...String(x.numero)].length}">${esc(x.numero)}</p><p class="passo__texto">${rico(x.texto)}</p>${x.fonte ? `<p class="passo__fonte">${esc(x.fonte)}</p>` : ""}`;
   // selo da parceria de hospedagem: "mini" dentro de um capítulo, completo (com texto e botão) abaixo dos planos
   const selo = (pc, mini) => !pc ? "" : `<aside class="parceria${mini ? " parceria--mini" : " sobe"}" aria-label="${esc(pc.rotulo)}: WZS Studio e ${esc(pc.nome)}">
-  <span class="parceria__selo" aria-hidden="true"><svg viewBox="0 0 424 422"><use href="#wzs-mark"/></svg><span class="parceria__x">×</span><span class="parceria__ms">${esc(pc.nome.replace(/Site$/, ""))}<b>Site</b></span></span>
-  ${mini ? `<span class="parceria__txt"><span class="parceria__rotulo mono">${esc(pc.rotulo)}</span><b class="parceria__mini">${esc(pc.desconto)} de desconto para clientes WZS</b></span>`
-    : `<div class="parceria__txt"><p class="parceria__rotulo mono">${esc(pc.rotulo)}</p><p class="parceria__titulo display"><span class="parceria__pct">${esc(pc.desconto)}</span> ${esc(pc.titulo)}</p><p class="parceria__texto">${rico(pc.texto)}</p><a class="btn btn--linha" href="${zap(whatsapp.mensagens.sites(pc.interesse))}" target="_blank" rel="noopener" data-zap="sites|hospedagem|parceria">${ico("zap")} ${esc(pc.cta)}</a></div>`}
+  <span class="parceria__selo" aria-hidden="true"><svg viewBox="0 0 424 422"><use href="#wzs-mark"/></svg><span class="parceria__x">×</span><img class="parceria__logo" src="${esc(pc.logo)}" alt="" width="536" height="138" decoding="async"></span>
+  ${mini ? `<span class="parceria__txt"><b class="parceria__mini">${esc(pc.rotulo)}</b></span>`
+    : `<div class="parceria__txt"><p class="parceria__titulo display">${esc(pc.rotulo)}</p><p class="parceria__texto">${rico(pc.texto)}</p></div>`}
 </aside>`;
   const passos = (lista_, id) => { const f = faixas(lista_.length); return lista_.map((x, i) => passo(f[i][0], f[i][1], (x.numero ? numero(x) : titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : id)) + (x.parceria ? selo(sites.parceria, true) : ""))).join(""); };
   const camadasPassos = (cm, id) => passo("0", "0.120", `<h2 class="passo__titulo display" id="${id}">${palavras(cm.titulo)}</h2>`)
@@ -159,7 +159,7 @@ export function criarJornadas(h) {
     ${h.linha ? `<p class="hero__linha sobe" style="--d:250ms">${rico(h.linha)}</p>` : ""}
     <div class="hero__cta sobe" style="--d:350ms"><a class="btn" href="${zap(msgZap)}" target="_blank" rel="noopener" data-zap="${track}|geral|hero">${ico("zap")} ${esc(h.cta)}</a>${sec}</div>
     ${h.prova?.length ? `<div class="hero__prova sobe" style="--d:500ms">${lista(h.prova, (p) => `<div><strong>${esc(p.valor)}</strong><span>${esc(p.rotulo)}</span></div>`)}</div>` : ""}
-  </div></div>
+  </div></div>
 </section>`;
 
   // ======================================================== SITES
@@ -231,7 +231,7 @@ export function criarJornadas(h) {
     const organicos = [...c.series].sort((a, b) => ordem.indexOf(a.slug) - ordem.indexOf(b.slug)).flatMap((se) => se.videos.map((v) => ({ ...v, conta: se.conta })));
     secoes.push(carrossel({ id: "trabalhos", cena: "trabalhos", rotulo: "Para viralizar", titulo: "Os vídeos por trás dos números.", itens: organicos, card: cartVideo }));
     secoes.push(capitulo({ id: "cap-dinheiro", cap: "c-dinheiro", altura: 320, cena: "fundo", alt: c.anuncios?.videos?.[0]?.poster, rotulo: hi.dinheiro.rotulo, rotuloId: "t-cd", conteudo: passos(hi.dinheiro.passos, "t-cd") }));
-    if (c.anuncios?.videos?.length) secoes.push(carrossel({ id: "anuncios", cena: "trabalhos", rotulo: "Para anunciar", titulo: c.anuncios.titulo, itens: c.anuncios.videos.map((v) => ({ ...v, conta: v.id.startsWith("exemplo") || v.id.startsWith("motion") ? "Peça de demonstração" : "MedGrind · anúncio" })), card: cartVideo }));
+    if (c.anuncios?.videos?.length) secoes.push(carrossel({ id: "anuncios", cena: "trabalhos", rotulo: "Para anunciar", titulo: c.anuncios.titulo, itens: c.anuncios.videos.map((v) => ({ ...v, conta: v.conta || (v.id.startsWith("exemplo") || v.id.startsWith("motion") ? "Peça de demonstração" : "MedGrind · anúncio") })), card: cartVideo }));
     secoes.push(capitulo({ id: "cap-oportunidade", cap: "c-oportunidade", altura: 320, cena: "globo", rotulo: hi.oportunidade.rotulo, rotuloId: "t-co", conteudo: passos(hi.oportunidade.passos, "t-co") }));
     secoes.push(expande("convite-criativos", hi.convite, ""));
     secoes.push(planosHtml(c.planos, vagas.criativos, "criativos", whatsapp.mensagens.criativos, (it) => (it.slug === "anunciar" ? "dinheiro" : "coracoes")));

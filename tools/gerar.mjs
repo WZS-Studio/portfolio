@@ -114,7 +114,7 @@ function rodape() {
 </footer>`;
 }
 
-const DIALOGOS = `<dialog class="caso" id="caso" aria-labelledby="caso-titulo"><div class="caso__barra"><span class="mono" id="caso-rotulo">Estudo de caso</span><button class="fechar" type="button" data-fechar>Fechar ${ico("x")}</button></div><div class="caso__corpo" id="caso-corpo"></div></dialog>
+const DIALOGOS = `<dialog class="caso" id="caso" aria-labelledby="caso-titulo"><div class="caso__barra"><span class="mono" id="caso-rotulo">Estudo de caso</span><button class="fechar" type="button" data-fechar>Fechar ${ico("x")}</button></div><div class="caso__corpo" id="caso-corpo" tabindex="0" data-lenis-prevent></div></dialog>
 <dialog class="player" id="player" aria-label="Vídeo"><div class="player__box"><div class="player__topo"><p id="player-conta"></p><button class="fechar" type="button" data-fechar>Fechar ${ico("x")}</button></div><video id="player-video" controls playsinline preload="none"></video><p class="player__leg" id="player-leg"></p></div></dialog>
 <div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__mark"><svg viewBox="0 0 24 24"><use href="#cur-mark"/></svg></span><span class="cursor__ponto"></span><span class="cursor__rotulo" id="cursor-rotulo"></span></div>`;
 

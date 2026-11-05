@@ -7,7 +7,7 @@
 // o mundo 3D (Three.js, ~170 KB comprimido) carrega depois do conteúdo: veja iniciar()
 const CORES = { deep: "#0a1220", navy: "#0f1a2b", blue: "#3b82f6", rec: "#ff4d2e" };
 const suportaWebGL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; } };
-import { iniciarCursor } from "./cursor.js";
+import { iniciarCursor, cursorNoDialogo } from "./cursor.js";
 import { iniciarMedicao, medir, medirPagina } from "./medicao.js";
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -117,7 +117,7 @@ function ligarGlobais() {
   // diálogos: rolagem do fundo para enquanto estão abertos
   $$("dialog").forEach((d) => {
     d.addEventListener("close", () => {
-      lenis?.start(); mundo?.retomar();
+      lenis?.start(); mundo?.retomar(); cursorNoDialogo(false);
       if (d.id === "player") { const v = $("#player-video"); v.pause(); v.removeAttribute("src"); v.load(); }
       d._volta?.focus?.({ preventScroll: true });
     });
@@ -703,6 +703,12 @@ function previas() {
 }
 
 // ---------------------------------------------------------------------------
+function abrirDialogo(d) {
+  lenis?.stop(); mundo?.pausar();
+  d.showModal();
+  cursorNoDialogo(true);
+}
+
 function abrirVideo(botao) {
   const d = $("#player"), v = $("#player-video");
   $$(".vid__tela.is-previa video").forEach((x) => x.pause());
@@ -711,8 +717,7 @@ function abrirVideo(botao) {
   v.src = botao.dataset.src;
   v.poster = $("img", botao)?.currentSrc || "";
   d._volta = botao;
-  lenis?.stop(); mundo?.pausar();
-  d.showModal();
+  abrirDialogo(d);
   v.muted = false;
   v.play().catch(() => { });          // começou por um clique: pode tocar com som
   medir("reproduzir_video", { video: botao.dataset.play, conta: botao.dataset.conta, jornada: "criativos" });
@@ -725,8 +730,7 @@ function abrirCaso(slug, botao) {
   corpo.scrollTop = 0;
   $("#caso-rotulo").textContent = "Estudo de caso · " + ($("h2", corpo)?.textContent || "");
   d._volta = botao;
-  lenis?.stop(); mundo?.pausar();
-  d.showModal();
+  abrirDialogo(d);
   $(".fechar", d)?.focus();
   medir("abrir_projeto", { projeto: slug });
 }

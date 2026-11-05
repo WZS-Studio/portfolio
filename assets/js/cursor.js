@@ -5,6 +5,9 @@
 
 const CHAVE = "wzs:cursor";
 
+let aoDialogo = () => { };
+export const cursorNoDialogo = (aberto) => aoDialogo(aberto);
+
 export function iniciarCursor() {
   const el = document.getElementById("cursor");
   const rotulo = document.getElementById("cursor-rotulo");
@@ -28,11 +31,24 @@ export function iniciarCursor() {
   if (!el || !fino.matches) { if (botao) botao.closest("span").hidden = true; return; }
 
   let ativo = (() => { try { return localStorage.getItem(CHAVE) !== "padrao"; } catch { return true; } })();
+  // Um <dialog> modal fica na camada superior do navegador, acima de qualquer z-index, e cobriria o cursor.
+  // Enquanto ele estiver aberto, o cursor sobe para essa camada como popover (o último a subir fica por cima).
+  // Se o navegador não conseguir, o cursor do sistema volta até o diálogo fechar.
+  let podeSubir = "popover" in el, dialogoAberto = false;
+  if (podeSubir) el.popover = "manual";
   const aplicar = () => {
-    html.classList.toggle("tem-cursor", ativo);
+    html.classList.toggle("tem-cursor", ativo && (podeSubir || !dialogoAberto));
     if (botao) { botao.textContent = ativo ? "Usar cursor padrão" : "Usar cursor da marca"; botao.setAttribute("aria-pressed", String(!ativo)); }
   };
   aplicar();
+  aoDialogo = (aberto) => {
+    dialogoAberto = aberto;
+    try {
+      if (el.matches(":popover-open")) el.hidePopover();
+      if (aberto) el.showPopover();
+    } catch { podeSubir = false; }
+    aplicar();
+  };
   botao?.addEventListener("click", () => {
     ativo = !ativo;
     try { localStorage.setItem(CHAVE, ativo ? "marca" : "padrao"); } catch { /* sem armazenamento */ }
