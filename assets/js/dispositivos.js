@@ -136,10 +136,12 @@ const ICO = {
   camera(x, cx, cy) { x.strokeStyle = "#fff"; x.lineWidth = 2.2; rr(x, cx - 12, cy - 9, 24, 18, 5); x.stroke(); x.beginPath(); x.arc(cx, cy, 5, 0, Math.PI * 2); x.stroke(); },
 };
 
-export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
+export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia = {} }) {
   const leve = nivel !== "alta";
   // tela grande (1440p, retina): vídeo 720×1280 e canvas do celular em 540×1170; nas demais, 540×960 e 432×936
-  const grande = !leve && Math.min(screen.width, screen.height) * devicePixelRatio >= 1300, ESC = grande ? 1 : 0.8;
+  // (rede 3G ou economia de dados também fica com a versão leve)
+  const rede = navigator.connection || {}, lenta = !!rede.saveData || /(^|-)(2g|3g)$/.test(rede.effectiveType || "");
+  const grande = !leve && !lenta && Math.min(screen.width, screen.height) * devicePixelRatio >= 1300, ESC = grande ? 1 : 0.8;
   const raiz = new THREE.Group(); raiz.visible = false; scene.add(raiz);
   const loader = new THREE.TextureLoader();
   const cacheImg = new Map(), cacheEl = new Map();
@@ -296,13 +298,16 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   // porcelana com a luz, as sombras e a oclusão assadas no Blender (tools/blender/cafe_assar.py) na mesma malha de cafe-forma.js;
   // o brilho do esmalte vem do ambiente da cena (verniz), então a cor difusa fica preta e a textura entra como emissão,
   // sem a curva de tom da cena (ela achatava os brancos e apagava as sombras assadas)
-  const matsLouca = {}, louca = (k) => (matsLouca[k] = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#f4f0ea", emissiveIntensity: 1, roughness: 0.14, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 0.9, side: THREE.DoubleSide, toneMapped: false }));
+  // textura de 1 pixel até a do Blender chegar: o material já nasce com emissiveMap/map e trocar a imagem depois não
+  // recompila o shader (recompilar na hora travava a rolagem por ~0,4 s ao chegar no café)
+  const pixel = (r, g, b, a = 255) => { const t = new THREE.DataTexture(new Uint8Array([r, g, b, a]), 1, 1); t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true; return t; };
+  const matsLouca = {}, louca = (k) => (matsLouca[k] = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#ffffff", emissiveMap: pixel(244, 240, 234), emissiveIntensity: 1, roughness: 0.14, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 0.9, side: THREE.DoubleSide, toneMapped: false }));
   let sombraChao = null, cafeTexturas = false;
   const texturasCafe = () => {
     if (cafeTexturas || !midia.cafe) return; cafeTexturas = true;
     const carregar = (src, ok) => loader.load(src, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; ok(t); });
-    ["xicara", "pires", "alca"].forEach((k) => carregar(midia.cafe[k], (t) => { const m = matsLouca[k]; m.emissiveMap = t; m.emissive.set("#ffffff"); m.needsUpdate = true; }));
-    carregar(midia.cafe.chao, (t) => { sombraChao.material.map = t; sombraChao.material.opacity = 1; sombraChao.material.needsUpdate = true; });
+    ["xicara", "pires", "alca"].forEach((k) => carregar(midia.cafe[k], (t) => { matsLouca[k].emissiveMap = t; }));
+    carregar(midia.cafe.chao, (t) => { sombraChao.material.map = t; sombraChao.material.opacity = 1; });
     loader.load(midia.cafe.liquido, (t) => { cafeU.uSombra.value = t; cafeU.uTemSombra.value = 1; });
   };
   {
@@ -315,7 +320,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
     const concha = new THREE.Mesh(new THREE.SphereGeometry(0.07, 28, 18), matInox); concha.scale.set(1, 0.42, 1.45);
     colher.add(cabo, concha); colher.position.y = 0.58;
     // sombra no chão assada no Blender (preta, com transparência): sem ela a xícara parece flutuar
-    sombraChao = new THREE.Mesh(g.chao, new THREE.MeshBasicMaterial({ color: "#000000", transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+    sombraChao = new THREE.Mesh(g.chao, new THREE.MeshBasicMaterial({ color: "#000000", map: pixel(0, 0, 0, 0), transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
     cafe.add(sombraChao, pires, xicara, alca, liquido, colher);
   }
   const NV = 48, vaporPos = new Float32Array(NV * 3), vaporSem = Array.from({ length: NV }, () => Math.random());
@@ -330,7 +335,7 @@ export function criarDispositivos({ scene, vista, nivel, reduce, midia = {} }) {
   const NN = leve ? 26 : 46, notasU = { uT: { value: 0 } }, aNota = new Float32Array(NN), aFase = new Float32Array(NN);
   for (let i = 0; i < NN; i++) { aNota[i] = i % 3 === 2 ? 1 : 0; aFase[i] = Math.random() * 6.283; }
   const semente = Array.from({ length: NN }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
-  let notas = null;
+  let notas = null, notasProntas = false;
   const criarNotas = () => {
     const g = new THREE.PlaneGeometry(0.34, 0.153, 12, 2);
     g.setAttribute("aNota", new THREE.InstancedBufferAttribute(aNota, 1)); g.setAttribute("aFase", new THREE.InstancedBufferAttribute(aFase, 1));
@@ -352,6 +357,8 @@ varying float vNota;`)
   diffuseColor *= texture2D(map, vec2((gl_FrontFacing ? 0.0 : 0.5) + q.x * 0.5, topo - alt + q.y * alt)); }`);
     };
     notas = new THREE.InstancedMesh(g, m, NN); notas.frustumCulled = false; notas.visible = false; raiz.add(notas);
+    // compila em paralelo antes de aparecer (compilar no primeiro quadro travava a rolagem)
+    (renderer?.compileAsync ? renderer.compileAsync(notas, new THREE.Camera(), scene) : Promise.resolve()).catch(() => { }).then(() => (notasProntas = true));
   };
   const mtx = new THREE.Matrix4(), qq = new THREE.Quaternion(), ee = new THREE.Euler(), vv = new THREE.Vector3(), ss = new THREE.Vector3();
 
@@ -770,7 +777,7 @@ varying float vNota;`)
       // as cédulas saem do botão "Saiba mais", abrem em leque (o ar freia) e caem devagar, balançando como papel
       if (!notas) criarNotas();
       const jorro = faixa(p, 0.15, 1);
-      notas.visible = jorro > 0; notasU.uT.value = t;
+      notas.visible = notasProntas && jorro > 0; notasU.uT.value = t;
       const ox0 = atual.cel.pos.x - 0.05 * escCel, oy0 = atual.cel.pos.y - 0.36 * escCel, oz0 = atual.cel.pos.z + 0.1;
       for (let i = 0; i < NN; i++) {
         const sd = semente[i], dur = 2.6 + sd[0] * 1.6, tau = (t + sd[1] * dur) % dur, ativa = sd[3] < 0.3 + jorro * 0.7;

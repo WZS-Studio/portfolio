@@ -33,10 +33,13 @@ Os capítulos (`.cap`) ficam presos na tela enquanto a pessoa rola; a rolagem co
 Tudo que muda fica em **`conteudo/site.mjs`**: textos, projetos, vídeos, métricas, depoimentos, serviços, perguntas, links, WhatsApp e IDs de medição.
 
 ```bash
+node tools/otimizar-midia.mjs
 node tools/gerar.mjs
 ```
 
-Esse comando reescreve `index.html`, `sites/index.html`, `criativos/index.html` e `sitemap.xml`. Não edite esses quatro à mão.
+O primeiro cria as cópias leves de imagem e vídeo que entraram ou mudaram: `.webp` ao lado de cada `.jpg`/`.png` e `-leve.mp4` (540×960) para o player em rede lenta. O segundo reescreve `index.html`, `sites/index.html`, `criativos/index.html` e `sitemap.xml`. Não edite esses quatro à mão.
+
+O gerador põe `?v=` (marca do conteúdo) em todo CSS, JS, imagem e vídeo, porque o `.htaccess` manda o navegador guardar CSS, JS e fontes por um ano. Arquivo novo pedido sem passar pelo gerador ficaria velho na casa de quem já visitou. Também é ele que escreve a política de segurança (CSP) de cada página, com o hash dos scripts inline: script colado à mão no HTML é bloqueado.
 
 Regras do arquivo de conteúdo:
 - Toda métrica leva **fonte e data**. Visualização, curtida, CTR e venda são coisas diferentes: escreva qual é.
@@ -49,7 +52,7 @@ Regras do arquivo de conteúdo:
 node tools/midia.mjs video "C:/caminho/do/video.mp4" nome-do-video 1.5
 ```
 
-Gera `media/criativos/nome-do-video.mp4` (720×1280, leve) e a capa `.jpg` no segundo indicado. Depois acrescente o vídeo na série em `conteudo/site.mjs` e rode `node tools/gerar.mjs`. A duração é lida do arquivo.
+Gera `media/criativos/nome-do-video.mp4` (720×1280, leve) e a capa `.jpg` no segundo indicado. Depois acrescente o vídeo na série em `conteudo/site.mjs` e rode `node tools/otimizar-midia.mjs` e `node tools/gerar.mjs`. A duração é lida do arquivo.
 
 ### Adicionar a captura de um site
 
@@ -71,12 +74,12 @@ Abra http://localhost:5190 (o servidor entende `/sites/`, `/criativos/`, o 404 e
 
 O site fica na hospedagem da MasterSite (cPanel), no domínio [wzsstudio.com.br](https://wzsstudio.com.br).
 
-1. Rode `node tools/gerar.mjs` e confira localmente.
+1. Rode `node tools/otimizar-midia.mjs` e `node tools/gerar.mjs` e confira localmente.
 2. Faça o commit e o push na `main`.
 3. No cPanel: **Git™ Version Control → WZS-Studio/portfolio → Manage → Pull or Deploy** → **Update from Remote** e **Deploy HEAD Commit**.
 
-O [`.cpanel.yml`](.cpanel.yml) copia só o que o site usa: as páginas, `assets/`, `media/` e as pastas antigas de vídeo. `conteudo/`, `tools/`, `midia/`, `previews/` e `qrcode/` ficam só no repositório.
+O [`.cpanel.yml`](.cpanel.yml) copia só o que o site usa: as páginas, `assets/`, `media/` e as pastas antigas de vídeo. `conteudo/`, `tools/`, `midia/`, `previews/`, `qrcode/` e `logo-3d.html` (ferramenta interna, bloqueada no `.htaccess`) ficam só no repositório.
 
 ---
 
-Bibliotecas em `assets/vendor/`: Three.js r160, GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fontes: Bricolage Grotesque, Geist e Geist Mono (Google Fonts).
+Bibliotecas em `assets/vendor/`: Three.js r160, GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fontes em `assets/fontes/` (servidas pelo próprio site, licença OFL): Anybody, Schibsted Grotesk e Martian Mono.

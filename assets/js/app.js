@@ -4,9 +4,13 @@
 // - o portal: mover explora, clicar/tocar confirma;
 // - a rolagem: cada seção pede uma cena ao mundo e os objetos da página se reorganizam;
 // - estudos de caso, player de vídeo, cursor da marca e medição.
-// o mundo 3D (Three.js, ~170 KB comprimido) carrega depois do conteúdo: veja iniciar()
+// o mundo 3D (Three.js, ~150 KB comprimido) carrega depois do conteúdo: veja iniciar()
 const CORES = { deep: "#0a1220", navy: "#0f1a2b", blue: "#3b82f6", rec: "#ff4d2e" };
 const suportaWebGL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; } };
+// rede lenta ou economia de dados (Chrome/Android informam; Safari não): vídeos na versão leve
+const rede = navigator.connection || {};
+const redeLenta = () => !!rede.saveData || /(^|-)(2g|3g)$/.test(rede.effectiveType || "") || (rede.downlink > 0 && rede.downlink < 1.5);
+const fonteVideo = (el, leve) => (leve && el.dataset.leve) || el.dataset.src;
 import { iniciarCursor, cursorNoDialogo } from "./cursor.js";
 import { iniciarMedicao, medir, medirPagina } from "./medicao.js";
 
@@ -30,22 +34,39 @@ function iniciar() {
   let dados = {};
   try { dados = JSON.parse($("#dados-mundo")?.textContent || "{}"); } catch { /* sem dados */ }
   const sem3d = new URLSearchParams(location.search).get("3d") === "0";      // ?3d=0 desliga a cena
-  const quer3d = canvas && !sem3d && suportaWebGL();
+  // 2G ou economia de dados: a página fica sem a cena 3D (tudo funciona sem ela; a logo vira o desenho em SVG)
+  const poupar = !!rede.saveData || /(^|-)2g$/.test(rede.effectiveType || "");
+  const quer3d = canvas && !sem3d && !poupar && suportaWebGL();
   if (!quer3d) html.classList.add("sem-3d");
   else {
     canvas.style.opacity = "0";
-    import("./mundo.js?v=" + (window.WZS_V || "")).then(({ criarMundo }) => {
-      mundo = criarMundo(canvas, dados);
-      if (!mundo) { html.classList.add("sem-3d"); return; }
-      const u = html.dataset.universo;
-      mundo.setUniverso(u, { imediato: true });
-      mundo.setCena(u === "portal" ? "portal" : "hero", { imediato: true });
-      mundo.chegar(1.4);
-      requestAnimationFrame(() => { canvas.style.transition = "opacity 1s ease"; canvas.style.opacity = "1"; });
-      cenas();
-      if (document.body.dataset.pagina === "portal") mundo.setAutoBalanco(!fino.matches);
-      ST?.refresh();
-    }).catch(() => html.classList.add("sem-3d"));
+    // o 3D só começa a baixar depois que a página aparece, com prioridade baixa (não disputa a rede com o CSS,
+    // as fontes e o texto), e os módulos vão todos juntos em vez de em cascata (mundo → three → dispositivos)
+    const carregar3d = () => {
+      let mapa = {};
+      try { mapa = JSON.parse($("script[type=importmap]")?.textContent || "{}").imports || {}; } catch { /* sem mapa */ }
+      for (const m of ["three", "/assets/js/mundo.js", "/assets/js/dispositivos.js", "/assets/vendor/addons/RoomEnvironment.js", "/assets/js/cafe-forma.js"]) {
+        if (!mapa[m]) continue;
+        const l = Object.assign(document.createElement("link"), { rel: "modulepreload", href: mapa[m] });
+        l.setAttribute("fetchpriority", "low"); document.head.appendChild(l);
+      }
+      import("./mundo.js").then(({ criarMundo }) => {
+        mundo = criarMundo(canvas, dados);
+        if (!mundo) { html.classList.add("sem-3d"); return; }
+        const u = html.dataset.universo;
+        mundo.setUniverso(u, { imediato: true });
+        mundo.setCena(u === "portal" ? "portal" : "hero", { imediato: true });
+        cenas();
+        if (document.body.dataset.pagina === "portal") mundo.setAutoBalanco(!fino.matches);
+        ST?.refresh();
+        // a cena aparece quando os shaders terminam de compilar (veja mundo.js)
+        (mundo.pronto || Promise.resolve()).then(() => {
+          mundo.chegar(1.4);
+          requestAnimationFrame(() => { canvas.style.transition = "opacity 1s ease"; canvas.style.opacity = "1"; });
+        });
+      }).catch(() => html.classList.add("sem-3d"));
+    };
+    if (window.requestIdleCallback) requestIdleCallback(carregar3d, { timeout: 900 }); else setTimeout(carregar3d, 200);
   }
 
   if (gsap && ST && !reduz() && window.Lenis) {
@@ -221,7 +242,18 @@ function iniciarPagina() {
   if (pag === "criativos") jornadaCriativos();
   barraFixa();
   avisoRolar();
+  montarAntes();
   requestAnimationFrame(() => ST?.refresh());
+}
+
+// palcos dos capítulos e carrosséis: o CSS deixa o navegador pular os que estão longe (content-visibility);
+// duas telas antes de chegar, o palco é montado de vez, para as imagens (lazy) já estarem prontas quando ele aparece
+function montarAntes() {
+  const io = new IntersectionObserver((ents) => ents.forEach((en) => {
+    if (en.isIntersecting) { en.target.classList.add("is-perto"); io.unobserve(en.target); }
+  }), { rootMargin: "200% 0px" });
+  $$(".cap, .carrossel").forEach((s) => io.observe(s));
+  limpar.push(() => io.disconnect());
 }
 
 // aviso de rolar: aparece logo na abertura e volta quando a pessoa para no meio de um capítulo; some assim que ela rola
@@ -405,7 +437,7 @@ function carrosseis() {
       if (previa) { previa.pause(); previa.remove(); previa = null; }
       const tela = c && $(".cart__tela", c);
       if (!tela || reduz() || !fino.matches) return;
-      previa = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "metadata", src: tela.dataset.src });
+      previa = Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "metadata", src: fonteVideo(tela, true) });
       previa.setAttribute("muted", ""); previa.setAttribute("aria-hidden", "true");
       tela.insertBefore(previa, tela.firstChild.nextSibling);
       previa.play().then(() => tela.classList.add("is-previa")).catch(() => { });
@@ -460,7 +492,7 @@ function contarNumeros() {
 const FORMAS = {
   coracoes: ['<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff3040"/></svg>', '<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff7aa2"/></svg>'],
   // cédulas de verdade (frente das notas de R$ 100 e R$ 50, imagens do Banco Central)
-  dinheiro: ['<img class="estouro__nota" src="/media/tex/cedula-100.jpg" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-50.jpg" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-100.jpg" alt="">'],
+  dinheiro: ['<img class="estouro__nota" src="/media/tex/cedula-100.webp" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-50.webp" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-100.webp" alt="">'],
   codigo: ['<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#8fd3ff" font-family="monospace">&lt;/&gt;</text></svg>', '<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10" fill="none" stroke="#3ddc97" stroke-width="3" stroke-linecap="round"/></svg>', '<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#ffcb6b" font-family="monospace">{ }</text></svg>'],
 };
 function estourar(el, tipo, qtd = 16, forca = 1) {
@@ -519,7 +551,7 @@ function vitrines() {
   $$(".vitrine video").forEach((v) => {
     const io = new IntersectionObserver(([en]) => {
       if (!en.isIntersecting) { v.pause(); return; }
-      if (!v.src) v.src = v.dataset.src;
+      if (!v.src) { if (v.dataset.poster) v.poster = v.dataset.poster; v.src = v.dataset.src; }
       if (!reduz()) v.play().catch(() => {});
     }, { rootMargin: "240px 0px" });
     io.observe(v);
@@ -703,7 +735,7 @@ function previas() {
     timer = setTimeout(() => {
       atual = b;
       const v = document.createElement("video");
-      Object.assign(v, { muted: true, loop: true, playsInline: true, preload: "auto", src: b.dataset.src });
+      Object.assign(v, { muted: true, loop: true, playsInline: true, preload: "auto", src: fonteVideo(b, true) });
       v.setAttribute("aria-hidden", "true"); v.setAttribute("muted", "");
       b.insertBefore(v, b.firstChild.nextSibling);
       v.play().then(() => b.classList.add("is-previa")).catch(() => { });
@@ -728,7 +760,7 @@ function abrirVideo(botao) {
   $$(".vid__tela.is-previa video").forEach((x) => x.pause());
   $("#player-conta").textContent = botao.dataset.conta || "";
   $("#player-leg").textContent = botao.dataset.titulo || "";
-  v.src = botao.dataset.src;
+  v.src = fonteVideo(botao, redeLenta());
   v.poster = $("img", botao)?.currentSrc || "";
   d._volta = botao;
   abrirDialogo(d);

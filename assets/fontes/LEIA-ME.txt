@@ -1,0 +1,9 @@
+Fontes do site (subconjunto "latin", baixado do Google Fonts em 05/11/2026):
+
+  anybody-latin-v13.woff2           Anybody            Copyright The Anybody Project Authors
+  schibsted-grotesk-latin-v7.woff2  Schibsted Grotesk  Copyright The Schibsted Grotesk Project Authors
+  martian-mono-latin-v6.woff2       Martian Mono       Copyright The Martian Mono Project Authors
+
+As três são distribuídas sob a SIL Open Font License 1.1: https://openfontlicense.org
+O número no nome é a versão do Google Fonts. Para atualizar uma fonte, salve o arquivo novo com outro
+número (o navegador guarda estes por um ano) e troque o nome em assets/css/wzs.css, em 404.html e em tools/gerar.mjs (FONTES_TOPO).

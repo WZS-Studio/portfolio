@@ -405,7 +405,7 @@ export function suportaWebGL() {
   try { const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; }
 }
 
-export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) {
+export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps = {} } = {}) {
   const mqReduce = matchMedia("(prefers-reduced-motion: reduce)");
   let reduce = mqReduce.matches;
   mqReduce.addEventListener?.("change", (e) => { reduce = e.matches; });
@@ -443,11 +443,15 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
 
   const scene = new THREE.Scene();
   {
+    const sol = new THREE.DirectionalLight("#ffffff", 1.6); sol.position.set(-3, 4, 5); scene.add(sol);
+  }
+  // luz de estúdio (só os materiais físicos do celular, notebook e xícara usam; os shaders da logo e do fundo não):
+  // é gerada depois do primeiro quadro, junto com os aparelhos (veja o fim de criarMundo)
+  const ambiente = () => {
     const pm = new THREE.PMREMGenerator(renderer);
     scene.environment = pm.fromScene(new RoomEnvironment(renderer), 0.04).texture;
     pm.dispose();
-    const sol = new THREE.DirectionalLight("#ffffff", 1.6); sol.position.set(-3, 4, 5); scene.add(sol);
-  }
+  };
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 60);
   const CAM_Z = 7.5;
   camera.position.set(0, 0, CAM_Z);
@@ -531,7 +535,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   {
     const tl = new THREE.TextureLoader(); let n = 0;
     for (const [k, nome] of [["g", "gelo"], ["s", "sites"], ["c", "criativos"]]) {
-      tl.load(`/assets/tex/matcap-${nome}.jpg`, (tex) => {
+      tl.load(matcaps[nome] || `/assets/tex/matcap-${nome}.jpg`, (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace; MATCAPS[k].value = tex;
         if (++n === 3) MATCAPS.tem.value = 1;
       });
@@ -814,7 +818,22 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
     // seções de leitura (fundo escurecido, sem travessia): meia taxa de quadros poupa bateria
     pular = !pular;
     if (st.dim > 0.7 && st.mergulho === 0 && st.chegada === 0 && pular) return;
+    if (aquecer) aquecerUm();
     renderer.render(scene, camera);
+  }
+  // cada aparelho é desenhado uma vez num pixel só, um por quadro, logo antes do quadro normal (que redesenha a tela
+  // inteira): o driver de vídeo termina de preparar os shaders agora, e não quando o celular aparece no meio da rolagem
+  let aquecer = null;
+  function aquecerUm() {
+    const grupo = aquecer.shift(); if (!aquecer.length) aquecer = null;
+    const mudados = [];
+    const mostrar = (o) => { mudados.push([o, o.visible, o.frustumCulled]); o.visible = true; o.frustumCulled = false; };
+    mostrar(disp.raiz); grupo.traverse(mostrar);
+    renderer.setScissorTest(true); renderer.setScissor(0, 0, 1, 1);
+    try { renderer.render(scene, camera); } finally {
+      renderer.setScissorTest(false);
+      for (const [o, v, f] of mudados) { o.visible = v; o.frustumCulled = f; }
+    }
   }
   const tmpCol = new THREE.Color(), tmpCol2 = new THREE.Color(), tmpCol3 = new THREE.Color(), tmpCol4 = new THREE.Color(), tmpCol5 = new THREE.Color();
 
@@ -884,6 +903,21 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {} } = {}) 
   };
 
   canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); document.documentElement.classList.add("sem-3d"); st.vivo = false; });
-  frame();
+
+  // shaders: compilar na hora do primeiro quadro travava a página (até ~5 s numa placa integrada, em pedaços
+  // durante a rolagem). Agora compilam em paralelo (KHR_parallel_shader_compile) e a cena só aparece depois:
+  // primeiro o fundo, a logo e os cartões; os aparelhos (celular, notebook, xícara) logo em seguida, antes da rolagem chegar neles.
+  // api.pronto resolve no primeiro quadro desenhado.
+  let avisar;
+  api.pronto = new Promise((r) => (avisar = r));
+  const compilar = (obj, alvo) => (renderer.compileAsync ? renderer.compileAsync(obj, camera, alvo) : Promise.resolve()).catch(() => { });
+  scene.remove(disp.raiz);
+  compilar(scene).then(() => {
+    frame(); avisar();
+    return new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+  }).then(() => {
+    ambiente(); scene.add(disp.raiz);
+    return compilar(disp.raiz, scene);
+  }).then(() => { aquecer = disp.raiz.children.length ? [...disp.raiz.children] : null; });
   return api;
 }

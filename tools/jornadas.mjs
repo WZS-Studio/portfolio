@@ -3,7 +3,7 @@
 // Cada capítulo (.cap) fica preso na tela enquanto a pessoa rola; os passos (.passo) trocam por faixa de
 // rolagem (data-de / data-ate) e o mundo 3D recebe o mesmo progresso (data-cap).
 export function criarJornadas(h) {
-  const { esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, doc, orgLd, faqLd, dadosMundo, hv } = h;
+  const { esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, doc, orgLd, faqLd, dadosMundo, hv, midiaV, leve } = h;
   const n2 = (k) => String(k).padStart(2, "0");
 
   const passo = (de, ate, html, cls = "") => `<div class="passo${cls ? " " + cls : ""}" data-de="${de}" data-ate="${ate}">${html}</div>`;
@@ -12,7 +12,7 @@ export function criarJornadas(h) {
   const numero = (x) => `<p class="passo__num display" style="--n:${[...String(x.numero)].length}">${esc(x.numero)}</p><p class="passo__texto">${rico(x.texto)}</p>${x.fonte ? `<p class="passo__fonte">${esc(x.fonte)}</p>` : ""}`;
   // selo da parceria de hospedagem: "mini" dentro de um capítulo, completo (com texto e botão) abaixo dos planos
   const selo = (pc, mini) => !pc ? "" : `<aside class="parceria${mini ? " parceria--mini" : " sobe"}" aria-label="${esc(pc.rotulo)}: WZS Studio e ${esc(pc.nome)}">
-  <span class="parceria__selo" aria-hidden="true"><svg viewBox="0 0 424 422"><use href="#wzs-mark"/></svg><span class="parceria__x">×</span><img class="parceria__logo" src="${esc(pc.logo)}" alt="" width="536" height="138" decoding="async"></span>
+  <span class="parceria__selo" aria-hidden="true"><svg viewBox="0 0 424 422"><use href="#wzs-mark"/></svg><span class="parceria__x">×</span><img class="parceria__logo" src="${esc(midiaV(pc.logo))}" alt="" width="536" height="138" decoding="async"></span>
   ${mini ? `<span class="parceria__txt"><b class="parceria__mini">${esc(pc.rotulo)}</b></span>`
     : `<div class="parceria__txt"><p class="parceria__titulo display">${esc(pc.rotulo)}</p><p class="parceria__texto">${rico(pc.texto)}</p></div>`}
 </aside>`;
@@ -47,7 +47,7 @@ export function criarJornadas(h) {
   <div class="editor__corpo">
     <div class="editor__regua">${["0s", "3s", "10s", "20s", "30s", "40s"].map((t, i) => `<span style="left:${[0, 7.5, 25, 50, 75, 100][i]}%">${t}</span>`).join("")}</div>
     <div class="editor__trilhas">
-      <div class="trilha" data-i="0"><span class="trilha__n">V1</span><div class="trilha__pista"><div class="clip clip--v">${lista(cm.quadros, (q) => `<i style="background-image:url(${esc(q)})"></i>`)}</div></div></div>
+      <div class="trilha" data-i="0"><span class="trilha__n">V1</span><div class="trilha__pista"><div class="clip clip--v">${lista(cm.quadros, (q) => `<i style="background-image:url(${esc(midiaV(q))})"></i>`)}</div></div></div>
       <div class="trilha" data-i="1"><span class="trilha__n">T1</span><div class="trilha__pista"><div class="clip clip--t" style="--x:0%;--w:16%"><b>T</b>FA: DÁ PRA VIVER ANOS. FV: MINUTOS.</div></div></div>
       <div class="trilha" data-i="2"><span class="trilha__n">TXT</span><div class="trilha__pista">${["ele se mexe…", "mas não", "bombeia", "sangue", "comenta", "A ou B"].map((w, i) => `<div class="clip clip--l" style="--x:${8 + i * 13}%;--w:11%">${w}</div>`).join("")}</div></div>
       <div class="trilha" data-i="3"><span class="trilha__n">A1</span><div class="trilha__pista"><div class="clip clip--a"><span class="ondas">${ondas}</span><b>trilha + efeitos</b></div></div></div>
@@ -94,7 +94,7 @@ export function criarJornadas(h) {
 </section>`;
   const cartVideo = (v) => `
 <article class="cart" data-video="${esc(v.id)}">
-  <button class="cart__tela vid__tela" type="button" data-play="${esc(v.id)}" data-src="${esc(v.arquivo)}" data-titulo="${esc(v.titulo)}" data-conta="${esc(v.conta)}" data-cursor="Reproduzir" aria-label="Reproduzir vídeo: ${esc(v.titulo)} (${esc(v.conta)})">
+  <button class="cart__tela vid__tela" type="button" data-play="${esc(v.id)}" data-src="${esc(hv(v.arquivo))}"${leve(v.arquivo)} data-titulo="${esc(v.titulo)}" data-conta="${esc(v.conta)}" data-cursor="Reproduzir" aria-label="Reproduzir vídeo: ${esc(v.titulo)} (${esc(v.conta)})">
     ${img(v.poster, "", { cls: "vid__poster" })}
     <span class="cart__ui"><span class="cart__conta"><i></i>${esc(v.conta)}</span><span class="cart__titulo">${esc(v.titulo)}</span></span>
     ${v.selo ? `<span class="cart__selo">${esc(v.selo)}</span>` : ""}
@@ -124,7 +124,7 @@ export function criarJornadas(h) {
   };
   const vitrine = (vt) => !vt ? "" : `<div class="vitrine${vt.patrocinado ? " vitrine--anuncio" : ""}" style="--av:${vt.cor}" aria-hidden="true">
           <div class="vitrine__cel"><div class="vitrine__tela">
-            <video muted loop playsinline preload="none" poster="${hv(vt.poster)}" data-src="${hv(vt.video)}"></video>
+            <video muted loop playsinline preload="none" data-poster="${midiaV(vt.poster)}" data-src="${hv(vt.video)}"></video>
             <span class="vitrine__ig">
               ${vt.patrocinado ? "" : '<b class="vitrine__reels">Reels</b>'}
               <span class="vitrine__acoes">${[["curtir", vt.curtidas], ["comentar", vt.comentarios], ["enviar", vt.envios]].map(([k, n]) => `<i>${IG[k]}${n ? `<small>${esc(n)}</small>` : ""}</i>`).join("")}</span>
@@ -176,7 +176,7 @@ export function criarJornadas(h) {
   const heroHtml = (h, msgZap, track, sec) => `<section class="hero hero--curto" id="inicio" data-cena="hero" aria-labelledby="t-hero">
   <div class="hero__in"><div class="hero__copy">
     <p class="rotulo sobe"><b>${esc(h.rotulo)}</b></p>
-    <h1 class="display entra" id="t-hero">${palavras(h.titulo)}</h1>
+    <h1 class="display entra" id="t-hero">${palavras(h.titulo, true)}</h1>
     ${h.linha ? `<p class="hero__linha sobe" style="--d:250ms">${rico(h.linha)}</p>` : ""}
     <div class="hero__cta sobe" style="--d:350ms"><a class="btn" href="${zap(msgZap)}" target="_blank" rel="noopener" data-zap="${track}|geral|hero">${ico("zap")} ${esc(h.cta)}</a>${sec}</div>
     ${h.prova?.length ? `<div class="hero__prova sobe" style="--d:500ms">${lista(h.prova, (p) => `<div><strong>${esc(p.valor)}</strong><span>${esc(p.rotulo)}</span></div>`)}</div>` : ""}

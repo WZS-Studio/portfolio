@@ -14,22 +14,70 @@ const C = await import(pathToFileURL(join(RAIZ, "conteudo/site.mjs")).href + "?v
 const { marca, whatsapp, medicao, portal, sites, vagas } = C;
 import { criarJornadas } from "./jornadas.mjs";
 const criativos = { ...C.criativos, series: C.criativos.series.filter((s) => s.publicar !== false) };
-const VERSAO = Date.now().toString(36);
-// todo módulo importado sem ?v= (import estático de um módulo para outro) ganha a versão pelo importmap:
-// sem isso o navegador roda uma cópia velha guardada por até um dia (Expires do .htaccess)
-const IMPORTMAP = JSON.stringify({ imports: { three: "/assets/vendor/three.module.min.js",
-  ...Object.fromEntries(["dispositivos", "cafe-forma", "cursor", "medicao", "logo3d"].map((m) => [`/assets/js/${m}.js`, `/assets/js/${m}.js?v=${VERSAO}`])) } });
+
+// endereço com a marca do conteúdo (soma o arquivo e a versão -leve, se houver): só muda quando o arquivo muda.
+// CSS, JS e fontes ficam guardados por um ano no navegador (.htaccess), então tudo que a página pede leva ?v=
+const cacheHv = new Map();
+const hv = (p) => {
+  if (!p || !p.startsWith("/") || p.includes("?")) return p;
+  if (!cacheHv.has(p)) {
+    const h = createHash("md5"); let achou = false;
+    for (const f of [p, p.replace(/\.mp4$/, "-leve.mp4")]) if (existsSync(join(RAIZ, f))) { h.update(readFileSync(join(RAIZ, f))); achou = true; }
+    cacheHv.set(p, achou ? `${p}?v=${h.digest("hex").slice(0, 8)}` : p);
+  }
+  return cacheHv.get(p);
+};
+// imagem: usa a cópia .webp ao lado do .jpg/.png quando existe (tools/otimizar-midia.mjs gera; ~45% menor)
+const webp = (p) => {
+  if (!p || !/^\/.*\.(jpe?g|png)$/i.test(p)) return p;
+  const w = p.replace(/\.(jpe?g|png)$/i, ".webp");
+  return existsSync(join(RAIZ, w)) ? w : p;
+};
+const midiaV = (p) => hv(webp(p));
+// vídeo do player: endereço da versão leve (540×960), quando existe, para rede lenta e tela pequena
+const leve = (p) => {
+  const l = p?.replace(/\.mp4$/, "-leve.mp4");
+  return l && l !== p && existsSync(join(RAIZ, l)) ? ` data-leve="${hv(p).replace(/\.mp4\?/, "-leve.mp4?")}"` : "";
+};
+
+// todo módulo é pedido pelo importmap com a versão do conteúdo (import estático, import() e as libs do Three)
+const MODULOS = ["/assets/vendor/addons/RoomEnvironment.js", ...["mundo", "dispositivos", "cafe-forma", "cursor", "medicao", "logo3d"].map((m) => `/assets/js/${m}.js`)];
+const IMPORTMAP = JSON.stringify({ imports: { three: hv("/assets/vendor/three.module.min.js"), ...Object.fromEntries(MODULOS.map((m) => [m, hv(m)])) } });
+// fontes servidas pelo próprio site (antes vinham do Google: duas conexões a mais e o IP do visitante para fora)
+// O <head> pré-carrega só as duas que aparecem grandes no topo (título e texto); a mono dos rótulos chega logo depois
+// sem disputar a rede lenta com elas (a troca dela não mexe no layout: os rótulos têm altura de linha fixa)
+const FONTES_TOPO = ["anybody-latin-v13", "schibsted-grotesk-latin-v7"];
+
+// política de segurança (CSP): só roda script do próprio site e os blocos inline desta página (pelo hash).
+// GA4, GTM e Plausible entram sozinhos quando têm ID em conteudo/site.mjs; outra tag dentro do GTM (ex.: Pixel da Meta)
+// precisa do domínio dela aqui, senão o navegador bloqueia
+const sha = (s) => `'sha256-${createHash("sha256").update(s).digest("base64")}'`;
+function politica(inlines, med) {
+  const google = med.ga4 || med.gtm, plausible = med.plausible;
+  const fontes = (base, ...extra) => [base, ...extra.filter(Boolean)].join(" ");
+  return [
+    "default-src 'self'",
+    `script-src ${fontes("'self'", ...inlines.map(sha), google && "https://www.googletagmanager.com", plausible && "https://plausible.io")}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src ${fontes("'self' data: blob:", google && "https://*.google-analytics.com https://*.googletagmanager.com")}`,
+    "font-src 'self'",
+    "media-src 'self' blob:",
+    `connect-src ${fontes("'self'", google && "https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com", plausible && "https://plausible.io")}`,
+    "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-src 'none'", "worker-src 'self' blob:",
+  ].join("; ");
+}
 
 // ---------- utilidades ----------
 const esc = (s = "") => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 // *texto* vira destaque na cor do universo
 const rico = (s = "") => esc(s).replace(/\*(.+?)\*/g, '<span class="acc">$1</span>');
-const palavras = (s = "") => {
-  let i = 0;
-  return esc(s).split(/(\*[^*]+\*)/).map((parte) => {
+// letras = true: as letras já saem separadas (o título do topo anima sem esperar o JavaScript)
+const palavras = (s = "", letras = false) => {
+  let i = 0, li = 0;
+  return String(s).split(/(\*[^*]+\*)/).map((parte) => {
     const acc = /^\*.*\*$/.test(parte);
     const txt = acc ? parte.slice(1, -1) : parte;
-    const ws = txt.split(/(\s+)/).map((w) => (/^\s+$/.test(w) || !w ? w : `<span class="pal" style="--i:${i++}">${w}</span>`)).join("");
+    const ws = txt.split(/(\s+)/).map((w) => (/^\s+$/.test(w) || !w ? w : `<span class="pal" style="--i:${i++}">${letras ? [...w].map((c) => `<span class="l" style="--li:${li++}">${esc(c)}</span>`).join("") : esc(w)}</span>`)).join("");
     return acc ? `<span class="acc">${ws}</span>` : ws;
   }).join("");
 };
@@ -66,7 +114,7 @@ function dim(src) {
 }
 const img = (src, alt, { cls = "", lazy = true, sizes = "" } = {}) => {
   const d = dim(src);
-  return `<img src="${esc(src)}" alt="${esc(alt)}"${d ? ` width="${d.w}" height="${d.h}"` : ""}${cls ? ` class="${cls}"` : ""}${lazy ? ' loading="lazy"' : ' fetchpriority="high"'} decoding="async"${sizes ? ` sizes="${sizes}"` : ""}>`;
+  return `<img src="${esc(midiaV(src))}" alt="${esc(alt)}"${d ? ` width="${d.w}" height="${d.h}"` : ""}${cls ? ` class="${cls}"` : ""}${lazy ? ' loading="lazy"' : ' fetchpriority="high"'} decoding="async"${sizes ? ` sizes="${sizes}"` : ""}>`;
 };
 
 // ---------- peças comuns ----------
@@ -122,10 +170,13 @@ function doc({ pagina, universo, seo, main, dadosMundo, jsonld = [], zapFixo }) 
   const url = marca.dominio + seo.caminho;
   const og = seo.og ? marca.dominio + seo.og : marca.dominio + "/media/og/og-portal.jpg";
   const med = medicao || {};
+  const jsInicio = 'document.documentElement.classList.replace("no-js","js");';
+  const jsMedicao = `window.WZS_MEDICAO=${JSON.stringify({ ga4: med.ga4 || "", gtm: med.gtm || "", plausible: med.plausible || "" })};`;
   return `<!doctype html>
 <html lang="pt-BR" data-universo="${universo}" class="no-js">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="${politica([jsInicio, IMPORTMAP, jsMedicao], med)}">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(seo.titulo)}</title>
 <meta name="description" content="${esc(seo.descricao)}">
@@ -142,18 +193,12 @@ function doc({ pagina, universo, seo, main, dadosMundo, jsonld = [], zapFixo }) 
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Schibsted+Grotesk:wght@400..700&family=Martian+Mono:wdth,wght@75..112.5,400..600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/wzs.css?v=${VERSAO}">
-<script>document.documentElement.classList.replace("no-js","js");</script>
+${FONTES_TOPO.map((f) => `<link rel="preload" href="/assets/fontes/${f}.woff2" as="font" type="font/woff2" crossorigin>`).join("\n")}
+<link rel="stylesheet" href="${hv("/assets/css/wzs.css")}">
+<script>${jsInicio}</script>
 <script type="importmap">${IMPORTMAP}</script>
-<script>window.WZS_V="${VERSAO}";</script>
-<link rel="modulepreload" href="/assets/vendor/three.module.min.js">
-<link rel="modulepreload" href="/assets/js/mundo.js?v=${VERSAO}">
-<link rel="modulepreload" href="/assets/js/dispositivos.js?v=${VERSAO}">
 ${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j)}</script>`).join("\n")}
-<script>window.WZS_MEDICAO=${JSON.stringify({ ga4: med.ga4 || "", gtm: med.gtm || "", plausible: med.plausible || "" })};</script>
+<script>${jsMedicao}</script>
 </head>
 <body data-pagina="${pagina}">
 <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -165,10 +210,10 @@ ${rodape()}
 ${zapFixo ? `<div class="zapfixo" id="zapfixo"><a class="btn" href="${zapFixo.href}" target="_blank" rel="noopener" data-zap="${zapFixo.track}">${ico("zap")}${esc(zapFixo.rotulo)}</a></div>` : '<div class="zapfixo" id="zapfixo"></div>'}
 ${DIALOGOS}
 <script type="application/json" id="dados-mundo">${JSON.stringify(dadosMundo)}</script>
-<script src="/assets/vendor/gsap.min.js" defer></script>
-<script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
-<script src="/assets/vendor/lenis.min.js" defer></script>
-<script type="module" src="/assets/js/app.js?v=${VERSAO}"></script>
+<script src="${hv("/assets/vendor/gsap.min.js")}" defer></script>
+<script src="${hv("/assets/vendor/ScrollTrigger.min.js")}" defer></script>
+<script src="${hv("/assets/vendor/lenis.min.js")}" defer></script>
+<script type="module" src="${hv("/assets/js/app.js")}"></script>
 </body>
 </html>
 `;
@@ -193,37 +238,33 @@ const orgLd = () => ({
 });
 
 // ---------- dados do mundo 3D ----------
-// endereço com a marca do conteúdo (soma o arquivo e a versão -leve, se houver): só muda quando o arquivo muda
-const hv = (p) => {
-  const h = createHash("md5");
-  for (const f of [p, p.replace(/.mp4$/, "-leve.mp4")]) if (existsSync(join(RAIZ, f))) h.update(readFileSync(join(RAIZ, f)));
-  return `${p}?v=${h.digest("hex").slice(0, 8)}`;
-};
 const CENAS_MG = ["abertura", "revelacao", "construcao", "plantonista", "questoes", "amigos"];
+const cartoes = JSON.parse(readFileSync(join(RAIZ, "media/tex/cards/lista.json"), "utf8"));
 const dadosMundo = {
   // miniaturas leves para os quadros que orbitam a logo (geradas em media/tex/cards)
-  ...JSON.parse(readFileSync(join(RAIZ, "media/tex/cards/lista.json"), "utf8")),
+  telas: cartoes.telas.map(midiaV), reels: cartoes.reels.map(midiaV),
+  matcaps: Object.fromEntries(["gelo", "sites", "criativos"].map((n) => [n, midiaV(`/assets/tex/matcap-${n}.jpg`)])),
   midia: {
     // vídeos das telas 3D, sem som, em /media/tex: 720×1280 para telas grandes e "-leve" (540×960) para as demais
-    videoMontagem: hv("/media/tex/montagem.mp4"), posterMontagem: hv("/media/tex/montagem.jpg"),
+    videoMontagem: hv("/media/tex/montagem.mp4"), posterMontagem: midiaV("/media/tex/montagem.jpg"),
     videoSucesso: hv("/media/tex/sucesso.mp4"), videoAnuncio: hv("/media/tex/anuncio.mp4"),
     // quadro parado enquanto o vídeo abre (antes a tela ficava preta)
-    posterSucesso: hv("/media/tex/sucesso.jpg"), posterAnuncio: hv("/media/tex/anuncio.jpg"),
+    posterSucesso: midiaV("/media/tex/sucesso.jpg"), posterAnuncio: midiaV("/media/tex/anuncio.jpg"),
     // frente e verso das cédulas de R$ 100 e R$ 50 (imagens do Banco Central) numa folha só, para as notas 3D do anúncio
-    cedulas: hv("/media/tex/cedulas.webp"),
+    cedulas: midiaV("/media/tex/cedulas.webp"),
     // xícara do capítulo do café: luz e sombra assadas no Blender (tools/blender/cafe_assar.py)
-    cafe: Object.fromEntries(["xicara", "pires", "alca", "liquido", "chao"].map((n) => [n, hv(`/media/tex/cafe/${n}.webp`)])),
+    cafe: Object.fromEntries(["xicara", "pires", "alca", "liquido", "chao"].map((n) => [n, midiaV(`/media/tex/cafe/${n}.webp`)])),
     feed: [
-      { v: hv("/media/tex/feed-1.mp4"), poster: hv("/media/tex/feed-1.jpg"), conta: "felipen.med", legenda: "Estenose × insuficiência aórtica", cor: "#3b82f6" },
-      { v: hv("/media/tex/feed-2.mp4"), poster: hv("/media/tex/feed-2.jpg"), conta: "felipen.med", legenda: "O último plantão", cor: "#3b82f6" },
-      { v: hv("/media/tex/feed-3.mp4"), poster: hv("/media/tex/feed-3.jpg"), conta: "wzs_studio", legenda: "Ninguém sabe que ele existe", cor: "#1f5fd6" },
-      { v: hv("/media/tex/feed-4.mp4"), poster: hv("/media/tex/feed-4.jpg"), conta: "felipen.med", legenda: "DPP × placenta prévia", cor: "#3b82f6" },
-      { v: hv("/media/tex/feed-5.mp4"), poster: hv("/media/tex/feed-5.jpg"), conta: "medgrind_oficial", legenda: "Bora atender", cor: "#14a2ff" },
-      { v: hv("/media/tex/feed-6.mp4"), poster: hv("/media/tex/feed-6.jpg"), conta: "felipen.med", legenda: "Soro no traumatismo craniano", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-1.mp4"), poster: midiaV("/media/tex/feed-1.jpg"), conta: "felipen.med", legenda: "Estenose × insuficiência aórtica", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-2.mp4"), poster: midiaV("/media/tex/feed-2.jpg"), conta: "felipen.med", legenda: "O último plantão", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-3.mp4"), poster: midiaV("/media/tex/feed-3.jpg"), conta: "wzs_studio", legenda: "Ninguém sabe que ele existe", cor: "#1f5fd6" },
+      { v: hv("/media/tex/feed-4.mp4"), poster: midiaV("/media/tex/feed-4.jpg"), conta: "felipen.med", legenda: "DPP × placenta prévia", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-5.mp4"), poster: midiaV("/media/tex/feed-5.jpg"), conta: "medgrind_oficial", legenda: "Bora atender", cor: "#14a2ff" },
+      { v: hv("/media/tex/feed-6.mp4"), poster: midiaV("/media/tex/feed-6.jpg"), conta: "felipen.med", legenda: "Soro no traumatismo craniano", cor: "#3b82f6" },
     ],
-    ch: { foto: "/media/sites/crosshard/foto-musculacao.webp", logo: "/media/sites/crosshard/logo-branco.png", desk: "/media/sites/crosshard/desk-1.webp", cel: "/media/sites/crosshard/cel-1.webp" },
-    cenas: CENAS_MG.map((c) => `/media/sites/medgrind/cenas/${c}-wide.webp`),
-    cenasTall: CENAS_MG.map((c) => `/media/sites/medgrind/cenas/${c}-tall.webp`),
+    ch: { foto: midiaV("/media/sites/crosshard/foto-musculacao.webp"), logo: midiaV("/media/sites/crosshard/logo-branco.png"), desk: midiaV("/media/sites/crosshard/desk-1.webp"), cel: midiaV("/media/sites/crosshard/cel-1.webp") },
+    cenas: CENAS_MG.map((c) => midiaV(`/media/sites/medgrind/cenas/${c}-wide.webp`)),
+    cenasTall: CENAS_MG.map((c) => midiaV(`/media/sites/medgrind/cenas/${c}-tall.webp`)),
     // a landing do MedGrind gravada rolando (computador e celular), arrastada pela rolagem do capítulo
     vooMg: hv("/media/sites/medgrind/voo.mp4"), vooMgCel: hv("/media/sites/medgrind/voo-cel.mp4"),
   },
@@ -295,7 +336,7 @@ function videoHtml(v, serie) {
   if (v.arquivo && !existsSync(join(RAIZ, v.arquivo.replace(/^\/+/, "")))) console.warn("  ! vídeo não encontrado:", v.arquivo);
   const met = (v.metricas || []).filter((m) => m.valor);
   return `<article class="vid${v.grande ? " vid--grande" : ""}" data-video="${esc(v.id)}">
-    <button class="vid__tela" type="button" data-play="${esc(v.id)}" data-src="${esc(v.arquivo)}" data-titulo="${esc(v.titulo)}" data-conta="${esc(serie.conta)}" data-cursor="Reproduzir" aria-label="Reproduzir vídeo: ${esc(v.titulo)} (${esc(serie.conta)})">
+    <button class="vid__tela" type="button" data-play="${esc(v.id)}" data-src="${esc(hv(v.arquivo))}"${leve(v.arquivo)} data-titulo="${esc(v.titulo)}" data-conta="${esc(serie.conta)}" data-cursor="Reproduzir" aria-label="Reproduzir vídeo: ${esc(v.titulo)} (${esc(serie.conta)})">
       ${img(v.poster, "", { cls: "vid__poster" })}
       ${v.selo ? `<span class="vid__selo">${esc(v.selo)}</span>` : ""}${v.duracao ? `<span class="vid__dur">${esc(v.duracao)}</span>` : ""}
       <span class="vid__play"><i>${ico("play", "ico ico--fill")}</i>Assistir</span>
@@ -336,7 +377,7 @@ function escrever(rel, html) {
   console.log("  ✓", rel, (html.length / 1024).toFixed(1) + " KB");
 }
 escrever("index.html", paginaPortal());
-const J = criarJornadas({ esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, serieHtml, doc, orgLd, faqLd, dadosMundo, hv });
+const J = criarJornadas({ esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, serieHtml, doc, orgLd, faqLd, dadosMundo, hv, midiaV, leve });
 escrever("sites/index.html", J.paginaSites());
 escrever("criativos/index.html", J.paginaCriativos());
 const hoje = new Date().toISOString().slice(0, 10);
