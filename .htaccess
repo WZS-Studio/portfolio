@@ -3,6 +3,7 @@ Options -Indexes
 AddType image/webp .webp
 AddType image/avif .avif
 AddType video/webm .webm
+AddType application/octet-stream .bin
 AddType font/woff2 .woff2
 ErrorDocument 404 /404.html
 ErrorDocument 403 /404.html
@@ -70,5 +71,6 @@ ErrorDocument 403 /404.html
   ExpiresByType image/avif "access plus 1 month"
   ExpiresByType video/mp4 "access plus 1 month"
   ExpiresByType video/webm "access plus 1 month"
+  ExpiresByType application/octet-stream "access plus 1 month"
   ExpiresByType audio/mpeg "access plus 1 month"
 </IfModule>

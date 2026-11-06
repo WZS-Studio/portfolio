@@ -62,6 +62,16 @@ node tools/midia.mjs captura "C:/caminho/tela.png" media/sites/projeto/desk-1.we
 
 Para celular use largura 780: `... media/sites/projeto/cel-1.webp 780`.
 
+### Trocar a gravação do voo do MedGrind
+
+As telas do capítulo MedGrind não usam vídeo: mostram quadros prontos que seguem a rolagem. Para trocar a gravação, substitua `midia/medgrind/voo.mp4` e `voo-cel.mp4` e rode:
+
+```bash
+node tools/voo.mjs
+```
+
+Gera os pacotes `.bin` em `media/sites/medgrind/` e a curva de ritmo. Depois rode `node tools/gerar.mjs`.
+
 ## Testar no computador
 
 ```bash

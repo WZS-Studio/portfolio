@@ -22,7 +22,9 @@ const hv = (p) => {
   if (!p || !p.startsWith("/") || p.includes("?")) return p;
   if (!cacheHv.has(p)) {
     const h = createHash("md5"); let achou = false;
-    for (const f of [p, p.replace(/\.mp4$/, "-leve.mp4")]) if (existsSync(join(RAIZ, f))) { h.update(readFileSync(join(RAIZ, f))); achou = true; }
+    // os pacotes do voo têm três níveis e um endereço só (tools/voo.mjs)
+    const niveis = /\.bin$/.test(p) ? [p, p.replace(/\.bin$/, "-medio.bin"), p.replace(/\.bin$/, "-leve.bin")] : [p, p.replace(/\.mp4$/, "-leve.mp4")];
+    for (const f of niveis) if (existsSync(join(RAIZ, f))) { h.update(readFileSync(join(RAIZ, f))); achou = true; }
     cacheHv.set(p, achou ? `${p}?v=${h.digest("hex").slice(0, 8)}` : p);
   }
   return cacheHv.get(p);
@@ -265,8 +267,8 @@ const dadosMundo = {
     ch: { foto: midiaV("/media/sites/crosshard/foto-musculacao.webp"), logo: midiaV("/media/sites/crosshard/logo-branco.png"), desk: midiaV("/media/sites/crosshard/desk-1.webp"), cel: midiaV("/media/sites/crosshard/cel-1.webp") },
     cenas: CENAS_MG.map((c) => midiaV(`/media/sites/medgrind/cenas/${c}-wide.webp`)),
     cenasTall: CENAS_MG.map((c) => midiaV(`/media/sites/medgrind/cenas/${c}-tall.webp`)),
-    // a landing do MedGrind gravada rolando (computador e celular), arrastada pela rolagem do capítulo
-    vooMg: hv("/media/sites/medgrind/voo.mp4"), vooMgCel: hv("/media/sites/medgrind/voo-cel.mp4"),
+    // a landing do MedGrind gravada rolando (computador e celular), em quadros prontos (tools/voo.mjs) que seguem a rolagem do capítulo
+    vooMg: hv("/media/sites/medgrind/voo.bin"), vooMgCel: hv("/media/sites/medgrind/voo-cel.bin"), vooRitmo: JSON.parse(readFileSync(join(RAIZ, "midia/medgrind/voo-ritmo.json"), "utf8")),
   },
 };
 

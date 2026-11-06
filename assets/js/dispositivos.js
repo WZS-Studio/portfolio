@@ -18,6 +18,8 @@ const faixa = (p, a, b) => clamp((p - a) / (b - a));
 const suave = (x) => x * x * (3 - 2 * x);
 const glide = (x) => x * x * x * (x * (x * 6 - 15) + 10);
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
+// lê uma curva dada por pontos igualmente espaçados em 0–1
+const curva = (x, c) => { if (!c?.length) return x; const f = clamp(x) * (c.length - 1), i = Math.min(c.length - 2, Math.floor(f)); return c[i] + (c[i + 1] - c[i]) * (f - i); };
 const fmt = (n) => (n < 1000 ? String(Math.round(n)) : n < 1e6 ? (n / 1000).toFixed(n < 1e4 ? 1 : 0).replace(".", ",").replace(",0", "") + " mil" : (n / 1e6).toFixed(1).replace(".", ",") + " mi");
 
 const VERT = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
@@ -151,7 +153,7 @@ export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia
     return cacheImg.get(src);
   };
   const imgEl = (src) => { if (!src) return null; if (!cacheEl.has(src)) { const i = new Image(); i.src = src; cacheEl.set(src, i); } return cacheEl.get(src); };
-  // vídeos: um toca por vez; a montagem "arrasta" o vídeo pela rolagem (sem tocar)
+  // vídeos: um toca por vez
   const cacheVid = new Map();
   const video = (src) => {
     if (!src) return null;
@@ -165,24 +167,80 @@ export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia
   };
   let tocando = null;
   const tocar = (src) => { const v = video(src); if (!v) return null; if (tocando && tocando !== v) tocando.pause(); tocando = v; if (v.paused) v.play().catch(() => { }); return v; };
-  const pararVideos = () => { tocando?.pause(); tocando = null; };
-  const arrastar = (src, frac) => {
-    const v = video(src); if (!v) return null;
-    if (tocando === v) { v.pause(); tocando = null; }
-    if (v.readyState >= 1 && v.duration && !v.seeking) { const tt = frac * (v.duration - 0.1); if (Math.abs(v.currentTime - tt) > 0.08) v.currentTime = tt; }
-    return v;
-  };
-  const cacheTexV = new Map();
-  const texVideo = (v) => {
-    if (!cacheTexV.has(v)) {
-      const t = new THREE.VideoTexture(v); t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
-      v.addEventListener("seeked", () => (t.needsUpdate = true)); // parado e arrastado: cada busca precisa subir o quadro novo
-      if (v.readyState >= 2) t.needsUpdate = true; // o quadro que já está pronto (a busca anterior pode ter terminado antes desta textura existir)
-      cacheTexV.set(v, t);
-    }
-    return cacheTexV.get(v);
-  };
+  const pararVideos = () => { tocando?.pause(); tocando = null; cacheVoo.forEach((v) => v.liberar()); };
   const pronto = (el) => !!el && ((el.readyState !== undefined && el.readyState >= 2) || (el.complete && el.naturalWidth > 0));
+
+  // O voo do MedGrind: a landing gravada em quadros prontos (tools/voo.mjs) no lugar de um vídeo arrastado pela rolagem.
+  // No vídeo cada passo da rolagem vira uma busca: durante ela o elemento fica sem quadro (a tela piscava), o tempo depende do
+  // decodificador do aparelho e as duas telas saem de sincronia. Aqui uma janela de quadros fica decodificada em volta do
+  // ponto atual e a tela mistura os dois vizinhos, então a passagem não tem degrau nem depende de busca.
+  const cacheVoo = new Map();
+  const pegarVoo = (src) => { if (!src) return null; if (!cacheVoo.has(src)) cacheVoo.set(src, criarVoo(src)); return cacheVoo.get(src); };
+  function criarVoo(src) {
+    const JANELA = 8;
+    const novaTex = () => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; t.flipY = false; return t; };
+    const bm = new Map(), slots = [novaTex(), novaTex()], noSlot = [-1, -1]; // bm: índice → ImageBitmap (null enquanto decodifica)
+    let dados = null, ini = null, n = 0, recebidos = 0, baixado = 0, emCurso = 0, ultimo = 0, dir = 1, sA = 0, pos = -1;
+    // baixa em fluxo: cada quadro já vale assim que chega, sem esperar o arquivo inteiro
+    (async () => {
+      const resp = await fetch(grande ? src : src.replace(/\.bin(?=\?|$)/, leve || lenta ? "-leve.bin" : "-medio.bin"));
+      if (!resp.ok) return;
+      const leitor = resp.body.getReader();
+      let cab = new Uint8Array(0);
+      for (;;) {
+        const { done, value } = await leitor.read(); if (done) return;
+        if (!dados) {
+          const j = new Uint8Array(cab.length + value.length); j.set(cab); j.set(value, cab.length); cab = j;
+          if (cab.length < 4) continue;
+          const dv = new DataView(cab.buffer), q = dv.getUint32(0, true);
+          if (cab.length < 4 + q * 4) continue;
+          ini = new Uint32Array(q + 1); ini[0] = 4 + q * 4;
+          for (let i = 0; i < q; i++) ini[i + 1] = ini[i] + dv.getUint32(4 + i * 4, true);
+          dados = new Uint8Array(ini[q]); dados.set(cab); baixado = cab.length; n = q;
+        } else { dados.set(value, baixado); baixado += value.length; }
+        while (recebidos < n && ini[recebidos + 1] <= baixado) recebidos++;
+      }
+    })().catch(() => { });
+    const decodificar = (i) => {
+      if (i < 0 || i >= recebidos || bm.has(i) || emCurso >= (leve ? 2 : 3)) return;
+      bm.set(i, null); emCurso++;
+      // ImageBitmap ignora o flipY do WebGL: vira já na decodificação
+      createImageBitmap(new Blob([dados.subarray(ini[i], ini[i + 1])], { type: "image/webp" }), { imageOrientation: "flipY", premultiplyAlpha: "none", colorSpaceConversion: "none" })
+        .then((b) => { if (bm.get(i) === null) bm.set(i, b); else b.close(); })
+        .catch(() => bm.delete(i)).finally(() => emCurso--);
+    };
+    const porSlot = (s, i) => { if (noSlot[s] !== i) { slots[s].image = bm.get(i); slots[s].needsUpdate = true; noSlot[s] = i; } };
+    return {
+      // leva a tela até frac (0–1); devolve false enquanto não houver nenhum quadro para mostrar
+      mostrar(u, frac, telaAsp, texAsp, dt) {
+        if (!recebidos) return false;
+        const meta = frac * (n - 1), vel = Math.abs(meta - ultimo) / Math.max(dt, 0.001); // quadros por segundo
+        if (meta !== ultimo) dir = meta > ultimo ? 1 : -1;
+        ultimo = meta;
+        // andando, segue a rolagem; parada, escorrega até o quadro inteiro mais próximo para a tela não descansar misturando dois
+        pos = pos < 0 ? meta : damp(pos, vel > 1.5 ? meta : Math.round(meta), 14, dt);
+        const alvo = Math.min(pos, recebidos - 1), i = Math.floor(alvo);
+        // a janela é mais larga para onde a rolagem está indo; quem está nas texturas só sai quando for trocado
+        const de = i - (dir > 0 ? 2 : JANELA), ate = i + (dir > 0 ? JANELA : 2);
+        for (const [q, b] of bm) if ((q < de || q > ate) && q !== noSlot[0] && q !== noSlot[1]) { b?.close(); bm.delete(q); }
+        decodificar(i); decodificar(i + 1);
+        for (let d = 1; d <= JANELA; d++) decodificar(i + dir * d);
+        // o quadro pronto mais próximo: se o aparelho atrasar, a tela segura o último em vez de piscar
+        let a = i; while (a >= de && !bm.get(a)) a--;
+        if (a < de) { a = i + 1; while (a <= ate && !bm.get(a)) a++; if (a > ate) a = -1; }
+        let mix = 0;
+        if (a >= 0) {
+          sA = noSlot[0] === a ? 0 : noSlot[1] === a || noSlot[0] === a + 1 ? 1 : 0;
+          porSlot(sA, a);
+          if (a === i && bm.get(a + 1)) { porSlot(1 - sA, a + 1); mix = suave(clamp(alvo - a)); } // curva em S: menos tempo em dupla exposição
+        } else if (noSlot[sA] < 0) return false;
+        porNaTela(u, "A", slots[sA], telaAsp, texAsp); porNaTela(u, "B", slots[1 - sA], telaAsp, texAsp); u.uMix.value = mix;
+        return true;
+      },
+      // fora do capítulo não precisa segurar quadro decodificado na memória
+      liberar() { pos = -1; for (const [q, b] of bm) if (q !== noSlot[0] && q !== noSlot[1]) { b?.close(); bm.delete(q); } },
+    };
+  }
 
   // materiais (a luz de estúdio vem do scene.environment)
   const matAro = new THREE.MeshPhysicalMaterial({ color: "#2a3140", metalness: 1, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.3 });
@@ -696,7 +754,7 @@ varying float vNota;`)
   const tmpQ = new THREE.Quaternion();
   const alvo = { cel: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0 }, nb: { pos: new THREE.Vector3(), rot: new THREE.Euler(), s: 0, tampa: -0.2 } };
   const atual = { cel: { pos: new THREE.Vector3(0, -6, 0), q: new THREE.Quaternion(), s: 0.001 }, nb: { pos: new THREE.Vector3(0, -6, 0), q: new THREE.Quaternion(), s: 0.001, tampa: 1.55 } };
-  let corac = [], ultimoCap = null;
+  let corac = [], ultimoCap = null, vooPos = -1;
   function aplicar(obj, a, at, dt, k) {
     if (at.s < 0.03) at.pos.copy(a.pos);
     at.pos.x = damp(at.pos.x, a.pos.x, k, dt); at.pos.y = damp(at.pos.y, a.pos.y, k, dt); at.pos.z = damp(at.pos.z, a.pos.z, k, dt);
@@ -724,7 +782,7 @@ varying float vNota;`)
     if (cap !== "c-montagem") camReel.forEach((k) => (k.m.visible = false));
     if (cap !== "s-montagem") camSite.forEach((k) => (k.m.visible = false));
     quadro++; redesenha = reduce || cap !== ultimoCap || quadro % (leve ? 3 : 2) === 0;
-    if (cap !== ultimoCap) { corac = []; ultimoCap = cap; }
+    if (cap !== ultimoCap) { corac = []; ultimoCap = cap; vooPos = -1; cacheVoo.forEach((v) => v.liberar()); }
 
     if (cap === "c-problema") {
       const e = glide(faixa(p, 0, 0.12));
@@ -812,7 +870,7 @@ varying float vNota;`)
         if (chega > 0 && fundeS < 1 && (!siteDesenhado[i] || (i === 0 && redesenha))) { desenharCamadaSite(i, t); siteDesenhado[i] = true; }
         voar(k, i, nbTelaPos, chega, fundeS, t, 1.9);
       });
-      if (kk > 3.5) { video(midia.vooMg); video(midia.vooMgCel); } // o voo do MedGrind (próximo capítulo) já começa a baixar
+      if (kk > 3.5) { pegarVoo(midia.vooMg); pegarVoo(midia.vooMgCel); } // o voo do MedGrind (próximo capítulo) já começa a baixar
       const celV = glide(faixa(kk, 3, 3.6));
       if (celV > 0) {
         if (redesenha) desenharObra(kk, t, true);
@@ -840,23 +898,24 @@ varying float vNota;`)
       // o notebook chega fechado, gira e abre; na tela, a landing de verdade voa pelos capítulos no ritmo da rolagem.
       // No meio, o celular sobe pela frente (nunca por dentro do notebook) com a versão em pé, no mesmo ponto do voo.
       const chega = glide(faixa(p, 0, 0.12)), abre = glide(faixa(p, 0.05, 0.19)), celEntra = glide(faixa(p, 0.4, 0.54)), gira = suave(faixa(p, 0.06, 1));
-      const voo = faixa(p, 0.13, 0.86), fora = 1 - chega; // no último passo a landing para na cena final (avaliações e "Saiba mais")
+      // no último passo a landing para na cena final (avaliações e "Saiba mais"); a curva dá mais rolagem aos trechos em que a câmera corre (tools/voo.mjs)
+      const voo = curva(faixa(p, 0.13, 0.86), midia.vooRitmo), fora = 1 - chega;
       nb.pos.set(px - celEntra * (retrato ? 0 : 0.5) + fora * 1.4, py + (retrato ? -0.6 + celEntra * 0.25 : -0.45) - fora * 0.9, -1.6 * fora - celEntra * 0.55);
       nb.rot.set(0.2 - abre * 0.06, -0.8 + gira * 0.9, fora * 0.1); nb.s = escNb * (retrato ? 1 : 0.94 + 0.1 * (1 - celEntra));
       nb.tampa = 1.55 - 1.75 * abre; nbU.uLuz.value = faixa(p, 0.1, 0.19); nbU.uBordaK.value = Math.sin(faixa(p, 0.12, 0.26) * Math.PI) * 1.3;
-      const vNb = arrastar(midia.vooMg, voo);
-      if (pronto(vNb)) porNaTela(nbU, "A", texVideo(vNb), NB_ASP, 16 / 9);
-      else { // enquanto o vídeo abre: as cenas paradas, em sequência
-        const cenas = midia.cenas || [], n = cenas.length || 1, pos = voo * (n - 1), i = Math.floor(pos);
+      // as duas telas andam juntas pelo mesmo ponto, que persegue a rolagem com um leve atraso para não andar aos trancos
+      vooPos = vooPos < 0 || reduce ? voo : damp(vooPos, voo, 8, dt);
+      if (!pegarVoo(midia.vooMg)?.mostrar(nbU, vooPos, NB_ASP, 16 / 9, dt)) { // enquanto os primeiros quadros não chegam: as cenas paradas, em sequência
+        const cenas = midia.cenas || [], n = cenas.length || 1, pos = vooPos * (n - 1), i = Math.floor(pos);
         porNaTela(nbU, "A", imagem(cenas[i]), NB_ASP, 16 / 9); porNaTela(nbU, "B", imagem(cenas[Math.min(n - 1, i + 1)]), NB_ASP, 16 / 9); nbU.uMix.value = suave(pos - i);
       }
+      // já decodifica um pouco antes de o celular aparecer, para ele entrar com o quadro certo
+      const celPronto = p > 0.34 && pegarVoo(midia.vooMgCel)?.mostrar(celU, vooPos, CEL_ASP, 540 / 1168, dt);
       if (celEntra > 0) {
         const sai = 1 - celEntra;
         cel.pos.set((retrato ? 0.5 : px + VW * 0.1) + sai * (retrato ? 1.1 : 1.5), (retrato ? py - 0.1 : -0.4) - sai * 0.9, retrato ? 0.95 : 1.5);
         cel.rot.set(0.05, -0.36 - sai * 0.8, 0.04 - sai * 0.15); cel.s = escCel * (retrato ? 0.5 : 0.56) * Math.max(0.05, celEntra);
-        const vCel = arrastar(midia.vooMgCel, voo);
-        if (pronto(vCel)) porNaTela(celU, "A", texVideo(vCel), CEL_ASP, 540 / 1168);
-        else { const tall = midia.cenasTall || [], n = tall.length || 1; porNaTela(celU, "A", imagem(tall[Math.min(n - 1, Math.round(voo * (n - 1)))]), CEL_ASP, 9 / 16); }
+        if (!celPronto) { const tall = midia.cenasTall || [], n = tall.length || 1; porNaTela(celU, "A", imagem(tall[Math.min(n - 1, Math.round(vooPos * (n - 1)))]), CEL_ASP, 9 / 16); }
         celU.uBordaK.value = Math.sin(celEntra * Math.PI) * 1.1;
       }
     } else if (cap === "s-oportunidade") {
