@@ -29,6 +29,11 @@ ErrorDocument 403 /404.html
   RewriteCond %{THE_REQUEST} \s/(sites|criativos)/index\.html[\s?] [NC]
   RewriteRule ^(sites|criativos)/index\.html$ /%1/ [R=301,L]
 
+  # Landing do livro do Dr. Lucas Tosi: o endereço é /LUCASTOSI/. Qualquer outra caixa (/lucastosi, /LucasTosi)
+  # e o endereço sem a barra final vão para ele (a página usa caminhos relativos e precisa da barra).
+  RewriteCond %{REQUEST_URI} !^/LUCASTOSI/
+  RewriteRule ^lucastosi(/.*)?$ /LUCASTOSI/ [NC,R=301,L]
+
   # logo-3d.html é ferramenta interna (exporta a logo 3D e carrega scripts de CDN): fica só no repositório
   RewriteRule ^logo-3d\.html$ - [F,L]
 </IfModule>
