@@ -26,6 +26,8 @@ const CENAS = {
   // capítulos com celular/notebook: a logo recua para o fundo
   fundo:     { x: -0.37, y: 0.27, s: 0.2, o: 1, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.12, o: 1 }, m: { x: -0.36, y: 0.29, s: 0.18 } },
   painel:    { x: 0.02, y: 0.33, s: 0.17, o: 1, cards: "fora", dim: 0.3, d: { x: 0.33, y: 0.36, s: 0.1, o: 1 } },
+  // capítulos só de texto (voz clonada, depoimento): a logo sai de cena para a leitura ficar livre
+  texto:     { x: -0.37, y: 0.27, s: 0.12, o: 0, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.1, o: 0 } },
   // caso em destaque (Sites): como o fundo, mas a logo desce para o canto de baixo e deixa o nome do cliente livre
   caso:      { x: -0.37, y: -0.36, s: 0.18, o: 1, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.12, o: 1 }, m: { x: -0.36, y: -0.36, s: 0.16 } },
   // oportunidade: a logo vira um globo de alcance
@@ -331,8 +333,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   // 0 riscos · 1 grade · 2 feed · 3 estilhaços · 4 trilhas · 5 corações · 6 pontos · 7 barras · 8 radar
   // 9 céu · 10 bolhas · 11 vapor · 12 raios · 13 carregando · 14 código
   const PADROES = {
-    "c-problema": 2, "c-explode": 3, "c-montagem": 4, "c-sucesso": 5, numeros: 6, trabalhos: 12, "c-dinheiro": 7, anuncios: 6, "c-oportunidade": 8,
-    "s-problema": 13, "s-montagem": 14, "s-caso": 9, projetos: 6, "s-oportunidade": 10, "s-cafe": 11,
+    "c-problema": 2, "c-explode": 3, "c-montagem": 4, "c-voz": 10, "c-sucesso": 5, numeros: 6, trabalhos: 12, "c-dinheiro": 7, anuncios: 6, "c-oportunidade": 8,
+    "s-problema": 13, "s-montagem": 14, "s-caso": 9, "s-depoimento": 7, projetos: 6, "s-oportunidade": 10, "s-cafe": 11,
   };
   // capítulos em que o papel fica no off-white quente (os outros ficam no branco): os dois tons se alternam pela página
   const CREME = new Set(["c-problema", "c-montagem", "numeros", "c-dinheiro", "c-oportunidade", "s-problema", "s-caso", "s-oportunidade"]);
@@ -587,7 +589,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
     // leitura: limpa o papel à esquerda no hero e no pé da tela no celular, sem faixas que rolam
     const retr = fundoU.uPortrait.value > 0.5, jornada = st.universo !== "portal";
     st.lado = damp(st.lado, jornada && !retr && st.cena === "hero" ? 1 : 0, 2.4, dt);
-    st.baixo = damp(st.baixo, jornada && retr && ["hero", "fundo", "caso", "painel", "globo"].includes(st.cena) ? 1 : 0, 2.4, dt);
+    st.baixo = damp(st.baixo, jornada && retr && ["hero", "fundo", "texto", "caso", "painel", "globo"].includes(st.cena) ? 1 : 0, 2.4, dt);
     fundoU.uLado.value = st.lado; fundoU.uBaixo.value = st.baixo;
     st.velT = (st.velT || 0) + dt * Math.abs(st.vel || 0) * 0.6;
     const fala = Math.sin(Math.min(1, st.pulso) * Math.PI * 0.5);

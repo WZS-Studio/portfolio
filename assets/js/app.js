@@ -353,7 +353,7 @@ function capitulos() {
   caps.forEach((cap) => {
     const nome = cap.dataset.cap;
     const passos = $$(".passo", cap), veu = $(".cap__veu", cap);
-    const contador = $("[data-contador]", cap), barras = $$(".barras", cap);
+    const contador = $("[data-contador]", cap), barras = $$(".barras", cap), prog = $$("[data-progresso]", cap);
     const trilhas = $$(".trilha", cap), editor = $(".editor", cap), tc = $("[data-tc]", cap);
     const linhas = $$(".ln", cap), abas = $$(".codigo__abas span", cap), rodape = $("[data-camada]", cap);
     const notif = $(".notif", cap), notifN = $$("[data-conta]", cap), notifL = $$(".notif__lista li", cap);
@@ -414,6 +414,7 @@ function capitulos() {
         contador.textContent = k >= 1 ? contador.dataset.final : n >= 1000 ? Math.round(n / 1000) + " mil" : Math.round(n).toString();
       }
       barras.forEach((b) => b.style.setProperty("--p", faixa(p, 0.62, 0.74).toFixed(3)));
+      prog.forEach((b) => b.style.setProperty("--p", p.toFixed(3)));
     };
     const st = ST.create({
       trigger: cap, start: "top top", end: "bottom bottom",

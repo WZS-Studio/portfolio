@@ -18,6 +18,7 @@ const noAr = (l) => (l || []).filter((x) => x.publicar !== false && !x.oculto);
 const criativos = { ...C.criativos, series: noAr(C.criativos.series), anuncios: { ...C.criativos.anuncios, videos: noAr(C.criativos.anuncios?.videos) } };
 const sites = { ...C.sites, projetos: noAr(C.sites.projetos), maisProjetos: noAr(C.sites.maisProjetos) };
 const clientes = noAr(C.clientes);
+const autor = C.autor || {};
 
 // endereço com a marca do conteúdo (soma o arquivo e a versão -leve, se houver): só muda quando o arquivo muda.
 // CSS, JS e fontes ficam guardados por um ano no navegador (.htaccess), então tudo que a página pede leva ?v=
@@ -261,7 +262,7 @@ const orgLd = () => ({
   "@context": "https://schema.org", "@type": "ProfessionalService", name: marca.nome, url: marca.dominio + "/",
   logo: marca.dominio + "/assets/logo.png", image: marca.dominio + "/media/og/og-portal.jpg",
   description: portal.seo.descricao, telephone: "+" + whatsapp.numero, email: marca.email,
-  address: { "@type": "PostalAddress", addressLocality: marca.cidade.split(",")[0], addressRegion: "RS", addressCountry: "BR" },
+  areaServed: { "@type": "Country", name: "Brasil" },
   sameAs: marca.redes.map((r) => r.url),
 });
 
@@ -279,20 +280,22 @@ const dadosMundo = {
     // vídeos das telas 3D, sem som, em /media/tex: 720×1280 para telas grandes e "-leve" (540×960) para as demais
     videoMontagem: hv("/media/tex/montagem.mp4"), posterMontagem: midiaV("/media/tex/montagem.jpg"),
     // o vídeo do cliente (Dr. Lucas Tosi, "Mioma: vira câncer?", 20 s sem som) no celular de "Para anunciar" e da oportunidade de Sites
-    videoSucesso: hv("/media/tex/sucesso.mp4"), videoCliente: hv("/media/tex/cliente.mp4"), avatarCliente: cliente ? midiaV(cliente.foto) : null,
+    videoSucesso: hv("/media/tex/sucesso.mp4"), videoCliente: hv("/media/tex/cliente.mp4"), avatarCliente: cliente ? midiaV(cliente.foto) : null, verificadoCliente: !!cliente?.verificado,
+    avatarAutor: autor.foto ? midiaV(autor.foto) : null, verificadoAutor: !!autor.verificado,
     // quadro parado enquanto o vídeo abre (antes a tela ficava preta)
     posterSucesso: midiaV("/media/tex/sucesso.jpg"), posterCliente: midiaV("/media/tex/cliente.jpg"),
     // frente e verso das cédulas de R$ 100 e R$ 50 (imagens do Banco Central) numa folha só, para as notas 3D do anúncio
     cedulas: midiaV("/media/tex/cedulas.webp"),
     // xícara do capítulo do café: luz e sombra assadas no Blender (tools/blender/cafe_assar.py)
     cafe: Object.fromEntries(["xicara", "pires", "alca", "liquido", "chao"].map((n) => [n, midiaV(`/media/tex/cafe/${n}.webp`)])),
+    // feed do capítulo "O problema": criativos ruins e genéricos, de contas fictícias (feitos em media/tex/feed-N.mp4)
     feed: [
-      { v: hv("/media/tex/feed-1.mp4"), poster: midiaV("/media/tex/feed-1.jpg"), conta: "felipen.med", legenda: "“Eu quero antibiótico!”", cor: "#b8923a" },
-      { v: hv("/media/tex/feed-2.mp4"), poster: midiaV("/media/tex/feed-2.jpg"), conta: "felipen.med", legenda: "“Doutor, é só um atestado!”", cor: "#b8923a" },
-      { v: hv("/media/tex/feed-3.mp4"), poster: midiaV("/media/tex/feed-3.jpg"), conta: "felipen.med", legenda: "Falta de ar depois do camarão", cor: "#b8923a" },
-      { v: hv("/media/tex/feed-4.mp4"), poster: midiaV("/media/tex/feed-4.jpg"), conta: "felipen.med", legenda: "“O ChatGPT disse que é tumor.”", cor: "#b8923a" },
-      { v: hv("/media/tex/feed-5.mp4"), poster: midiaV("/media/tex/feed-5.jpg"), conta: "felipen.med", legenda: "Estenose × insuficiência aórtica", cor: "#b8923a" },
-      { v: hv("/media/tex/feed-6.mp4"), poster: midiaV("/media/tex/feed-6.jpg"), conta: "felipen.med", legenda: "Parou. Choca ou não choca?", cor: "#b8923a" },
+      { v: hv("/media/tex/feed-1.mp4"), poster: midiaV("/media/tex/feed-1.jpg"), conta: "clinica.exemplo", legenda: "Você sabia? Leia até o final 👇", cor: "#2b8de0" },
+      { v: hv("/media/tex/feed-2.mp4"), poster: midiaV("/media/tex/feed-2.jpg"), conta: "consultorio.modelo", legenda: "AGENDE JÁ!!! 📞📞📞", cor: "#d50000" },
+      { v: hv("/media/tex/feed-3.mp4"), poster: midiaV("/media/tex/feed-3.jpg"), conta: "consultorio.modelo", legenda: "Bom diaaa ☀️🙏", cor: "#d63a7a" },
+      { v: hv("/media/tex/feed-4.mp4"), poster: midiaV("/media/tex/feed-4.jpg"), conta: "clinica.exemplo", legenda: "Feliz Dia Mundial da Saúde", cor: "#9aa3ad" },
+      { v: hv("/media/tex/feed-5.mp4"), poster: midiaV("/media/tex/feed-5.jpg"), conta: "sua.clinica.aqui", legenda: "Arrasta pro lado ➡️ (1/10)", cor: "#e65100" },
+      { v: hv("/media/tex/feed-6.mp4"), poster: midiaV("/media/tex/feed-6.jpg"), conta: "sua.clinica.aqui", legenda: "Últimas vagas!!! Chama no direct", cor: "#00c853" },
     ],
     // o site de consultório montado no capítulo "Como eu construo": o mármore da abertura (recortes das capturas) e as capturas reais
     obra: { faixa: midiaV("/media/sites/valter/obra-desk.webp"), faixaCel: midiaV("/media/sites/valter/obra-cel.webp"), desk: midiaV("/media/sites/valter/desk-1.webp"), cel: midiaV("/media/sites/valter/cel-1.webp") },
@@ -396,7 +399,7 @@ function serieHtml(se) {
         <h3 class="entra" id="t-serie-${se.slug}">${palavras(se.nome)}</h3>
         ${se.numeros?.length ? `<div class="serie__nums sobe">${lista(se.numeros, (x) => `<div><strong>${esc(x.valor)}</strong><span>${esc(x.rotulo)}</span></div>`)}</div>${se.fonte ? `<p class="serie__fonte sobe">${esc(se.fonte)}</p>` : ""}` : ""}
       </div>
-      <div class="serie__desc sobe">${lista(se.descricao, (p) => `<p>${rico(p)}</p>`)}${se.participacao ? `<p><strong>Minha participação:</strong> ${rico(se.participacao)}</p>` : ""}</div>
+      <div class="serie__desc sobe">${lista(se.descricao, (p) => `<p>${rico(p)}</p>`)}${se.participacao ? `<p><strong>Nossa participação:</strong> ${rico(se.participacao)}</p>` : ""}</div>
     </div>
     <div class="colagem">${lista(se.videos, (v) => videoHtml(v, se))}</div>
   </section>`;

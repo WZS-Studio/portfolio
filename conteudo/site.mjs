@@ -11,7 +11,7 @@
 export const marca = {
   nome: "WZS Studio",
   responsavel: "",                               // nome que assina o rodapé; vazio esconde
-  cidade: "Vila Flores, RS",
+  cidade: "Atendimento em todo o Brasil",
   dominio: "https://wzsstudio.com.br",
   email: "wzs.studio11@gmail.com",
   assinatura: "Vídeos e sites para médicos e clínicas, com base clínica e dentro das regras de publicidade do CFM.",
@@ -58,6 +58,10 @@ export const clientes = [
     site: "https://wzsstudio.com.br/LUCASTOSI/",
   },
 ];
+
+// Quem assina o conteúdo próprio (@felipen.med): a foto aparece onde o site cita o perfil.
+// verificado: o perfil não tinha o selo azul do Instagram em 20/11/2026; ligue só quando tiver.
+export const autor = { arroba: "@felipen.med", conta: "felipen.med", foto: "/media/clientes/felipen-med.jpg", verificado: false };
 
 export const medicao = {
   ga4: "",          // ex.: "G-XXXXXXXXXX"
@@ -106,9 +110,9 @@ export const sites = {
   hero: {
     rotulo: "Sites para médicos e clínicas",
     titulo: "Sites escritos do zero para o paciente *encontrar, confiar e agendar.*",
-    texto: "O site de um médico precisa explicar com clareza, passar confiança e respeitar as regras de publicidade do CFM, tudo ao mesmo tempo. Eu desenho e programo cada parte, sem template e pensando primeiro na tela do celular.",
+    texto: "O site de um médico precisa explicar com clareza, passar confiança e respeitar as regras de publicidade do CFM, tudo ao mesmo tempo. Desenhamos e programamos cada parte, sem template e pensando primeiro na tela do celular.",
     cta: "Conversar sobre meu site",
-    linha: "Eu desenho e programo sites para consultórios e clínicas: abrem rápido no celular, mostram quem atende e levam o paciente até o agendamento.",
+    linha: "Desenhamos e programamos sites para consultórios e clínicas: abrem rápido no celular, mostram quem atende e levam o paciente até o agendamento.",
     ctaSecundario: "Ver projetos",
     nota: "Orçamento sem compromisso, direto no WhatsApp.",
   },
@@ -127,7 +131,7 @@ export const sites = {
       ],
     },
     montagem: {
-      rotulo: "Como eu construo",
+      rotulo: "Como construímos",
       titulo: "O site de um consultório, camada por camada.",
       // a tela 3D deste capítulo monta o site do Dr. Valter Dias (assets/js/dispositivos.js) e termina na captura real
       camadas: [
@@ -143,23 +147,31 @@ export const sites = {
           codigo: ['<a class="btn" href="https://wa.me/...">', '  Agendar minha avaliação', '</a>'] },
       ],
     },
-    // caso em destaque: a landing gravada rolando voa na tela do notebook (tools/voo.mjs) e o projeto abre o estudo de caso
+    // caso em destaque: o site gravado rolando voa na tela do notebook (tools/voo.mjs valter) e o projeto abre o estudo de caso
     caso: {
       rotulo: "Caso em destaque",
-      projeto: "lucas-tosi",
+      projeto: "valter",
       passos: [
-        { titulo: "Dr. Lucas Tosi", texto: "A landing do livro “A revolução da mulher 40+”.", cliente: true },
-        { titulo: "O livro acompanha a leitura.", texto: "Fechado na abertura, aberto nos sete pilares e em pé na hora da compra, em 3D ao vivo." },
-        { titulo: "Feito para o celular também.", texto: "Na tela em pé, o livro aberto ocupa a largura toda e as páginas viram com o dedo." },
-        { titulo: "Leve até no 3G.", texto: "Título na tela em 0,8 s; o livro 3D chega depois, sem travar a página.", barras: { antes: "5,0 s", depois: "3,7 s", proporcao: 0.74, rotulo: "Livro 3D na tela, celular em 3G", fonte: "Teste do projeto em 19/11/2026: celular emulado, rede 3G, sem cache." } },
-        { titulo: "Da leitura à compra.", texto: "As duas lojas sempre à vista, com CRM e RQE no rodapé e nenhuma promessa de resultado.", acoes: true },
+        { titulo: "Dr. Valter Dias", texto: "O site de um consultório de farmácia clínica e estética em Adamantina-SP." },
+        { titulo: "A avaliação vem primeiro.", texto: "O site explica que todo tratamento começa pela saúde e pelos remédios em uso, antes de qualquer procedimento." },
+        { titulo: "Uma página para cada dúvida.", texto: "32 páginas: 16 tratamentos, perguntas frequentes e artigos. O paciente acha a resposta antes de chamar." },
+        { titulo: "Pensado para o celular.", texto: "Cada tratamento abre com um toque e o botão de agendar fica sempre à vista." },
+        { titulo: "Do interesse ao agendamento.", texto: "O agendamento já monta a mensagem no WhatsApp com o tratamento escolhido.", acoes: true },
+      ],
+    },
+    // depoimento de cliente (texto passado pelo Felipe em 20/11/2026); a agenda ao lado enche com a rolagem
+    depoimento: {
+      rotulo: "Na prática",
+      passos: [
+        { titulo: "Uma clínica recém-aberta, com a agenda vazia." },
+        { titulo: "Site novo no ar.", texto: "E o reconhecimento da clínica na cidade cresceu." },
+        { titulo: "Hoje, a agenda está cheia.", depoimento: { texto: "Eu estava bem desanimada, mas, com o site novo, meu reconhecimento local aumentou muito! Não tenho mais horário livre, basicamente!", nome: "Dra. Mariana", cargo: "cliente de site da WZS Studio" } },
       ],
     },
     oportunidade: {
       rotulo: "A oportunidade",
       passos: [
-        { titulo: "Quem vê o seu vídeo chega pelo celular." },
-        { numero: "130 mil", texto: "seguidores do Dr. Lucas Tosi no Instagram: o link da bio precisa abrir rápido na tela em pé.", fonte: "Perfil @dr.lucastosi no Instagram em 20/11/2026." },
+        { titulo: "Quem procura médico, procura pelo celular." },
         { titulo: "O site é onde o interesse vira agendamento.", texto: "WhatsApp do consultório a um toque, com a mensagem já escrita." },
       ],
     },
@@ -206,7 +218,29 @@ export const sites = {
   // publicar: false = o projeto fica guardado aqui, mas não aparece no site (desde 20/11/2026 o site mostra só a área da saúde)
   projetos: [
     {
-      slug: "lucas-tosi", nome: "Dr. Lucas Tosi", peso: "destaque", interesse: "landing page",
+      slug: "valter", nome: "Dr. Valter Dias", peso: "destaque", interesse: "site do zero",
+      tipo: "Site · farmácia clínica e estética",
+      linha: "Um site de 32 páginas para um farmacêutico clínico e esteta de Adamantina-SP, com a avaliação individual como ponto de partida.",
+      oQueE: "Consultório do Dr. Valter Dias, farmacêutico clínico e esteta em Adamantina-SP: estética facial e corporal e farmácia clínica, com atendimento particular e hora marcada.",
+      paraQuem: "Quem procura estética facial ou corporal em Adamantina e quer que a avaliação considere a saúde e os remédios em uso, e quem precisa revisar medicamentos e suplementos.",
+      feito: "Início com mármore animado, apresentação do Dr. Valter, as três frentes (Rosto, Corpo, Farmácia clínica) em painéis que se abrem, oito queixas para começar, processo em cinco passos, artigos, perguntas frequentes e localização; 16 páginas de tratamento e agendamento que monta a mensagem pronta no WhatsApp.",
+      decisoes: [
+        "Mármore com veios dourados gerado em WebGL no lugar de um vídeo, com botão de pausa e parado quando o sistema pede menos movimento.",
+        "Creme e dourado, Fraunces nos títulos e Inter no texto.",
+        "Registro profissional e responsável técnico no rodapé, e em cada tratamento o aviso de que a indicação e os resultados variam de pessoa para pessoa.",
+        "O mapa só carrega depois de um clique (LGPD), e o agendamento só monta a mensagem para o WhatsApp.",
+      ],
+      stack: ["HTML", "CSS", "JavaScript", "WebGL"],
+      capturaNota: "versão pronta, ainda não publicada",
+      capturas: {
+        desktop: ["/media/sites/valter/desk-1.webp", "/media/sites/valter/desk-3.webp", "/media/sites/valter/desk-4.webp"],
+        celular: ["/media/sites/valter/cel-1.webp", "/media/sites/valter/cel-2.webp"],
+      },
+      resultados: [],
+      nota: "Site pronto e ainda não publicado: o domínio ainda não foi definido.",
+    },
+    {
+      slug: "lucas-tosi", nome: "Dr. Lucas Tosi", peso: "medio", interesse: "landing page",
       tipo: "Landing page 3D · livro de ginecologista",
       linha: "A landing do livro “A revolução da mulher 40+”, com o livro em 3D que acompanha a leitura e as duas lojas a um toque.",
       url: "https://wzsstudio.com.br/LUCASTOSI/", urlRotulo: "wzsstudio.com.br/LUCASTOSI",
@@ -232,28 +266,6 @@ export const sites = {
         { valor: "440 KB", rotulo: "baixados até o livro aparecer, contra 572 KB antes", fonte: "Teste de carga do projeto", data: "19/11/2026" },
       ],
       nota: "Fotos do palco: @oandrewillian (encontro do Clube VERO). A lombada, a contracapa e as páginas do livro em 3D são ilustrativas.",
-    },
-    {
-      slug: "valter", nome: "Dr. Valter Dias", peso: "compacto", interesse: "site do zero",
-      tipo: "Site · farmácia clínica e estética",
-      linha: "Um site de 32 páginas para um farmacêutico clínico e esteta de Adamantina-SP, com a avaliação individual como ponto de partida.",
-      oQueE: "Consultório do Dr. Valter Dias, farmacêutico clínico e esteta em Adamantina-SP: estética facial e corporal e farmácia clínica, com atendimento particular e hora marcada.",
-      paraQuem: "Quem procura estética facial ou corporal em Adamantina e quer que a avaliação considere a saúde e os remédios em uso, e quem precisa revisar medicamentos e suplementos.",
-      feito: "Início com mármore animado, apresentação do Dr. Valter, as três frentes (Rosto, Corpo, Farmácia clínica) em painéis que se abrem, oito queixas para começar, processo em cinco passos, artigos, perguntas frequentes e localização; 16 páginas de tratamento e agendamento que monta a mensagem pronta no WhatsApp.",
-      decisoes: [
-        "Mármore com veios dourados gerado em WebGL no lugar de um vídeo, com botão de pausa e parado quando o sistema pede menos movimento.",
-        "Creme e dourado, Fraunces nos títulos e Inter no texto.",
-        "Registro profissional e responsável técnico no rodapé, e em cada tratamento o aviso de que a indicação e os resultados variam de pessoa para pessoa.",
-        "O mapa só carrega depois de um clique (LGPD), e o agendamento só monta a mensagem para o WhatsApp.",
-      ],
-      stack: ["HTML", "CSS", "JavaScript", "WebGL"],
-      capturaNota: "versão pronta, ainda não publicada",
-      capturas: {
-        desktop: ["/media/sites/valter/desk-1.webp", "/media/sites/valter/desk-3.webp", "/media/sites/valter/desk-4.webp"],
-        celular: ["/media/sites/valter/cel-1.webp", "/media/sites/valter/cel-2.webp"],
-      },
-      resultados: [],
-      nota: "Site pronto e ainda não publicado: o domínio ainda não foi definido.",
     },
     {
       slug: "medgrind", publicar: false, nome: "MedGrind", peso: "destaque", interesse: "landing page",
@@ -458,7 +470,7 @@ export const sites = {
 
   servicos: {
     titulo: "Três jeitos de começar.",
-    lead: "Escolha pelo momento do seu negócio. Se não souber qual faz sentido, me conte pelo WhatsApp e eu indico.",
+    lead: "Escolha pelo momento do seu negócio. Se não souber qual faz sentido, conte pelo WhatsApp e nós indicamos.",
     itens: [
       {
         slug: "landing-page", nome: "Landing page", interesse: "landing page", cta: "Quero uma landing page",
@@ -471,7 +483,7 @@ export const sites = {
           "Título, descrição e imagem de compartilhamento para o Google e as redes",
           "Publicação no seu domínio",
         ],
-        comoComeca: "Você me conta a oferta, o público e de onde vem o visitante (anúncio, Instagram, Google). Com isso eu envio um orçamento fechado.",
+        comoComeca: "Você conta a oferta, o público e de onde vem o visitante (anúncio, Instagram, Google). Com isso enviamos um orçamento fechado.",
       },
       {
         slug: "reformulacao", nome: "Reformulação de site", interesse: "reformulação de site", cta: "Quero reformular meu site",
@@ -484,7 +496,7 @@ export const sites = {
           "Revisão de títulos, descrições e estrutura para o Google",
           "Publicação no mesmo domínio",
         ],
-        comoComeca: "Você me manda o link do site atual e conta o que incomoda. Eu respondo com o que mudaria e um orçamento fechado.",
+        comoComeca: "Você manda o link do site atual e conta o que incomoda. Respondemos com o que mudaríamos e um orçamento fechado.",
       },
       {
         slug: "site-do-zero", nome: "Site do zero", interesse: "site do zero", cta: "Quero um site do zero",
@@ -506,8 +518,8 @@ export const sites = {
     titulo: "Do primeiro oi ao site no ar.",
     passos: [
       { hash: "a1f3c9e", titulo: "Conversa", texto: "Você conta sobre o negócio pelo WhatsApp: o que vende, para quem e o que o site precisa fazer. Você recebe um orçamento fechado." },
-      { hash: "7c2e04b", titulo: "Design e código", texto: "Desenho as telas e escrevo o site do zero. Você acompanha por um link de prévia e pede ajustes antes de publicar." },
-      { hash: "e94b6d1", titulo: "No ar", texto: "Publico com o seu domínio, testo no celular e no computador e deixo tudo pronto para o Google encontrar." },
+      { hash: "7c2e04b", titulo: "Design e código", texto: "Desenhamos as telas e escrevemos o site do zero. Você acompanha por um link de prévia e pede ajustes antes de publicar." },
+      { hash: "e94b6d1", titulo: "No ar", texto: "Publicamos com o seu domínio, testamos no celular e no computador e deixamos tudo pronto para o Google encontrar." },
     ],
   },
 
@@ -527,9 +539,9 @@ export const sites = {
       { p: "Você usa template?", r: "Não. Cada site é escrito do zero em HTML, CSS e JavaScript, com o visual e as funções que o seu consultório pede." },
       { p: "O site funciona bem no celular?", r: "Sim. Todo projeto começa pela tela do celular, porque é de lá que vem a maior parte das visitas." },
       { p: "Vou aparecer no Google?", r: "O site sai com títulos, descrições, velocidade, endereço e estrutura que o Google lê bem. Ninguém pode garantir a primeira posição, mas a base fica certa." },
-      { p: "Preciso ter domínio e hospedagem?", r: "Não precisa chegar com nada. Eu ajudo a registrar o domínio e publico o site. A hospedagem é paga à parte, e a WZS tem parceria com a MasterSite." },
-      { p: "Consigo mudar textos e fotos depois?", r: "Sim. Combinamos no orçamento se eu faço as atualizações ou se o site ganha um jeito simples de você mesmo editar." },
-      { p: "Atende fora de Vila Flores?", r: "Sim. O atendimento acontece pelo WhatsApp e pelo e-mail, então a distância não muda nada." },
+      { p: "Preciso ter domínio e hospedagem?", r: "Não precisa chegar com nada. Ajudamos a registrar o domínio e publicamos o site. A hospedagem é paga à parte, e a WZS tem parceria com a MasterSite." },
+      { p: "Consigo mudar textos e fotos depois?", r: "Sim. Combinamos no orçamento se nós fazemos as atualizações ou se o site ganha um jeito simples de você mesmo editar." },
+      { p: "Vocês atendem a minha cidade?", r: "Sim. Atendemos médicos e clínicas de qualquer lugar do Brasil: a conversa acontece pelo WhatsApp e pelo e-mail, então a distância não muda nada." },
     ],
   },
 
@@ -557,7 +569,7 @@ export const criativos = {
   hero: {
     rotulo: "Criativos para médicos e clínicas",
     titulo: "Conteúdo médico com *gancho, ritmo e rigor.*",
-    texto: "Crio vídeos curtos para o perfil do seu consultório e criativos para as suas campanhas. O roteiro nasce de uma fonte clínica, a animação faz a pessoa ficar até o fim e nada promete resultado.",
+    texto: "Criamos vídeos curtos para o perfil do seu consultório e criativos para as suas campanhas. O roteiro nasce de uma fonte clínica, a animação faz a pessoa ficar até o fim e nada promete resultado.",
     cta: "Conversar sobre criativos",
     linha: "Roteiro com fonte, animação e edição para Reels, TikTok e anúncios, do gancho à chamada final, seguindo as regras de publicidade do CFM.",
     ctaSecundario: "Ver trabalhos",
@@ -580,13 +592,21 @@ export const criativos = {
         { titulo: "Sem roteiro, assiste e não lembra de quem era." },
       ],
     },
-    explode: { titulo: "É aqui que eu entro.", texto: "Eu monto o vídeo inteiro: a ideia, o roteiro conferido na fonte, a animação e a edição." },
+    explode: { titulo: "É aqui que nós entramos.", texto: "Montamos o vídeo inteiro: a ideia, o roteiro conferido na fonte, a animação e a edição." },
+    // clonagem de voz (texto do Felipe, 20/11/2026)
+    voz: {
+      rotulo: "Com a sua voz",
+      passos: [
+        { titulo: "Imagine não ter que passar horas narrando." },
+        { titulo: "E o conteúdo ser produzido com a sua voz, de forma *profissional.*", texto: "Com uma gravação curta, criamos uma versão digital da sua voz. Você ouve e aprova cada narração antes de publicar." },
+      ],
+    },
     montagem: {
-      rotulo: "Como eu monto",
+      rotulo: "Como montamos",
       titulo: "Um reel de medicina, camada por camada.",
       arquivo: "reel_fa_x_fv.mp4",
       camadas: [
-        { nome: "Corte", trilha: "V1", texto: "Escolho os melhores trechos e corto no ritmo." },
+        { nome: "Corte", trilha: "V1", texto: "Escolhemos os melhores trechos e cortamos no ritmo." },
         { nome: "Gancho", trilha: "T1", texto: "Uma frase forte nos primeiros segundos." },
         { nome: "Legenda", trilha: "TXT", texto: "Palavra por palavra, para quem assiste sem som." },
         { nome: "Som", trilha: "A1", texto: "Trilha e efeitos no tempo dos cortes." },
@@ -625,7 +645,7 @@ export const criativos = {
 
   // números de cada fonte (cartões grandes)
   fontes: [
-    { conta: "@felipen.med", url: "https://www.instagram.com/felipen.med/reels/", tema: "Medicina em 3D e pixel art", numero: "759 mil", rotulo: "visualizações no reel mais visto", extras: ["6 reels acima de 100 mil", "10,7 mil seguidores"] },
+    { conta: "@felipen.med", foto: "/media/clientes/felipen-med.jpg", url: "https://www.instagram.com/felipen.med/reels/", tema: "Medicina em 3D e pixel art", numero: "759 mil", rotulo: "visualizações no reel mais visto", extras: ["6 reels acima de 100 mil", "10,7 mil seguidores"] },
   ],
   fontesNota: "Números públicos do Instagram do @felipen.med em 19/11/2026. Visualização mede alcance: não é consulta marcada nem venda.",
   // reels de destaque, com link para conferir o contador no Instagram
@@ -641,10 +661,10 @@ export const criativos = {
     itens: [
       { slug: "viralizar", nome: "Para o perfil", rotulo: "Orgânico", interesse: "o perfil do consultório", cta: "Quero conteúdo para o perfil",
         resumo: "Vídeos para o seu perfil crescer: alcance, salvamentos e seguidores da sua área.",
-        inclui: ["Ideia e roteiro com fonte, em série", "Animação e edição com legenda e som", "Sua revisão clínica antes de publicar"],
+        inclui: ["Ideia e roteiro com fonte, em série", "Narração com a sua voz, sem gravar cada vídeo", "Animação e edição com legenda e som", "Sua revisão clínica antes de publicar"],
         metrica: { rotulo: "Medido por", itens: ["Visualizações", "Envios e salvamentos", "Seguidores"] },
         // celular atrás da caixa: o reel “Eu quero antibiótico!” do @felipen.med (contador público do Instagram, 19/11/2026)
-        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "felipen.med", cor: "#b8923a",
+        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "felipen.med", cor: "#b8923a", avatar: "/media/clientes/felipen-med.jpg",
           legenda: "Você prescreveria para ele?", curtidas: "50 mil", comentarios: "425", envios: "26,3 mil", selo: { rotulo: "Visualizações", valor: "759 mil", nota: "em um único reel" } } },
       { slug: "anunciar", nome: "Para anunciar", rotulo: "Tráfego pago", interesse: "anúncios", cta: "Quero criativos para anúncios",
         resumo: "Criativos para campanhas: apresentar a clínica, um serviço, um livro ou um evento e testar ganchos.",
@@ -687,7 +707,7 @@ export const criativos = {
 
   trabalhosCab: {
     titulo: "Trabalhos com números públicos.",
-    lead: "Selecionei os vídeos pelo desempenho e pela qualidade criativa. Os números são os que aparecem publicamente em cada perfil, com a data da consulta.",
+    lead: "Selecionamos os vídeos pelo desempenho e pela qualidade criativa. Os números são os que aparecem publicamente em cada perfil, com a data da consulta.",
   },
 
   // séries de vídeos. Cada vídeo: { id, titulo, arquivo, poster, duracao, data, objetivo, publico,
@@ -695,7 +715,7 @@ export const criativos = {
   // publicar: false = a série fica pronta aqui, mas não aparece no site (use enquanto falta confirmar algo)
   series: [
     {
-      slug: "dr-lucastosi", conta: "@dr.lucastosi", contaUrl: "https://www.instagram.com/dr.lucastosi/",
+      slug: "dr-lucastosi", conta: "@dr.lucastosi", contaUrl: "https://www.instagram.com/dr.lucastosi/", foto: "/media/clientes/dr-lucastosi.jpg", verificado: true,
       tema: "Ginecologia e menopausa", nome: "O médico explica, a animação mostra.",
       descricao: [
         "Vídeos para o perfil de um ginecologista com 130 mil seguidores: a fala dele no consultório ou no palco, intercalada com animação 3D do que acontece dentro do corpo.",
@@ -721,7 +741,7 @@ export const criativos = {
       ],
     },
     {
-      slug: "felipen-med", conta: "@felipen.med", contaUrl: "https://www.instagram.com/felipen.med/",
+      slug: "felipen-med", conta: "@felipen.med", contaUrl: "https://www.instagram.com/felipen.med/", foto: "/media/clientes/felipen-med.jpg",
       tema: "Medicina em vídeos curtos", nome: "Medicina que dá vontade de assistir até o fim.",
       descricao: [
         "Perfil próprio de conteúdo médico, com dois formatos que se completam: o *POV de plantão*, em 3D e primeira pessoa, traz alcance; o *caso clínico interativo* ensina uma conduta e traz seguidores da área.",
@@ -995,6 +1015,7 @@ export const criativos = {
     itens: [
       { p: "O conteúdo segue as regras do CFM?", r: "Sim, é o ponto de partida. Os roteiros seguem a Resolução CFM nº 2.336/2023: caráter educativo, sem promessa de resultado e sem sensacionalismo, com a sua identificação profissional (nome, CRM e, se houver especialidade, RQE). Como a responsabilidade pela publicidade é do médico, nada vai ao ar sem a sua aprovação." },
       { p: "Quem escreve o roteiro entende de medicina?", r: "Sim. Todo roteiro é escrito com a fonte de cada afirmação anotada (diretriz, artigo ou protocolo), e você revisa antes de publicar. A palavra final sobre o conteúdo clínico é sempre sua." },
+      { p: "Vocês narram com a minha voz?", r: "Sim. Com uma gravação curta, criamos uma versão digital da sua voz e narramos os roteiros com ela, sem você precisar gravar cada vídeo. Só fazemos com a sua autorização por escrito, a voz é usada apenas nos seus conteúdos e você ouve e aprova cada narração antes de publicar." },
       { p: "Preciso aparecer no vídeo?", r: "Não. Dá para ter conteúdo só com animação e narração, como no @felipen.med. Se você quiser aparecer, a sua gravação ganha animação 3D do que acontece no corpo, como nos vídeos do Dr. Lucas Tosi." },
       { p: "Você garante que o vídeo vai viralizar?", r: "Não. Ninguém controla o algoritmo. O trabalho é aumentar as chances: entender o público, escolher o ângulo, testar ganchos e editar com ritmo. Os números desta página são resultados reais, com fonte e data, não uma promessa." },
       { p: "Muitas visualizações significam mais pacientes?", r: "Não necessariamente. Visualização mostra alcance. Consulta marcada depende do público certo, da especialidade, da região e do caminho até o agendamento. Por isso cada vídeo começa com um objetivo e uma métrica." },

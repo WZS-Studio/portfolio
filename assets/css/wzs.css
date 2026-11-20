@@ -113,9 +113,9 @@ main, .rodape, .topo { position: relative; z-index: 2; }
 .topo::before { content: ""; position: absolute; inset: 0 0 -24px; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .5s var(--ease);
   background: linear-gradient(to bottom, rgba(255, 255, 255, .96) 0%, rgba(255, 255, 255, .82) 62%, rgba(255, 255, 255, 0) 100%); }
 .topo.is-rolado::before { opacity: 1; }
-.topo__marca { justify-self: start; display: flex; align-items: center; gap: 11px; color: var(--tinta); padding: 4px 0; }
+.topo__marca { justify-self: start; display: flex; align-items: center; gap: 11px; color: var(--ouro); padding: 4px 0; }
 .topo__marca .emb { height: 36px; width: auto; aspect-ratio: 424 / 422; }
-.topo__marca .marca-letras { height: 25px; width: auto; }
+.topo__marca .marca-letras { height: 25px; width: auto; color: var(--ouro-escuro); }
 .topo__zap { justify-self: end; }
 .troca { position: relative; display: flex; padding: 4px; border-radius: 999px; background: rgba(255, 255, 255, .78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px var(--linha), var(--sombra); }
 .troca a { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 16px; border-radius: 999px; font: 500 14px/1 var(--sans); color: var(--suave); transition: color .4s var(--ease); white-space: nowrap; }
@@ -722,7 +722,7 @@ html[data-universo="criativos"] .planos .sec__in { --lado: clamp(150px, 26vw - 1
 .rodape { padding: 72px var(--g) 30px; background: var(--tinta); color: #e9ecf1; }
 .rodape__in { max-width: var(--max); margin: 0 auto; display: grid; gap: 44px; }
 .rodape__cols { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
-.rodape__marca svg { height: 46px; width: auto; color: #fff; }
+.rodape__marca svg { height: 46px; width: auto; color: var(--ouro); }
 .rodape__marca p { margin-top: 16px; color: #aab2c0; font-size: 14.5px; max-width: 34ch; }
 .rodape h3 { font: 600 10.5px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--ouro-claro); margin-bottom: 16px; }
 .rodape ul { display: grid; gap: 9px; font-size: 15px; }
@@ -794,7 +794,7 @@ dialog::backdrop { background: rgba(15, 23, 36, .55); backdrop-filter: blur(6px)
 .tem-cursor .cursor { display: block; }
 .tem-cursor, .tem-cursor a, .tem-cursor button, .tem-cursor summary, .tem-cursor label { cursor: none; }
 .tem-cursor input, .tem-cursor textarea, .tem-cursor select, .tem-cursor [contenteditable] { cursor: text; }
-.cursor__mark { position: absolute; left: -11px; top: -11px; width: 22px; height: 22px; color: var(--cur, var(--tinta)); transition: transform .35s var(--ease-out), color .5s var(--ease), opacity .25s; filter: drop-shadow(0 0 1px #fff); }
+.cursor__mark { position: absolute; left: -11px; top: -11px; width: 22px; height: 22px; color: var(--cur, var(--ouro)); transition: transform .35s var(--ease-out), color .5s var(--ease), opacity .25s; filter: drop-shadow(0 0 1px #fff); }
 .cursor__mark svg { width: 100%; height: 100%; overflow: visible; }
 .cursor__ponto { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; border-radius: 50%; background: var(--ouro); box-shadow: 0 0 0 1.5px #fff; }
 .cursor__rotulo { position: absolute; left: 18px; top: 16px; padding: 6px 11px; border-radius: 999px; background: var(--tinta); color: #fff; font: 600 12px/1 var(--sans); white-space: nowrap; opacity: 0; transform: translateY(4px) scale(.9); transform-origin: left top; transition: opacity .25s var(--ease), transform .35s var(--ease-out); box-shadow: inset 0 0 0 1px rgba(232, 217, 176, .5); }
@@ -850,3 +850,46 @@ dialog::backdrop { background: rgba(15, 23, 36, .55); backdrop-filter: blur(6px)
   html:not(.caps-estaticos) .is-perto > .cap__palco, html .is-perto > .carrossel__palco { content-visibility: visible; }
 }
 .planos, .planos ~ .sec, .rodape { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+
+/* ---------- 20/11/2026: depoimento com agenda, voz clonada e foto nos cartões ---------- */
+/* agenda da clínica: os horários se preenchem com a rolagem (--p de 0 a 1, vindo do app.js) */
+.agenda { position: absolute; right: var(--g); top: 50%; transform: translateY(-50%); z-index: 1; width: min(520px, 40vw); padding: 22px 24px 24px; border-radius: 22px; background: rgba(255, 255, 255, .92); box-shadow: inset 0 0 0 1px var(--ouro-claro), var(--sombra-alta); --q: clamp(0, calc((var(--p, 0) - .22) / .6), 1); }
+.agenda__cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; font: 600 15px/1.2 var(--sans); color: var(--tinta); }
+.agenda__cab span { font: 600 11px/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; transition: opacity .4s var(--ease); }
+.agenda__vazia { color: var(--suave); opacity: calc(1 - var(--q) * 4); }
+.agenda__cheia { position: absolute; right: 24px; color: var(--ouro-escuro); opacity: calc(var(--q) * 4 - 3); }
+.agenda__grade { display: grid; grid-template-columns: 52px repeat(5, 1fr); gap: 6px; }
+.agenda__dia { font: 600 11px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--suave); text-align: center; padding-bottom: 4px; }
+.agenda__hora { font: 500 12px/26px var(--sans); color: var(--suave); font-variant-numeric: tabular-nums; }
+.agenda__grade i { height: 26px; border-radius: 7px; background: var(--creme); box-shadow: inset 0 0 0 1px var(--linha); position: relative; overflow: hidden; }
+.agenda__grade i::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(135deg, var(--ouro), var(--ouro-escuro)); opacity: clamp(0, calc(var(--q) * 42 - var(--o)), 1); transform: scale(clamp(.6, calc(.6 + (var(--q) * 42 - var(--o)) * .4), 1)); }
+.depo { margin-top: 26px; max-width: 34ch; padding: 22px 26px; border-radius: 18px; background: rgba(255, 255, 255, .9); box-shadow: inset 0 0 0 1px var(--ouro-claro), var(--sombra); }
+.depo blockquote { font: italic 500 clamp(22px, 1.9vw, 28px)/1.3 var(--serifa); color: var(--tinta); }
+.depo figcaption { margin-top: 14px; font-size: 14px; color: var(--suave); }
+.depo figcaption b { color: var(--tinta); font-weight: 600; }
+
+/* voz clonada: a onda da narração, desenhada em CSS */
+.voz { position: absolute; right: var(--g); top: 50%; transform: translateY(-50%); z-index: 1; width: min(520px, 40vw); padding: 26px 28px; border-radius: 22px; background: rgba(255, 255, 255, .9); box-shadow: inset 0 0 0 1px var(--ouro-claro), var(--sombra-alta); }
+.voz__rot { font: 600 11px/1.3 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ouro-escuro); }
+.voz__onda { display: flex; align-items: center; gap: 4px; height: 150px; margin: 18px 0 14px; }
+.voz__onda i { flex: 1; height: var(--h); min-height: 6px; border-radius: 3px; background: linear-gradient(180deg, var(--ouro), var(--ouro-escuro)); transform-origin: center; transform: scaleY(clamp(.12, calc(var(--p, 0) * 2.4 - var(--d) * .9), 1)); }
+.voz__leg { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.voz__leg b { color: var(--tinta); font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) { .voz__onda i { animation: voz-pulsa 1.6s var(--ease) infinite alternate; animation-delay: calc(var(--d) * -3); } }
+@keyframes voz-pulsa { to { height: calc(var(--h) * .7); } }
+
+/* foto do perfil nos cartões de vídeo e de números */
+.cart__conta i { overflow: hidden; display: grid; }
+.cart__conta i img { width: 100%; height: 100%; object-fit: cover; }
+.cart__conta .cliente__ok { width: 14px; height: 14px; margin-left: -3px; }
+.fonte__conta { grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; }
+.fonte__conta > :not(.fonte__foto) { grid-column: 2; }
+.fonte__foto { grid-row: 1 / span 2; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ouro); }
+
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
+  .agenda, .voz { top: 96px; right: 20px; left: 20px; width: auto; transform: none; padding: 16px 16px 18px; }
+  .agenda__grade { grid-template-columns: 42px repeat(5, 1fr); gap: 4px; }
+  .agenda__grade i { height: 18px; } .agenda__hora { line-height: 18px; font-size: 11px; }
+  .voz__onda { height: 90px; }
+  .depo { margin-top: 16px; padding: 14px 16px; } .depo blockquote { font-size: 19px; }
+}

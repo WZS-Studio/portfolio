@@ -12,7 +12,7 @@ Site em HTML, CSS e JavaScript puros (sem build), com um mundo 3D em Three.js qu
 | Endereço | O que é |
 |---|---|
 | `/` | Portal: a logo 3D entre os dois caminhos. Mover o mouse (ou o dedo) antecipa o universo; clicar ou tocar confirma. |
-| `/sites/` | Jornada *Sites para médicos e clínicas*, contada em capítulos: a logo expande → o problema (notebook 3D com um site que perde o paciente) → as cinco camadas do site de um consultório → o caso em destaque (a landing do livro do Dr. Lucas Tosi voando no notebook) → mais projetos → a oportunidade → planos e vagas. |
+| `/sites/` | Jornada *Sites para médicos e clínicas*, contada em capítulos: a logo expande → o problema (notebook 3D com um site que perde o paciente) → as cinco camadas do site de um consultório → o caso em destaque (o site da clínica do Dr. Valter Dias voando no notebook) → o depoimento com a agenda enchendo → mais projetos → a oportunidade → planos e vagas. |
 | `/criativos/` | Jornada *Criativos e conteúdo médico*: a logo expande → o problema (celular 3D com o feed sendo pulado) → as camadas de um reel → o celular gira com um reel que deu certo → números das fontes → vídeos → anúncios → a oportunidade → planos e vagas. |
 
 Os capítulos (`.cap`) ficam presos na tela enquanto a pessoa rola; a rolagem continua natural. Os textos de cada capítulo, os planos e as **vagas do mês** estão em `conteudo/site.mjs` (`historia`, `planos`, `vagas`).
@@ -68,10 +68,10 @@ Para celular use largura 780: `... media/sites/projeto/cel-1.webp 780`.
 
 ### Trocar o caso em destaque (e a gravação do voo)
 
-As telas do capítulo "Caso em destaque" de Sites não usam vídeo: mostram quadros prontos que seguem a rolagem. O projeto do capítulo é `sites.historia.caso.projeto` (hoje `lucas-tosi`). Para trocar a gravação, ponha a landing gravada rolando em `midia/<projeto>/voo.mp4` (computador, 16:9) e `voo-cel.mp4` (celular, 780×1688) e rode:
+As telas do capítulo "Caso em destaque" de Sites não usam vídeo: mostram quadros prontos que seguem a rolagem. O projeto do capítulo é `sites.historia.caso.projeto` (hoje `valter`; a gravação do computador é a demonstração do site e a do celular foi feita rolando a página inicial). Para trocar a gravação, ponha a landing gravada rolando em `midia/<projeto>/voo.mp4` (computador, 16:9) e `voo-cel.mp4` (celular, 780×1688) e rode:
 
 ```bash
-node tools/voo.mjs lucas-tosi
+node tools/voo.mjs valter
 ```
 
 Gera os pacotes `.bin` em `media/sites/<projeto>/` e a curva de ritmo (gravações longas são lidas de N em N quadros, para ficar perto de 300). Os seis quadros parados que aparecem enquanto o voo baixa ficam em `media/sites/<projeto>/cenas/c0…c5-wide.webp` e `-tall.webp`. Depois rode `node tools/gerar.mjs`.

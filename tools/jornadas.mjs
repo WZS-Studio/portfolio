@@ -43,7 +43,7 @@ export function criarJornadas(h) {
 </section>`;
 
   const expande = (id, pergunta, prox) => `
-<section class="cap cap--expande" id="${id}" data-cap="expande" data-prox="${prox || "-"}" data-cena="hero" style="--altura:190">
+<section class="cap cap--expande" id="${id}" data-cap="expande" data-prox="${prox || "-"}" data-cena="hero" style="--altura:150">
   <div class="cap__palco">
     <div class="cap__veu" aria-hidden="true"></div>
     <div class="cap__texto cap__texto--centro">${passo("0.300", "1.010", `<p class="expande__pergunta display">${palavras(pergunta)}</p>`)}</div>
@@ -107,7 +107,7 @@ export function criarJornadas(h) {
 <article class="cart" data-video="${esc(v.id)}">
   <button class="cart__tela vid__tela" type="button" data-play="${esc(v.id)}" data-src="${esc(hv(v.arquivo))}"${leve(v.arquivo)} data-titulo="${esc(v.titulo)}" data-conta="${esc(v.conta)}" data-cursor="Reproduzir" aria-label="Reproduzir vídeo: ${esc(v.titulo)} (${esc(v.conta)})">
     ${img(v.poster, "", { cls: "vid__poster" })}
-    <span class="cart__ui"><span class="cart__conta"><i></i>${esc(v.conta)}</span><span class="cart__titulo">${esc(v.titulo)}</span></span>
+    <span class="cart__ui"><span class="cart__conta"><i>${v.foto ? img(v.foto, "") : ""}</i>${esc(v.conta)}${v.verificado ? verificado : ""}</span><span class="cart__titulo">${esc(v.titulo)}</span></span>
     ${v.selo ? `<span class="cart__selo">${esc(v.selo)}</span>` : ""}
     <span class="vid__play"><i>${ico("play", "ico ico--fill")}</i>Assistir</span>
   </button>
@@ -200,25 +200,36 @@ export function criarJornadas(h) {
     const cmd = hi.caso, md = s.projetos.find((p) => p.slug === cmd.projeto), cl = clientes.find((x) => x.slug === cmd.projeto);
     const obra = s.projetos.find((p) => p.slug === "valter");
     const secoes = [];
-    secoes.push(heroHtml(s.hero, whatsapp.mensagens.sitesGeral, "sites", `<a class="btn btn--linha" href="#cap-caso">Ver o caso ${esc(md?.nome || "em destaque")} ${ico("dir")}</a>`));
+    secoes.push(heroHtml(s.hero, whatsapp.mensagens.sitesGeral, "sites", `<a class="btn btn--linha" href="#cap-caso">Ver o caso em destaque ${ico("dir")}</a>`));
     secoes.push(expande("abre-sites", hi.abertura, "s-problema"));
-    secoes.push(capitulo({ id: "cap-problema", cap: "s-problema", altura: 330, cena: "fundo", rotulo: hi.problema.rotulo, rotuloId: "t-sp", conteudo: passos(hi.problema.passos, "t-sp") }));
-    secoes.push(capitulo({ id: "cap-montagem", cap: "s-montagem", altura: 460, cena: "painel", cls: "cap--painel", alt: obra?.capturas?.desktop?.[0], rotulo: hi.montagem.rotulo, rotuloId: "t-sm", conteudo: camadasPassos(hi.montagem, "t-sm"), extra: codigoSite(hi.montagem) }));
+    secoes.push(capitulo({ id: "cap-problema", cap: "s-problema", altura: 240, cena: "fundo", rotulo: hi.problema.rotulo, rotuloId: "t-sp", conteudo: passos(hi.problema.passos, "t-sp") }));
+    secoes.push(capitulo({ id: "cap-montagem", cap: "s-montagem", altura: 340, cena: "painel", cls: "cap--painel", alt: obra?.capturas?.desktop?.[0], rotulo: hi.montagem.rotulo, rotuloId: "t-sm", conteudo: camadasPassos(hi.montagem, "t-sm"), extra: codigoSite(hi.montagem) }));
     const fm = faixas(cmd.passos.length);
     // cena "caso": a logo desce para o canto de baixo, longe do nome do cliente e do notebook
-    secoes.push(capitulo({ id: "cap-caso", cap: "s-caso", altura: 480, cena: "caso", alt: md?.capturas?.desktop?.[0], rotulo: cmd.rotulo, rotuloId: "t-mg",
+    secoes.push(capitulo({ id: "cap-caso", cap: "s-caso", altura: 340, cena: "caso", alt: md?.capturas?.desktop?.[0], rotulo: cmd.rotulo, rotuloId: "t-mg",
       conteudo: cmd.passos.map((x, i) => {
         let h2 = titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : "t-mg");
         if (!i) h2 = h2.replace("passo__titulo", "passo__titulo passo__titulo--gigante passo__titulo--nome");
         if (x.barras) h2 += `<div class="barras" aria-label="${x.barras.rotulo ? esc(x.barras.rotulo) + ": " : ""}antes ${esc(x.barras.antes)}, depois ${esc(x.barras.depois)}">${x.barras.rotulo ? `<p class="barras__rotulo">${esc(x.barras.rotulo)}</p>` : ""}<div class="barras__l"><span>Antes</span><i style="--w:1"></i><b>${esc(x.barras.antes)}</b></div><div class="barras__l barras__l--depois"><span>Depois</span><i style="--w:${x.barras.proporcao}"></i><b>${esc(x.barras.depois)}</b></div><p class="passo__fonte">${esc(x.barras.fonte)}</p></div>`;
         if (x.cliente && cl) h2 += clienteHtml(cl, true);
-        if (x.acoes && md) h2 += `<div class="passo__acoes"><button class="btn" type="button" data-abrir-caso="${md.slug}" data-cursor="Ver projeto">Estudo de caso completo ${ico("dir")}</button><a class="btn btn--linha" href="${esc(md.url)}" target="_blank" rel="noopener" data-cursor="Abrir site">Ver no ar ${ico("seta")}</a></div>`;
+        if (x.acoes && md) h2 += `<div class="passo__acoes"><button class="btn" type="button" data-abrir-caso="${md.slug}" data-cursor="Ver projeto">Estudo de caso completo ${ico("dir")}</button>${md.url ? `<a class="btn btn--linha" href="${esc(md.url)}" target="_blank" rel="noopener" data-cursor="Abrir site">Ver no ar ${ico("seta")}</a>` : ""}</div>`;
         return passo(fm[i][0], fm[i][1], h2);
       }).join("") }));
+    if (hi.depoimento) {
+      const dp = hi.depoimento, fd = faixas(dp.passos.length);
+      // agenda de uma semana: os horários se preenchem conforme a rolagem (--p vem do app.js, em [data-progresso])
+      const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"], horas = ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
+      const ordemCh = (d, h) => ((d * 5 + h * 3) % 40);
+      const agenda = `<div class="agenda" data-progresso aria-hidden="true"><div class="agenda__cab"><b>Agenda</b><span class="agenda__vazia">nenhum horário marcado</span><span class="agenda__cheia">sem horário livre</span></div>
+        <div class="agenda__grade"><span></span>${dias.map((d) => `<span class="agenda__dia">${d}</span>`).join("")}${horas.map((h, hi_) => `<span class="agenda__hora">${h}</span>${dias.map((_, di) => `<i style="--o:${ordemCh(di, hi_)}"></i>`).join("")}`).join("")}</div></div>`;
+      secoes.push(capitulo({ id: "cap-depoimento", cap: "s-depoimento", altura: 240, cena: "texto", rotulo: dp.rotulo, rotuloId: "t-sd", extra: agenda,
+        conteudo: dp.passos.map((x, i) => passo(fd[i][0], fd[i][1], titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : "t-sd")
+          + (x.depoimento ? `<figure class="depo"><blockquote>“${esc(x.depoimento.texto)}”</blockquote><figcaption><b>${esc(x.depoimento.nome)}</b> · ${esc(x.depoimento.cargo)}</figcaption></figure>` : ""))).join("") }));
+    }
     secoes.push(carrossel({ id: "projetos", cena: "trabalhos", rotulo: "Projetos", titulo: "Os sites por trás dos números.", itens: s.projetos, card: cartSite,
       extra: s.maisProjetos?.length ? `<p class="outros__mais">Também: ${lista(s.maisProjetos, (m, i) => `${i ? " · " : ""}${m.url ? `<a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.nome)} ↗</a>` : esc(m.nome)}`)}</p>` : "" }));
-    secoes.push(capitulo({ id: "cap-oportunidade", cap: "s-oportunidade", altura: 320, cena: "fundo", rotulo: hi.oportunidade.rotulo, rotuloId: "t-so", conteudo: passos(hi.oportunidade.passos, "t-so") }));
-    if (hi.cafe) secoes.push(capitulo({ id: "cap-cafe", cap: "s-cafe", altura: 300, cena: "fundo", rotulo: hi.cafe.rotulo, rotuloId: "t-sc", conteudo: passos(hi.cafe.passos, "t-sc") }));
+    secoes.push(capitulo({ id: "cap-oportunidade", cap: "s-oportunidade", altura: 220, cena: "fundo", rotulo: hi.oportunidade.rotulo, rotuloId: "t-so", conteudo: passos(hi.oportunidade.passos, "t-so") }));
+    if (hi.cafe) secoes.push(capitulo({ id: "cap-cafe", cap: "s-cafe", altura: 220, cena: "fundo", rotulo: hi.cafe.rotulo, rotuloId: "t-sc", conteudo: passos(hi.cafe.passos, "t-sc") }));
     secoes.push(expande("convite-sites", hi.convite, ""));
     secoes.push(planosHtml(s.planos, vagas.sites, "sites", whatsapp.mensagens.sites, () => "codigo"));
     secoes.push(faqCurto(s.faq));
@@ -236,12 +247,17 @@ export function criarJornadas(h) {
     const secoes = [];
     secoes.push(heroHtml(c.hero, whatsapp.mensagens.criativosGeral, "criativos", `<a class="btn btn--linha" href="#numeros">Ver os números ${ico("dir")}</a>`));
     secoes.push(expande("abre-criativos", hi.abertura, "c-problema"));
-    secoes.push(capitulo({ id: "cap-problema", cap: "c-problema", altura: 330, cena: "fundo", rotulo: hi.problema.rotulo, rotuloId: "t-cp", conteudo: passos(hi.problema.passos, "t-cp") }));
-    secoes.push(capitulo({ id: "cap-explode", cap: "c-explode", altura: 230, cena: "fundo", alt: hi.montagem.poster, rotuloId: "t-ce",
+    secoes.push(capitulo({ id: "cap-problema", cap: "c-problema", altura: 240, cena: "fundo", rotulo: hi.problema.rotulo, rotuloId: "t-cp", conteudo: passos(hi.problema.passos, "t-cp") }));
+    secoes.push(capitulo({ id: "cap-explode", cap: "c-explode", altura: 180, cena: "fundo", alt: hi.montagem.poster, rotuloId: "t-ce",
       conteudo: passo("0", "0.580", `<p class="passo__titulo display passo__titulo--gigante" aria-hidden="true">Pulou.</p>`) + passo("0.580", "1.010", titulo(hi.explode.titulo, hi.explode.texto, "h2", "t-ce")) }));
-    secoes.push(capitulo({ id: "cap-montagem", cap: "c-montagem", altura: 460, cena: "painel", cls: "cap--painel", alt: hi.montagem.poster, rotulo: hi.montagem.rotulo, rotuloId: "t-cm", conteudo: camadasPassos(hi.montagem, "t-cm"), extra: editorReel(hi.montagem) }));
+    secoes.push(capitulo({ id: "cap-montagem", cap: "c-montagem", altura: 340, cena: "painel", cls: "cap--painel", alt: hi.montagem.poster, rotulo: hi.montagem.rotulo, rotuloId: "t-cm", conteudo: camadasPassos(hi.montagem, "t-cm"), extra: editorReel(hi.montagem) }));
+    if (hi.voz) {
+      const onda = Array.from({ length: 48 }, (_, i) => `<i style="--h:${(22 + Math.abs(Math.sin(i * 0.9) * Math.cos(i * 0.37)) * 76).toFixed(0)}%;--d:${(i * 0.045).toFixed(2)}s"></i>`).join("");
+      const voz = `<div class="voz" data-progresso aria-hidden="true"><p class="voz__rot">Narração · sua voz</p><div class="voz__onda">${onda}</div><p class="voz__leg"><span>00:00</span><b>gravação curta</b><span>→ narração pronta</span></p></div>`;
+      secoes.push(capitulo({ id: "cap-voz", cap: "c-voz", altura: 200, cena: "texto", rotulo: hi.voz.rotulo, rotuloId: "t-cv", conteudo: passos(hi.voz.passos, "t-cv"), extra: voz }));
+    }
     const su = hi.sucesso;
-    secoes.push(capitulo({ id: "cap-sucesso", cap: "c-sucesso", altura: 320, cena: "fundo", cls: "cap--invertido", alt: su.poster, rotuloId: "t-cs", extra: notifSucesso,
+    secoes.push(capitulo({ id: "cap-sucesso", cap: "c-sucesso", altura: 240, cena: "fundo", cls: "cap--invertido", alt: su.poster, rotuloId: "t-cs", extra: notifSucesso,
       conteudo: passo("0", "0.300", `<h2 class="passo__titulo display" id="t-cs">${palavras(su.titulo)}</h2>`)
         + passo("0.300", "0.640", `<h3 class="passo__titulo display">${palavras(su.meio)}</h3>`)
         + passo("0.640", "1.010", `<p class="passo__num display" style="--n:${[...String(su.numero)].length}"><span data-contador="${su.contador}" data-final="${esc(su.numero)}">${esc(su.numero)}</span></p><p class="passo__texto">${esc(su.rotuloNumero)} · ${esc(su.legenda)}</p><p class="passo__fonte">${esc(su.fonte)}</p>`) }));
@@ -251,7 +267,7 @@ export function criarJornadas(h) {
     <header class="sec__cab"><p class="rotulo sobe"><b>Números reais</b></p><h2 class="display entra" id="t-fontes">${palavras("De quem já está fazendo.")}</h2></header>
     <div class="fontes__grade fontes__grade--${c.fontes.length + clientes.length}">${lista(clientes, (cl) => clienteHtml(cl, false))}${lista(c.fontes, (f, i) => `
       <article class="fonte sobe" style="--d:${i * 80}ms">
-        <p class="fonte__conta">${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.conta)} ↗</a>` : esc(f.conta)}<span>${esc(f.tema)}</span></p>
+        <p class="fonte__conta">${f.foto ? img(f.foto, "", { cls: "fonte__foto" }) : ""}${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.conta)} ↗</a>` : esc(f.conta)}<span>${esc(f.tema)}</span></p>
         <p class="fonte__num display" data-contar="${esc(f.numero)}">${esc(f.numero)}</p>
         <p class="fonte__rotulo">${esc(f.rotulo)}</p>
         <ul class="fonte__extras">${lista(f.extras, (x) => `<li>${esc(x)}</li>`)}</ul>
@@ -265,11 +281,11 @@ export function criarJornadas(h) {
     // conteúdo médico na frente; séries com publicar: false e vídeos com oculto: true ficam guardados no conteúdo, fora do carrossel
     const ordem = ["dr-lucastosi", "felipen-med", "marcas-proprias", "nilo", "wzs-studio"];
     const noAr = c.series.filter((se) => se.publicar !== false);
-    const organicos = [...noAr].sort((a, b) => ordem.indexOf(a.slug) - ordem.indexOf(b.slug)).flatMap((se) => se.videos.filter((v) => !v.oculto).map((v) => ({ ...v, conta: se.conta })));
+    const organicos = [...noAr].sort((a, b) => ordem.indexOf(a.slug) - ordem.indexOf(b.slug)).flatMap((se) => se.videos.filter((v) => !v.oculto).map((v) => ({ ...v, conta: se.conta, foto: se.foto, verificado: se.verificado })));
     secoes.push(carrossel({ id: "trabalhos", cena: "trabalhos", rotulo: "Para o perfil", titulo: "Os vídeos por trás dos números.", itens: organicos, card: cartVideo }));
-    secoes.push(capitulo({ id: "cap-dinheiro", cap: "c-dinheiro", altura: 320, cena: "fundo", alt: hi.dinheiro.poster || c.anuncios?.videos?.[0]?.poster, rotulo: hi.dinheiro.rotulo, rotuloId: "t-cd", conteudo: passos(hi.dinheiro.passos, "t-cd") }));
+    secoes.push(capitulo({ id: "cap-dinheiro", cap: "c-dinheiro", altura: 220, cena: "fundo", alt: hi.dinheiro.poster || c.anuncios?.videos?.[0]?.poster, rotulo: hi.dinheiro.rotulo, rotuloId: "t-cd", conteudo: passos(hi.dinheiro.passos, "t-cd") }));
     if (c.anuncios?.videos?.length) secoes.push(carrossel({ id: "anuncios", cena: "trabalhos", rotulo: "Para anunciar", titulo: c.anuncios.titulo, itens: c.anuncios.videos.map((v) => ({ ...v, conta: v.conta || (v.id.startsWith("exemplo") || v.id.startsWith("motion") ? "Peça de demonstração" : "MedGrind · anúncio") })), card: cartVideo }));
-    secoes.push(capitulo({ id: "cap-oportunidade", cap: "c-oportunidade", altura: 320, cena: "globo", rotulo: hi.oportunidade.rotulo, rotuloId: "t-co", conteudo: passos(hi.oportunidade.passos, "t-co") }));
+    secoes.push(capitulo({ id: "cap-oportunidade", cap: "c-oportunidade", altura: 220, cena: "globo", rotulo: hi.oportunidade.rotulo, rotuloId: "t-co", conteudo: passos(hi.oportunidade.passos, "t-co") }));
     secoes.push(expande("convite-criativos", hi.convite, ""));
     secoes.push(planosHtml(c.planos, vagas.criativos, "criativos", whatsapp.mensagens.criativos, (it) => (it.slug === "anunciar" ? "dinheiro" : "coracoes")));
     secoes.push(faqCurto(c.faq));

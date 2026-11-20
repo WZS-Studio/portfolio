@@ -390,7 +390,7 @@ export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia
   // ---------- dinheiro: cédulas de verdade (R$ 100 e R$ 50, frente e verso, imagens do Banco Central) ----------
   // uma malha instanciada; o shader dobra cada nota como papel ao vento e escolhe a face certa da folha de cédulas.
   // Só é criada (e a imagem baixada) quando o capítulo do anúncio aparece.
-  const NN = leve ? 26 : 46, notasU = { uT: { value: 0 } }, aNota = new Float32Array(NN), aFase = new Float32Array(NN);
+  const NN = leve ? 14 : 24, notasU = { uT: { value: 0 } }, aNota = new Float32Array(NN), aFase = new Float32Array(NN);
   for (let i = 0; i < NN; i++) { aNota[i] = i % 3 === 2 ? 1 : 0; aFase[i] = Math.random() * 6.283; }
   const semente = Array.from({ length: NN }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
   let notas = null, notasProntas = false;
@@ -472,7 +472,8 @@ varying float vNota;`)
     const av = o.avatar && imgEl(o.avatar);
     if (av && pronto(av)) { x.save(); x.beginPath(); x.arc(56, by, 26, 0, Math.PI * 2); x.clip(); x.drawImage(av, 30, by - 26, 52, 52); x.restore(); }
     x.fillStyle = "#fff"; x.font = "700 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; const u = o.usuario || "seu.perfil"; x.fillText(u, 96, by + 9);
-    const wu = x.measureText(u).width;
+    let wu = x.measureText(u).width;
+    if (o.verificado) { const vx = 96 + wu + 18, vy = by; x.fillStyle = "#0095f6"; x.beginPath(); x.arc(vx, vy, 12, 0, Math.PI * 2); x.fill(); x.strokeStyle = "#fff"; x.lineWidth = 3; x.lineCap = "round"; x.lineJoin = "round"; x.beginPath(); x.moveTo(vx - 5, vy); x.lineTo(vx - 1, vy + 4); x.lineTo(vx + 6, vy - 4); x.stroke(); wu += 30; }
     if (!o.patrocinado) { x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, 110 + wu, by - 20, 112, 40, 9); x.stroke(); x.font = "600 22px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText(o.seguindo ? "Seguindo" : "Seguir", 124 + wu, by + 8); }
     else { x.font = "400 20px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillStyle = "rgba(255,255,255,.85)"; x.fillText("Patrocinado", 96, by + 36); }
     x.fillStyle = "#fff"; x.font = "400 24px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText((o.legenda || "").slice(0, 34), 36, by + 74);
@@ -802,8 +803,8 @@ varying float vNota;`)
     if (!raiz.visible) { pararVideos(); return; }
     const k = reduce ? 30 : 7;
     // em pé: o celular ocupa até 50% da altura, logo abaixo da etiqueta (o texto fica no pé); deitado: 74% da altura
-    const escCel = retrato ? Math.min(VH * 0.5 / CEL.h, VW * 0.66 / CEL.w) : Math.min(2.05, VH * 0.74 / CEL.h);
-    const escNb = retrato ? Math.min(VW * 0.86 / NB.w, VH * 0.34 / NB.tampa) : Math.min(1.26, VW * 0.46 / NB.w);
+    const escCel = retrato ? Math.min(VH * 0.5 / CEL.h, VW * 0.66 / CEL.w) : Math.min(1.85, VH * 0.66 / CEL.h);
+    const escNb = retrato ? Math.min(VW * 0.86 / NB.w, VH * 0.34 / NB.tampa) : Math.min(1.14, VW * 0.42 / NB.w);
     const topo = (s) => VH / 2 - 0.62 - CEL.h * s / 2;
     const px = retrato ? 0 : VW * 0.2, py = retrato ? topo(escCel) : 0;
     const cel = alvo.cel, nb = alvo.nb;
@@ -830,7 +831,7 @@ varying float vNota;`)
         celU.uLuz.value = 1;
         cel.pos.set(px, py, -2.4 * (1 - volta)); cel.rot.set(0.05, -0.25 + (1 - volta) * Math.PI * 1.5, 0); cel.s = escCel * Math.max(0.05, volta);
         const v = tocar(midia.videoMontagem);
-        ig({ fonte: pronto(v) ? v : imgEl(midia.posterMontagem), usuario: "felipen.med", legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
+        ig({ fonte: pronto(v) ? v : imgEl(midia.posterMontagem), usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
         celU.uBordaK.value = Math.sin(volta * Math.PI) * 1.2;
       }
     } else if (cap === "c-montagem") {
@@ -839,7 +840,7 @@ varying float vNota;`)
       const cam = [0, 1, 2, 3, 4].map((i) => suave(faixa(p, 0.12 + i * 0.14, 0.2 + i * 0.14)));
       const vm = tocar(midia.videoMontagem), fonteV = pronto(vm) ? vm : imgEl(midia.posterMontagem);
       const funde = reduce ? 1 : faixa(p, 0.8, 0.92);
-      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
+      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
       else { if (redesenha) desenharEdicao(p, cam.map((v) => v * funde), fonteV); porNaTela(celU, "A", igT, CEL_ASP, W / H); }
       if (!reduce) camReel.forEach((k, i) => {
         const chega = faixa(p, 0.08 + i * 0.14, 0.2 + i * 0.14);
@@ -855,13 +856,13 @@ varying float vNota;`)
       cel.pos.set(retrato ? 0 : x0 + (x1 - x0) * lado, retrato ? py : Math.sin(lado * Math.PI) * 0.25, Math.sin(lado * Math.PI) * 0.6);
       cel.rot.set(0.04, -0.28 + lado * (Math.PI * 2 + 0.56), Math.sin(lado * Math.PI) * 0.12); cel.s = escCel;
       const cresce = 1 - Math.pow(1 - faixa(p, 0.25, 0.92), 3);
-      if (!reduce && p > 0.25 && corac.length < 30 && Math.random() < 0.55) corac.push({ x: W - 60 + (Math.random() - 0.5) * 40, y: H - 650, vy: 200 + Math.random() * 180, vx: (Math.random() - 0.5) * 100, s: 30 + Math.random() * 36, a: 1, cor: Math.random() < 0.8 ? "#ff3040" : "#ff7aa2" });
+      if (!reduce && p > 0.25 && corac.length < 14 && Math.random() < 0.3) corac.push({ x: W - 60 + (Math.random() - 0.5) * 40, y: H - 650, vy: 200 + Math.random() * 180, vx: (Math.random() - 0.5) * 100, s: 30 + Math.random() * 36, a: 1, cor: Math.random() < 0.8 ? "#ff3040" : "#ff7aa2" });
       corac.forEach((c) => { c.y -= c.vy * dt; c.x += c.vx * dt + Math.sin(c.y / 40) * 1.2; c.a -= dt * 0.5; });
       corac = corac.filter((c) => c.a > 0);
-      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", legenda: "Você prescreveria para ele?", curtidas: 50000 * cresce, comentarios: 425 * cresce, envios: 26300 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#b8923a" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000 * cresce, comentarios: 425 * cresce, envios: 26300 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#b8923a" });
     } else if (cap === "c-dinheiro") {
       cel.pos.set(px, py, 0); cel.rot.set(0.05, -0.3 + p * 0.25, 0.02); cel.s = escCel;
-      ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, corAvatar: "#b8923a", seguindo: true });
+      ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, verificado: midia.verificadoCliente, corAvatar: "#b8923a", seguindo: true });
       // as cédulas saem da altura da legenda, abrem em leque (o ar freia) e caem devagar, balançando como papel
       if (!notas) criarNotas();
       const jorro = faixa(p, 0.15, 1);
@@ -881,7 +882,7 @@ varying float vNota;`)
       notas.instanceMatrix.needsUpdate = true;
     } else if (cap === "c-oportunidade") {
       cel.pos.set(retrato ? -VW * 0.2 : px + VW * 0.16, retrato ? topo(escCel * 0.6) - 0.2 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = escCel * 0.6;
-      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", legenda: "Você prescreveria para ele?", curtidas: 50000, comentarios: 425, envios: 26300, curtido: true, seguindo: true, corAvatar: "#b8923a" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000, comentarios: 425, envios: 26300, curtido: true, seguindo: true, corAvatar: "#b8923a" });
     } else if (cap === "s-problema") {
       const e = glide(faixa(p, 0, 0.12));
       nb.pos.set(px, py - 0.35 - (1 - e) * 2.5, 0); nb.rot.set(0.16, -0.34 + p * 0.26, 0); nb.s = escNb;
@@ -913,8 +914,8 @@ varying float vNota;`)
       // menos que um cafezinho: a colher mexe, o redemoinho gira e o vapor sobe
       cafe.visible = true; texturasCafe();
       const mexe = 0.3 + 0.7 * suave(faixa(p, 0.1, 0.6));
-      cafeU.uT.value = t; cafeU.uMexe.value = reduce ? 0.4 : mexe;
-      const ang = reduce ? 0.8 : t * (1.2 + mexe * 2.6);
+      cafeU.uT.value = t * 0.45; cafeU.uMexe.value = reduce ? 0.4 : mexe * 0.7;
+      const ang = reduce ? 0.8 : t * (0.45 + mexe * 0.6);
       colher.position.set(Math.cos(ang) * 0.24, 0.58, Math.sin(ang) * 0.24); colher.rotation.set(Math.sin(ang) * 0.58, 0, -Math.cos(ang) * 0.58);
       for (let i = 0; i < NV; i++) {
         const sd = vaporSem[i], vida = (t * (0.12 + sd * 0.1) + sd) % 1;
@@ -952,7 +953,7 @@ varying float vNota;`)
       if (p > 0.3) texturasCafe();
       const vira = faixa(p, 0.58, 0.72), giro = Math.sin(vira * Math.PI);
       cel.pos.set(px, py - giro * (retrato ? 0.12 : -0.06), giro * (retrato ? 0.2 : 0.45)); cel.rot.set(0.05 - giro * 0.05, -0.3 + p * 0.22 + suave(vira) * Math.PI * 2, 0.02 - giro * 0.04); cel.s = escCel * 1.02;
-      if (vira < 0.5) ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, corAvatar: "#b8923a", seguindo: p > 0.5 });
+      if (vira < 0.5) ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, verificado: midia.verificadoCliente, corAvatar: "#b8923a", seguindo: p > 0.5 });
       else { if (redesenha) desenharChat(faixa(p, 0.66, 0.98), t); porNaTela(celU, "A", chatT, CEL_ASP, 540 / 1170); }
       celU.uBordaK.value = giro * 1.3;
     }
