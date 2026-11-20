@@ -3,7 +3,7 @@
 // Cada capítulo (.cap) fica preso na tela enquanto a pessoa rola; os passos (.passo) trocam por faixa de
 // rolagem (data-de / data-ate) e o mundo 3D recebe o mesmo progresso (data-cap).
 export function criarJornadas(h) {
-  const { esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, doc, orgLd, faqLd, dadosMundo, hv, midiaV, leve } = h;
+  const { esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, clientes = [], vagas, faqHtml, casoHtml, doc, orgLd, faqLd, dadosMundo, hv, midiaV, leve } = h;
   const n2 = (k) => String(k).padStart(2, "0");
 
   const passo = (de, ate, html, cls = "") => `<div class="passo${cls ? " " + cls : ""}" data-de="${de}" data-ate="${ate}">${html}</div>`;
@@ -16,6 +16,17 @@ export function criarJornadas(h) {
   ${mini ? `<span class="parceria__txt"><b class="parceria__mini">${esc(pc.rotulo)}</b></span>`
     : `<div class="parceria__txt"><p class="parceria__titulo display">${esc(pc.rotulo)}</p><p class="parceria__texto">${rico(pc.texto)}</p></div>`}
 </aside>`;
+  const verificado = '<svg class="cliente__ok" viewBox="0 0 24 24" aria-label="conta verificada" role="img"><path d="M12 2.5l2.3 1.7 2.8-.2 1 2.6 2.4 1.5-.6 2.8 1.2 2.6-2 2-.3 2.8-2.7.8-1.6 2.3-2.7-.9-2.7.9-1.6-2.3-2.7-.8-.3-2.8-2-2 1.2-2.6-.6-2.8 2.4-1.5 1-2.6 2.8.2z" fill="currentColor"/><path d="m8.4 12.3 2.5 2.4 4.8-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const clienteHtml = (cl, mini) => !cl ? "" : mini
+    ? `<div class="cliente cliente--mini">${img(cl.foto, `Foto de ${cl.nome}`, { cls: "cliente__foto" })}<div><p class="cliente__nome">${esc(cl.especialidade)}</p><p class="cliente__reg">${esc(cl.registro)}</p><p class="cliente__arroba"><a href="${esc(cl.instagram)}" target="_blank" rel="noopener">${esc(cl.arroba)}${cl.verificado ? verificado : ""} ↗</a> ·${lista(cl.numeros.slice(0, 1), (x) => `<b>${esc(x.valor)}</b> ${esc(x.rotulo)}`)}</p></div></div>`
+    : `<article class="cliente sobe">
+        <div class="cliente__topo">${img(cl.foto, `Foto de ${cl.nome}`, { cls: "cliente__foto" })}<div><p class="cliente__rotulo">Cliente</p><h3 class="cliente__nome display">${esc(cl.nome)}${cl.verificado ? verificado : ""}</h3><p class="cliente__reg">${esc(cl.especialidade)} · ${esc(cl.registro)}</p></div></div>
+        <p class="cliente__arroba"><a href="${esc(cl.instagram)}" target="_blank" rel="noopener" data-cursor="Abrir">${esc(cl.arroba)} ↗</a></p>
+        <div class="cliente__nums">${lista(cl.numeros, (x) => `<div><strong class="display">${esc(x.valor)}</strong><span>${esc(x.rotulo)}</span></div>`)}</div>
+        <ul class="cliente__feito">${lista(cl.feito, (x) => `<li>${rico(x)}</li>`)}</ul>
+        <div class="cliente__acoes"><a class="btn btn--linha" href="#trabalhos">Ver os vídeos ${ico("dir")}</a>${cl.site ? `<a class="link-seta" href="${esc(cl.site)}" target="_blank" rel="noopener" data-cursor="Abrir site">Ver a landing do livro ${ico("seta")}</a>` : ""}</div>
+        <p class="cliente__fonte">${esc(cl.fonte)}</p>
+      </article>`;
   const passos = (lista_, id) => { const f = faixas(lista_.length); return lista_.map((x, i) => passo(f[i][0], f[i][1], (x.numero ? numero(x) : titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : id)) + (x.parceria ? selo(sites.parceria, true) : ""))).join(""); };
   const camadasPassos = (cm, id) => passo("0", "0.120", `<h2 class="passo__titulo display" id="${id}">${palavras(cm.titulo)}</h2>`)
     + cm.camadas.map((c, i) => passo((0.12 + i * 0.14).toFixed(3), (i === cm.camadas.length - 1 ? 1.01 : 0.26 + i * 0.14).toFixed(3),
@@ -129,13 +140,13 @@ export function criarJornadas(h) {
               ${vt.patrocinado ? "" : '<b class="vitrine__reels">Reels</b>'}
               <span class="vitrine__acoes">${[["curtir", vt.curtidas], ["comentar", vt.comentarios], ["enviar", vt.envios]].map(([k, n]) => `<i>${IG[k]}${n ? `<small>${esc(n)}</small>` : ""}</i>`).join("")}</span>
               <span class="vitrine__pe">
-                <span class="vitrine__conta"><span class="vitrine__av">${esc(vt.conta[0].toUpperCase())}</span><span><b>${esc(vt.conta)}</b>${vt.patrocinado ? "<small>Patrocinado</small>" : ""}</span>${vt.patrocinado ? "" : "<em>Seguir</em>"}</span>
+                <span class="vitrine__conta"><span class="vitrine__av">${vt.avatar ? img(vt.avatar, "") : esc(vt.conta[0].toUpperCase())}</span><span><b>${esc(vt.conta)}</b>${vt.patrocinado ? "<small>Patrocinado</small>" : ""}</span>${vt.patrocinado ? "" : "<em>Seguir</em>"}</span>
                 <span class="vitrine__leg">${esc(vt.legenda)}</span>
                 ${vt.cta ? `<span class="vitrine__cta">${esc(vt.cta)}<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>` : ""}
               </span>
             </span>
           </div></div>
-          <p class="vitrine__selo"><small>${esc(vt.selo.rotulo)}</small><b>${esc(vt.selo.valor)}</b>${vt.selo.nota ? `<span>${esc(vt.selo.nota)}</span>` : ""}</p>
+          ${vt.selo ? `<p class="vitrine__selo"><small>${esc(vt.selo.rotulo)}</small><b>${esc(vt.selo.valor)}</b>${vt.selo.nota ? `<span>${esc(vt.selo.nota)}</span>` : ""}</p>` : ""}
         </div>`;
   const planosHtml = (pl, v, jornada, msg, efeito) => `
 <section class="sec planos" id="planos" data-cena="leitura" aria-labelledby="t-planos">
@@ -186,19 +197,22 @@ export function criarJornadas(h) {
   // ======================================================== SITES
   function paginaSites() {
     const s = sites, hi = s.historia;
-    const md = s.projetos.find((p) => p.slug === "medgrind");
+    const cmd = hi.caso, md = s.projetos.find((p) => p.slug === cmd.projeto), cl = clientes.find((x) => x.slug === cmd.projeto);
+    const obra = s.projetos.find((p) => p.slug === "valter");
     const secoes = [];
-    secoes.push(heroHtml(s.hero, whatsapp.mensagens.sitesGeral, "sites", `<a class="btn btn--linha" href="#cap-medgrind">Ver o caso MedGrind ${ico("dir")}</a>`));
+    secoes.push(heroHtml(s.hero, whatsapp.mensagens.sitesGeral, "sites", `<a class="btn btn--linha" href="#cap-caso">Ver o caso ${esc(md?.nome || "em destaque")} ${ico("dir")}</a>`));
     secoes.push(expande("abre-sites", hi.abertura, "s-problema"));
     secoes.push(capitulo({ id: "cap-problema", cap: "s-problema", altura: 330, cena: "fundo", rotulo: hi.problema.rotulo, rotuloId: "t-sp", conteudo: passos(hi.problema.passos, "t-sp") }));
-    secoes.push(capitulo({ id: "cap-montagem", cap: "s-montagem", altura: 460, cena: "painel", cls: "cap--painel", alt: md?.capturas?.desktop?.[0], rotulo: hi.montagem.rotulo, rotuloId: "t-sm", conteudo: camadasPassos(hi.montagem, "t-sm"), extra: codigoSite(hi.montagem) }));
-    const cmd = hi.medgrind, fm = faixas(cmd.passos.length);
-    secoes.push(capitulo({ id: "cap-medgrind", cap: "s-medgrind", altura: 480, cena: "fundo", alt: "/media/sites/medgrind/cenas/revelacao-wide.webp", rotulo: cmd.rotulo, rotuloId: "t-mg",
+    secoes.push(capitulo({ id: "cap-montagem", cap: "s-montagem", altura: 460, cena: "painel", cls: "cap--painel", alt: obra?.capturas?.desktop?.[0], rotulo: hi.montagem.rotulo, rotuloId: "t-sm", conteudo: camadasPassos(hi.montagem, "t-sm"), extra: codigoSite(hi.montagem) }));
+    const fm = faixas(cmd.passos.length);
+    // cena "caso": a logo desce para o canto de baixo, longe do nome do cliente e do notebook
+    secoes.push(capitulo({ id: "cap-caso", cap: "s-caso", altura: 480, cena: "caso", alt: md?.capturas?.desktop?.[0], rotulo: cmd.rotulo, rotuloId: "t-mg",
       conteudo: cmd.passos.map((x, i) => {
         let h2 = titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : "t-mg");
-        if (!i) h2 = h2.replace("passo__titulo", "passo__titulo passo__titulo--gigante");
-        if (x.barras) h2 += `<div class="barras" aria-label="Antes ${esc(x.barras.antes)}, depois ${esc(x.barras.depois)}"><div class="barras__l"><span>Antes</span><i style="--w:1"></i><b>${esc(x.barras.antes)}</b></div><div class="barras__l barras__l--depois"><span>Depois</span><i style="--w:${x.barras.proporcao}"></i><b>${esc(x.barras.depois)}</b></div><p class="passo__fonte">${esc(x.barras.fonte)}</p></div>`;
-        if (x.acoes && md) h2 += `<div class="passo__acoes"><button class="btn" type="button" data-abrir-caso="medgrind" data-cursor="Ver projeto">Estudo de caso completo ${ico("dir")}</button><a class="btn btn--linha" href="${esc(md.url)}" target="_blank" rel="noopener" data-cursor="Abrir site">Ver no ar ${ico("seta")}</a></div>`;
+        if (!i) h2 = h2.replace("passo__titulo", "passo__titulo passo__titulo--gigante passo__titulo--nome");
+        if (x.barras) h2 += `<div class="barras" aria-label="${x.barras.rotulo ? esc(x.barras.rotulo) + ": " : ""}antes ${esc(x.barras.antes)}, depois ${esc(x.barras.depois)}">${x.barras.rotulo ? `<p class="barras__rotulo">${esc(x.barras.rotulo)}</p>` : ""}<div class="barras__l"><span>Antes</span><i style="--w:1"></i><b>${esc(x.barras.antes)}</b></div><div class="barras__l barras__l--depois"><span>Depois</span><i style="--w:${x.barras.proporcao}"></i><b>${esc(x.barras.depois)}</b></div><p class="passo__fonte">${esc(x.barras.fonte)}</p></div>`;
+        if (x.cliente && cl) h2 += clienteHtml(cl, true);
+        if (x.acoes && md) h2 += `<div class="passo__acoes"><button class="btn" type="button" data-abrir-caso="${md.slug}" data-cursor="Ver projeto">Estudo de caso completo ${ico("dir")}</button><a class="btn btn--linha" href="${esc(md.url)}" target="_blank" rel="noopener" data-cursor="Abrir site">Ver no ar ${ico("seta")}</a></div>`;
         return passo(fm[i][0], fm[i][1], h2);
       }).join("") }));
     secoes.push(carrossel({ id: "projetos", cena: "trabalhos", rotulo: "Projetos", titulo: "Os sites por trás dos números.", itens: s.projetos, card: cartSite,
@@ -235,7 +249,7 @@ export function criarJornadas(h) {
     secoes.push(`<section class="sec fontes" id="numeros" data-cena="leitura" aria-labelledby="t-fontes">
   <div class="sec__in">
     <header class="sec__cab"><p class="rotulo sobe"><b>Números reais</b></p><h2 class="display entra" id="t-fontes">${palavras("De quem já está fazendo.")}</h2></header>
-    <div class="fontes__grade">${lista(c.fontes, (f, i) => `
+    <div class="fontes__grade fontes__grade--${c.fontes.length + clientes.length}">${lista(clientes, (cl) => clienteHtml(cl, false))}${lista(c.fontes, (f, i) => `
       <article class="fonte sobe" style="--d:${i * 80}ms">
         <p class="fonte__conta">${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.conta)} ↗</a>` : esc(f.conta)}<span>${esc(f.tema)}</span></p>
         <p class="fonte__num display" data-contar="${esc(f.numero)}">${esc(f.numero)}</p>
@@ -248,16 +262,18 @@ export function criarJornadas(h) {
   </div>
 </section>`);
 
-    const ordem = ["nilo", "felipen-med", "wzs-studio", "marcas-proprias"];
-    const organicos = [...c.series].sort((a, b) => ordem.indexOf(a.slug) - ordem.indexOf(b.slug)).flatMap((se) => se.videos.map((v) => ({ ...v, conta: se.conta })));
-    secoes.push(carrossel({ id: "trabalhos", cena: "trabalhos", rotulo: "Para viralizar", titulo: "Os vídeos por trás dos números.", itens: organicos, card: cartVideo }));
-    secoes.push(capitulo({ id: "cap-dinheiro", cap: "c-dinheiro", altura: 320, cena: "fundo", alt: c.anuncios?.videos?.[0]?.poster, rotulo: hi.dinheiro.rotulo, rotuloId: "t-cd", conteudo: passos(hi.dinheiro.passos, "t-cd") }));
+    // conteúdo médico na frente; séries com publicar: false e vídeos com oculto: true ficam guardados no conteúdo, fora do carrossel
+    const ordem = ["dr-lucastosi", "felipen-med", "marcas-proprias", "nilo", "wzs-studio"];
+    const noAr = c.series.filter((se) => se.publicar !== false);
+    const organicos = [...noAr].sort((a, b) => ordem.indexOf(a.slug) - ordem.indexOf(b.slug)).flatMap((se) => se.videos.filter((v) => !v.oculto).map((v) => ({ ...v, conta: se.conta })));
+    secoes.push(carrossel({ id: "trabalhos", cena: "trabalhos", rotulo: "Para o perfil", titulo: "Os vídeos por trás dos números.", itens: organicos, card: cartVideo }));
+    secoes.push(capitulo({ id: "cap-dinheiro", cap: "c-dinheiro", altura: 320, cena: "fundo", alt: hi.dinheiro.poster || c.anuncios?.videos?.[0]?.poster, rotulo: hi.dinheiro.rotulo, rotuloId: "t-cd", conteudo: passos(hi.dinheiro.passos, "t-cd") }));
     if (c.anuncios?.videos?.length) secoes.push(carrossel({ id: "anuncios", cena: "trabalhos", rotulo: "Para anunciar", titulo: c.anuncios.titulo, itens: c.anuncios.videos.map((v) => ({ ...v, conta: v.conta || (v.id.startsWith("exemplo") || v.id.startsWith("motion") ? "Peça de demonstração" : "MedGrind · anúncio") })), card: cartVideo }));
     secoes.push(capitulo({ id: "cap-oportunidade", cap: "c-oportunidade", altura: 320, cena: "globo", rotulo: hi.oportunidade.rotulo, rotuloId: "t-co", conteudo: passos(hi.oportunidade.passos, "t-co") }));
     secoes.push(expande("convite-criativos", hi.convite, ""));
     secoes.push(planosHtml(c.planos, vagas.criativos, "criativos", whatsapp.mensagens.criativos, (it) => (it.slug === "anunciar" ? "dinheiro" : "coracoes")));
     secoes.push(faqCurto(c.faq));
-    const videosLd = c.series.flatMap((s) => s.videos.map((v) => ({ "@type": "VideoObject", name: v.titulo, description: v.objetivo || s.tema, thumbnailUrl: marca.dominio + v.poster, contentUrl: marca.dominio + v.arquivo, uploadDate: v.data || undefined })));
+    const videosLd = noAr.flatMap((s) => s.videos.filter((v) => !v.oculto).map((v) => ({ "@type": "VideoObject", name: v.titulo, description: v.objetivo || s.tema, thumbnailUrl: marca.dominio + v.poster, contentUrl: marca.dominio + v.arquivo, uploadDate: v.data || undefined })));
     return doc({
       pagina: "criativos", universo: "criativos", seo: { ...c.seo, caminho: "/criativos/" }, main: `<main id="conteudo" class="jornada jornada--criativos">${secoes.join("\n")}</main>`, dadosMundo,
       jsonld: [orgLd(), faqLd(c.faq), ...(videosLd.some((v) => v.uploadDate) ? [{ "@context": "https://schema.org", "@graph": videosLd.filter((v) => v.uploadDate) }] : [])],

@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Página não encontrada · WZS Studio</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <style>
-  @font-face { font-family: "Schibsted Grotesk"; font-weight: 400 700; font-display: swap; src: url("/assets/fontes/schibsted-grotesk-latin-v7.woff2") format("woff2"); }
+  @font-face { font-family: "Cormorant Garamond"; font-weight: 400 700; font-display: swap; src: url("/assets/fontes/cormorant-garamond-latin-v21.woff2") format("woff2"); }
+  @font-face { font-family: "DM Sans"; font-weight: 400 700; font-display: swap; src: url("/assets/fontes/dm-sans-latin-v17.woff2") format("woff2"); }
   @font-face { font-family: "Martian Mono"; font-weight: 400 600; font-stretch: 75% 112.5%; font-display: swap; src: url("/assets/fontes/martian-mono-latin-v6.woff2") format("woff2"); }
-  body { margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 24px 16px; background: #0f1a2b; color: #eef1f6; font: 400 16px/24px "Schibsted Grotesk", system-ui, sans-serif; }
+  body { margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 24px 20px; background: #faf8f4; color: #0f1724; font: 400 17px/1.6 "DM Sans", system-ui, sans-serif; }
   main { max-width: 680px; }
-  pre { margin: 0 0 24px; font: 400 14px/24px "Martian Mono", monospace; color: #8e99ab; white-space: pre-wrap; }
-  pre b { color: #3b82f6; font-weight: 400; }
-  pre i { color: #ff8a8a; font-style: normal; }
-  h1 { margin: 0 0 16px; font-size: 48px; line-height: 1; letter-spacing: -.04em; font-weight: 600; }
-  p { margin: 0 0 32px; color: #c5ccd8; font-size: 18px; line-height: 28px; }
-  a { display: inline-flex; padding: 8px 12px; border-radius: 9999px; background: #1f5fd6; color: #fff; font-weight: 600; text-decoration: none; transition: background .7s cubic-bezier(.32,.72,0,1); }
-  a:hover { background: #3b82f6; }
+  pre { margin: 0 0 28px; padding: 14px 18px; border-radius: 12px; background: #0f1724; font: 400 13.5px/24px "Martian Mono", monospace; color: #9aa3b5; white-space: pre-wrap; }
+  pre b { color: #e8d9b0; font-weight: 400; }
+  pre i { color: #d9bd73; font-style: normal; }
+  h1 { margin: 0 0 16px; font: 600 clamp(44px, 9vw, 72px)/.98 "Cormorant Garamond", Georgia, serif; letter-spacing: -.018em; }
+  p { margin: 0 0 32px; color: #3a4252; font-size: 18px; line-height: 1.55; max-width: 46ch; }
   nav { display: flex; flex-wrap: wrap; gap: 10px; }
-  nav a { align-items: center; min-height: 44px; padding: 10px 18px; }
-  a.cri { background: #ff4d2e; color: #0a1220; }
-  a.cri:hover { background: #ff6a4f; }
-  a.linha { background: transparent; box-shadow: inset 0 0 0 1px #2f4366; }
-  a:focus-visible { outline: 2px solid #3b82f6; outline-offset: 4px; }
+  a { display: inline-flex; align-items: center; min-height: 46px; padding: 10px 20px; border-radius: 9999px; background: #0f1724; color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; transition: background .3s, box-shadow .3s; }
+  a:hover { background: #1b2740; }
+  a.linha { background: transparent; color: #0f1724; box-shadow: inset 0 0 0 1px #b8923a; }
+  a.linha:hover { background: #fff; box-shadow: inset 0 0 0 1px #8a6b22; }
+  a:focus-visible { outline: 2px solid #8a6b22; outline-offset: 4px; }
 </style>
 </head>
 <body>
@@ -32,7 +32,7 @@
 <i>404</i> rota não encontrada</pre>
   <h1>Essa página não existe.</h1>
   <p>O endereço pode ter mudado ou ter sido digitado errado. Os trabalhos e o contato continuam no portfólio.</p>
-  <nav aria-label="Para onde ir"><a class="cri" href="/criativos/">Criativos e conteúdos virais</a><a href="/sites/">Sites que convertem</a><a class="linha" href="/">Início</a></nav>
+  <nav aria-label="Para onde ir"><a href="/criativos/">Criativos e conteúdo médico</a><a href="/sites/">Sites para médicos e clínicas</a><a class="linha" href="/">Início</a></nav>
 </main>
 <script>document.getElementById('path').textContent = location.pathname;</script>
 </body>

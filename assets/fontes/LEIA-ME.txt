@@ -1,9 +1,10 @@
-Fontes do site (subconjunto "latin", baixado do Google Fonts em 05/11/2026):
+Fontes do site (subconjunto "latin", baixado do Google Fonts em 19/11/2026; a Martian Mono em 05/11/2026):
 
-  anybody-latin-v13.woff2           Anybody            Copyright The Anybody Project Authors
-  schibsted-grotesk-latin-v7.woff2  Schibsted Grotesk  Copyright The Schibsted Grotesk Project Authors
-  martian-mono-latin-v6.woff2       Martian Mono       Copyright The Martian Mono Project Authors
+  cormorant-garamond-latin-v21.woff2          Cormorant Garamond          títulos            Copyright The Cormorant Project Authors
+  cormorant-garamond-italico-latin-v21.woff2  Cormorant Garamond Italic   destaques dourados Copyright The Cormorant Project Authors
+  dm-sans-latin-v17.woff2                     DM Sans                     texto e rótulos    Copyright The DM Sans Project Authors
+  martian-mono-latin-v6.woff2                 Martian Mono                só nos painéis de código e de edição   Copyright The Martian Mono Project Authors
 
-As três são distribuídas sob a SIL Open Font License 1.1: https://openfontlicense.org
+Todas são distribuídas sob a SIL Open Font License 1.1: https://openfontlicense.org
 O número no nome é a versão do Google Fonts. Para atualizar uma fonte, salve o arquivo novo com outro
 número (o navegador guarda estes por um ano) e troque o nome em assets/css/wzs.css, em 404.html e em tools/gerar.mjs (FONTES_TOPO).

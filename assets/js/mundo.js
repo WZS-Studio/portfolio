@@ -1,172 +1,47 @@
 // Mundo 3D da WZS: uma única cena que fica atrás de todas as páginas.
-// A logo é a esfera de contornos de assets/js/logo3d.js (as curvas de nível do campo
-// h = x + sqrt(1 - y²) desenham os arcos do SVG). Um único número, "mix", vai de
-// -1 (Criativos) a +1 (Sites) e muda tudo junto: fluxo das linhas, cores, grade,
-// luz do fundo e os objetos em volta (telas de sites ou quadros de vídeo vertical).
+// O fundo é papel: branco e off-white quente, com desenhos em traço de ouro que mudam a cada capítulo.
+// A logo é o emblema de assets/js/emblema.js (esfera de pérola com os arcos em ouro), que vira o bastão de
+// Asclépio quando o mouse passa por ela. Um único número, "mix", vai de -1 (Criativos) a +1 (Sites) e decide
+// o lado do portal e os objetos em volta (quadros de vídeo vertical ou telas de sites).
 import * as THREE from "three";
 import { RoomEnvironment } from "/assets/vendor/addons/RoomEnvironment.js";
 import { criarDispositivos } from "./dispositivos.js";
+import { criarEmblema } from "./emblema.js";
 
-const STEP = 44.44 / 200;        // distância entre arcos (igual ao SVG)
-const HW = 13 / 200 / 2;         // meia largura do traço
-const RIDGE = 0.03;              // relevo das linhas
-
+// paleta da marca (a mesma do CSS)
 export const CORES = {
-  deep: "#0a1220", navy: "#0f1a2b", ice: "#eef1f6",
-  blue: "#3b82f6", cyan: "#8fd3ff",          // Sites
-  rec: "#ff4d2e", amber: "#ffb547",          // Criativos
+  papel: "#ffffff", creme: "#faf8f4", tinta: "#0f1724",
+  ouro: "#b8923a", ouroClaro: "#e8d9b0", ouroEscuro: "#8a6b22",
 };
 
 // Cenas: posição/escala da logo (em frações da tela visível), presença dos objetos,
 // quanto o fundo escurece para leitura. "d" = versão em pé (celular).
 const CENAS = {
-  portal:    { x: 0,    y: 0.02, s: 1,    o: 1,    cards: "portal", dim: 0,    d: { x: 0, y: -0.03, s: 0.45 } },
+  portal:    { x: 0,    y: 0.02, s: 1,    o: 1,    cards: "portal", dim: 0,    d: { x: 0, y: -0.03, s: 0.45 }, m: { s: 0.8 }, teto: 0.44 },
   hero:      { x: 0.3,  y: 0,    s: 0.86, o: 1,    cards: "orbita", dim: 0,    d: { x: 0, y: 0.25, s: 0.5, o: 0.9 }, m: { x: 0.37, s: 0.56, o: 0.8 } },
-  trabalhos: { x: 0.42, y: -0.32, s: 0.3, o: 0.75, cards: "fora",   dim: 0.55, d: { x: 0.3, y: -0.38, s: 0.2, o: 0.5 } },
-  leitura:   { x: 0.36, y: -0.06, s: 0.62, o: 0.38, cards: "fora",  dim: 0.78, d: { x: 0.2, y: 0.3, s: 0.4, o: 0.25 } },
+  trabalhos: { x: 0.42, y: -0.32, s: 0.3, o: 0,    cards: "fora",   dim: 0.55, d: { x: 0.3, y: -0.38, s: 0.2, o: 0 } },
+  leitura:   { x: 0.36, y: -0.06, s: 0.62, o: 0,    cards: "fora",  dim: 0.78, d: { x: 0.2, y: 0.3, s: 0.4, o: 0 } },
   servicos:  { x: -0.36, y: 0.04, s: 0.7, o: 0.7,  cards: "fora",   dim: 0.5,  d: { x: 0, y: 0.32, s: 0.42, o: 0.4 } },
   contato:   { x: 0,    y: 0.06, s: 1.02, o: 0.6,  cards: "orbita", dim: 0.1,  d: { x: 0, y: 0.18, s: 0.58, o: 0.5 } },
   // capítulos com celular/notebook: a logo recua para o fundo
   fundo:     { x: -0.37, y: 0.27, s: 0.2, o: 1, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.12, o: 1 }, m: { x: -0.36, y: 0.29, s: 0.18 } },
   painel:    { x: 0.02, y: 0.33, s: 0.17, o: 1, cards: "fora", dim: 0.3, d: { x: 0.33, y: 0.36, s: 0.1, o: 1 } },
+  // caso em destaque (Sites): como o fundo, mas a logo desce para o canto de baixo e deixa o nome do cliente livre
+  caso:      { x: -0.37, y: -0.36, s: 0.18, o: 1, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.12, o: 1 }, m: { x: -0.36, y: -0.36, s: 0.16 } },
   // oportunidade: a logo vira um globo de alcance
   globo:     { x: 0.2,  y: 0.02, s: 0.95, o: 0.85, cards: "fora", dim: 0.15, d: { x: 0, y: 0.2, s: 0.55, o: 0.8 }, m: { x: 0.24, s: 0.7 } },
 };
 
-const GLSL_CAMPO = /* glsl */ `
-  uniform float uTime, uNoise, uExtra, uWarp, uPhase, uHW;
-  uniform vec3 uPtr;
-  const float STEP = ${STEP.toFixed(5)};
-  float flow(vec3 p, float t) {
-    return sin(p.x * 2.1 + t * 0.9 + sin(p.y * 1.7 - t * 0.6) * 1.3) * 0.5
-         + sin(p.y * 2.6 - t * 0.7 + sin(p.z * 2.3 + t * 0.5) * 1.2) * 0.35
-         + sin(p.z * 3.1 + t * 0.4 + sin(p.x * 2.7 + t * 0.3) * 1.1) * 0.25;
-  }
-  float fieldH(vec3 p) {
-    float s = sqrt(max(0.0, 1.0 - p.y * p.y));
-    vec3 d = p - uPtr;
-    float h = p.x + s;
-    if (uNoise > 0.001) h += uNoise * flow(p + uPhase, uTime) * s;      // fluxo só quando há energia
-    if (uWarp > 0.001) h += uWarp * 0.22 * exp(-dot(d, d) * 7.0) * s;
-    return h;
-  }
-  float lineDist(vec3 p, out float k, out float w) {
-    float h = fieldH(p);
-    vec3 t1 = normalize(abs(p.y) < 0.99 ? cross(p, vec3(0.0, 1.0, 0.0)) : cross(p, vec3(1.0, 0.0, 0.0)));
-    vec3 t2 = cross(p, t1);
-    float e = 0.003;
-    vec2 g = vec2(fieldH(normalize(p + t1 * e)) - h, fieldH(normalize(p + t2 * e)) - h) / e;
-    float u = h / STEP;
-    k = floor(u + 0.5);
-    w = (k < 0.0 || k > 9.0) ? uExtra : 1.0;
-    return abs(u - k) * STEP / clamp(length(g), 0.7, 7.0);
-  }
-  float rimDist(vec3 p) { return abs(p.z); }
-  // grade de precisão (universo Sites): paralelos e meridianos a cada 15°
-  float gridDist(vec3 p) {
-    float lat = asin(clamp(p.y, -1.0, 1.0));
-    float lon = atan(p.z, p.x);
-    float g = 0.2618;
-    float dl = abs(fract(lat / g + 0.5) - 0.5) * g;
-    float dm = abs(fract(lon / g + 0.5) - 0.5) * g * cos(lat);
-    return min(dl, dm);
-  }
-`;
-
-const LOGO_VERT = /* glsl */ `
-  uniform float uR, uRidge, uRim;
-  varying vec3 vP; varying vec3 vW; varying vec3 vN;
-  ${GLSL_CAMPO}
-  vec3 disp(vec3 p) {
-    float k, w;
-    float d = lineDist(p, k, w);
-    float pr = sqrt(clamp(1.0 - (d / uHW) * (d / uHW), 0.0, 1.0)) * w;
-    float dr = rimDist(p);
-    pr = max(pr, sqrt(clamp(1.0 - (dr / uHW) * (dr / uHW), 0.0, 1.0)) * uRim);
-    return p * uR * (1.0 + pr * uRidge);
-  }
-  void main() {
-    vec3 p = normalize(position);
-    vec3 pos = disp(p);
-    vec3 t1 = normalize(abs(p.y) < 0.99 ? cross(p, vec3(0.0, 1.0, 0.0)) : cross(p, vec3(1.0, 0.0, 0.0)));
-    vec3 t2 = cross(p, t1);
-    float e = 0.0025;
-    vec3 n = normalize(cross(disp(normalize(p + t1 * e)) - pos, disp(normalize(p + t2 * e)) - pos));
-    if (dot(n, p) < 0.0) n = -n;
-    vN = normalize(mat3(modelMatrix) * n);
-    vP = p;
-    vec4 wp = modelMatrix * vec4(pos, 1.0);
-    vW = wp.xyz;
-    gl_Position = projectionMatrix * viewMatrix * wp;
-  }
-`;
-
-const LOGO_FRAG = /* glsl */ `
-  uniform vec3 uColA, uColB, uBodyCol, uRimCol, uGridCol;
-  // matcaps renderizados no Blender (tools/blender/matcaps.py): cerâmica gelo, cromo (Sites), laca (Criativos)
-  uniform sampler2D uMatG, uMatS, uMatC;
-  uniform float uTemMat, uWc, uWs;
-  uniform float uLineA, uBody, uRim, uFlip, uGrid, uScan, uGlow, uFade;
-  varying vec3 vP; varying vec3 vW; varying vec3 vN;
-  ${GLSL_CAMPO}
-  void main() {
-    vec3 p = normalize(vP);
-    float k, w;
-    float d = lineDist(p, k, w);
-    float aa = fwidth(d) * 1.2 + 1e-4;
-    float la = smoothstep(uHW + aa, uHW - aa, d) * w;
-    float dr = rimDist(p);
-    float ra = smoothstep(uHW + fwidth(dr) * 1.2, uHW - fwidth(dr) * 1.2, dr) * uRim;
-    float kk = ra > la ? 0.0 : k;
-    la = max(la, ra);
-
-    float gd = gridDist(p);
-    float gw = uHW * 0.32;
-    float ga = smoothstep(gw + fwidth(gd), gw - fwidth(gd), gd) * uGrid;
-
-    vec3 n = normalize(vN) * uFlip;
-    vec3 v = normalize(cameraPosition - vW);
-    vec3 L = normalize(vec3(-0.5, 0.7, 0.8));
-    float diff = 0.5 + 0.5 * max(dot(n, L), 0.0);
-    float spec = pow(max(dot(reflect(-L, n), v), 0.0), 40.0) * 0.6;
-    float fres = pow(1.0 - max(dot(n, v), 0.0), 3.0);
-
-    // faixa de leitura que percorre a esfera (Sites)
-    float scanY = fract(uTime * 0.11) * 2.6 - 1.3;
-    float band = exp(-pow((p.y - scanY) * 9.0, 2.0)) * uScan;
-
-    vec3 tinta = mix(uColA, uColB, clamp(kk / 9.0, 0.0, 1.0));
-    vec3 lineCol = tinta * diff + spec + fres * 0.2 + band * 0.6;
-    if (uTemMat > 0.5) {
-      vec3 nv = normalize((viewMatrix * vec4(n, 0.0)).xyz);
-      vec2 muv = nv.xy * 0.485 + 0.5;
-      vec3 mat = texture2D(uMatG, muv).rgb * max(0.0, 1.0 - uWc - uWs) + texture2D(uMatS, muv).rgb * uWs + texture2D(uMatC, muv).rgb * uWc;
-      lineCol = mat * mix(vec3(1.0), tinta, 0.5) * 1.12 + tinta * 0.22 * uWs + fres * 0.12 + band * 0.6;
-    }
-    lineCol *= 1.0 + uGlow;
-    vec3 bodyCol = uBodyCol + fres * uRimCol * 0.9;
-    float ba = uBody * (0.3 + fres * 0.7);
-    vec3 col = mix(bodyCol, uGridCol * (0.7 + band * 2.0), ga * (1.0 - la));
-    col = mix(col, lineCol, la);
-    float a = max(max(ba * (1.0 - la), ga * 0.55 * (1.0 - la)), la * uLineA);
-    a *= uFade;
-    if (a < 0.003) discard;
-    gl_FragColor = vec4(col, a);
-    #include <colorspace_fragment>
-  }
-`;
-
-// Fundo: um triângulo de tela cheia. Navy em todo lugar; luz quente que se mexe (Criativos)
-// e piso em grade azul com brilho frio (Sites). No portal cada lado mostra a sua luz.
+// Fundo: um triângulo de tela cheia. Papel branco e creme, com desenhos em traço de ouro.
+// No portal cada lado mostra o seu desenho: riscos (Criativos) e piso em perspectiva (Sites).
 const FUNDO_VERT = /* glsl */ `
   varying vec2 vUv;
   void main() { vUv = position.xy * 0.5 + 0.5; gl_Position = vec4(position.xy, 0.999, 1.0); }
 `;
 const FUNDO_FRAG = /* glsl */ `
   uniform vec2 uRes, uFoco; uniform float uTime, uMix, uPortal, uPortrait, uDim, uSplitK, uLuz, uOnda, uVelT;
-  uniform vec3 uDeep, uNavy, uRec, uAmber, uBlue, uCyan, uCorLuz;
-  uniform vec3 uDeep2, uNavy2, uRec2, uAmber2, uBlue2, uCyan2;
-  uniform float uTroca, uLado, uBaixo, uPadA, uPadB;
+  uniform vec3 uPapel, uCreme, uOuro, uOuroClaro, uTinta;
+  uniform float uTroca, uLado, uBaixo, uPadA, uPadB, uTomA, uTomB, uRaio, uForma, uSombra;
   varying vec2 vUv;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
@@ -178,7 +53,7 @@ const FUNDO_FRAG = /* glsl */ `
   float dot2(vec2 v) { return dot(v, v); }
   // coração (distância com sinal; ponta em y = 0, topo perto de y = 1)
   float coracao(vec2 p) { p.x = abs(p.x); if (p.y + p.x > 1.0) return sqrt(dot2(p - vec2(0.25, 0.75))) - 0.35355; return sqrt(min(dot2(p - vec2(0.0, 1.0)), dot2(p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y); }
-  // desenho do fundo de cada capítulo; devolve (luz principal, luz secundária) na cor do universo
+  // desenho do fundo de cada capítulo; devolve (traço principal, traço secundário), pintados em ouro
   vec2 padrao(float id, vec2 p, vec2 f, float t, float vt, float ar) {
     float r = length(p - f), a = atan(p.y - f.y, p.x - f.x);
     if (id < 0.5) { // riscos diagonais
@@ -267,77 +142,64 @@ const FUNDO_FRAG = /* glsl */ `
     float ar = uRes.x / uRes.y;
     vec2 p = (uv - 0.5) * vec2(ar, 1.0);
     float t = uTime;
-    // troca de paleta: a cor do capítulo novo se espalha em círculo a partir da logo
-    float rT = length(p - (uFoco - 0.5) * vec2(ar, 1.0));
-    float RT = uTroca * 2.7;
+    vec2 f = (uFoco - 0.5) * vec2(ar, 1.0);
+    // troca de capítulo: o desenho e o tom do papel novos se abrem em círculo a partir da logo
+    float rT = length(p - f), RT = uTroca * 2.7;
     float kT = uTroca >= 1.0 ? 1.0 : (uTroca <= 0.0 ? 0.0 : smoothstep(RT + 0.22, RT - 0.04, rT));
-    vec3 cDeep = mix(uDeep, uDeep2, kT), cNavy = mix(uNavy, uNavy2, kT), cRec = mix(uRec, uRec2, kT);
-    vec3 cAmber = mix(uAmber, uAmber2, kT), cBlue = mix(uBlue, uBlue2, kT), cCyan = mix(uCyan, uCyan2, kT);
     float c = clamp(-uMix, 0.0, 1.0), s = clamp(uMix, 0.0, 1.0);
 
     // lado: 0 = Criativos (esquerda / topo), 1 = Sites (direita / base)
     float axis = mix(uv.x, 1.0 - uv.y, uPortrait);
     float edge = 0.5 - uMix * uSplitK;
     float side = smoothstep(edge - 0.2, edge + 0.2, axis);
-    float wC = mix(c, (1.0 - side) * (0.27 + 0.73 * c) * (1.0 - 0.75 * s), uPortal);
+    float wC = mix(c, (1.0 - side) * (0.3 + 0.7 * c) * (1.0 - 0.75 * s), uPortal);
     float wS = mix(s, side * (0.3 + 0.7 * s) * (1.0 - 0.75 * c), uPortal);
-    wC *= 1.0 - uDim * 0.82; wS *= 1.0 - uDim * 0.82;
-
-    vec3 col = mix(cNavy, cDeep, smoothstep(0.2, 1.1, length(p)));
-
-    // nas jornadas a luz fica presa à logo (um halo), para o texto continuar legível
+    float calma = 1.0 - uDim * 0.82;                       // seções de leitura: o desenho quase some
     float jr = 1.0 - uPortal;
-    vec2 f = (uFoco - 0.5) * vec2(ar, 1.0);
 
-    // Criativos: dois focos de luz que dançam + riscos diagonais + grão
-    vec2 b1 = mix(vec2(-0.35 * ar + sin(t * 0.7) * 0.18, 0.15 + cos(t * 0.9) * 0.16), f + vec2(sin(t * 0.7) * 0.1, cos(t * 0.9) * 0.08), jr);
-    vec2 b2 = mix(vec2(-0.05 * ar + cos(t * 0.55) * 0.25, -0.3 + sin(t * 1.1) * 0.12), f + vec2(cos(t * 0.55) * 0.16 - 0.12, sin(t * 1.1) * 0.08 - 0.14), jr);
-    float g1 = exp(-dot(p - b1, p - b1) * mix(3.2, 7.0, jr));
-    float g2 = exp(-dot(p - b2, p - b2) * mix(4.5, 9.0, jr));
-    vec3 warm = cRec * g1 * mix(0.85, 0.62, jr) + cAmber * g2 * mix(0.55, 0.4, jr);
-    float streak = smoothstep(0.985, 1.0, sin((p.x * 0.8 + p.y) * 26.0 - t * 2.4 - uVelT * 7.0)) * 0.06;
-    warm += cAmber * streak * (g1 + g2 + 0.25) * uPortal;
-    col += warm * wC;
+    // papel: branco, com o off-white quente chegando pelas bordas; os capítulos alternam entre os dois tons
+    float tom = mix(uTomA, uTomB, kT);
+    vec3 col = mix(uPapel, uCreme, clamp(tom * 0.9 + smoothstep(0.3, 1.2, length(p)) * 0.55, 0.0, 1.0));
 
-    // Sites: brilho frio no alto + piso em perspectiva com linhas finas
-    vec2 cpos = mix(vec2(0.32 * ar, 0.42), f + vec2(0.06, 0.1), jr);
-    float glow = exp(-dot(p - cpos, p - cpos) * mix(2.4, 5.0, jr));
-    vec3 cool = cBlue * glow * mix(0.55, 0.5, jr);
-    float hz = -0.12;
-    if (p.y < hz) {
-      float z = 0.45 / (hz - p.y);
-      vec2 gp = vec2(p.x * z, z + t * 0.12 + uVelT * 0.9);
-      vec2 gl = abs(fract(gp * 1.2) - 0.5) / fwidth(gp * 1.2);
-      float line = 1.0 - min(min(gl.x, gl.y), 1.0);
-      float fade = smoothstep(9.0, 1.2, z) * smoothstep(hz, hz - 0.08, p.y);
-      cool += cCyan * line * fade * 0.22 * uPortal;
-    }
-    float scan = smoothstep(0.996, 1.0, sin(uv.y * uRes.y * 0.5)) * 0.015;
-    cool += cCyan * scan;
-    col += cool * wS;
-
-    // luz que a logo emite quando "fala": clarão no foco e uma onda circular que atravessa a tela
+    // luz quente junto da logo, como um refletor de estúdio sobre o papel
     float rl = length(p - f);
-    col += uCorLuz * exp(-rl * rl * 5.0) * uLuz * 0.42;
-    if (uOnda > 0.0) {
-      float R = uOnda * 2.1;
-      col += uCorLuz * exp(-pow((rl - R) / (0.035 + uOnda * 0.09), 2.0)) * pow(1.0 - uOnda, 1.6) * 0.34;
-      col += uCorLuz * smoothstep(R, R - 0.6, rl) * pow(1.0 - uOnda, 3.0) * 0.07;
-    }
-    // padrão do capítulo: o novo se abre em círculo a partir da logo; mais aceso perto da luz dela
+    col = mix(col, uOuroClaro, exp(-rl * rl * mix(2.0, 4.2, jr)) * (0.2 + 0.3 * uLuz) * calma * (0.4 + 0.6 * min(1.0, wC + wS)));
+
+    // desenho em traço de ouro. No portal: riscos do lado de Criativos e piso em perspectiva do lado de Sites.
+    // Nas jornadas: o desenho do capítulo, mais marcado perto da logo.
+    float tinta = 0.0;
     if (jr > 0.01) {
       vec2 pA = padrao(uPadA, p, f, t, uVelT, ar);
       vec2 pB = (kT > 0.001 && abs(uPadB - uPadA) > 0.5) ? padrao(uPadB, p, f, t, uVelT, ar) : pA;
       vec2 pat = mix(pA, pB, kT);
-      float lp = (0.2 + 0.95 * exp(-rT * rT * 1.3)) * (1.0 + uLuz * 0.9) * jr;
-      col += (cRec * pat.x + cAmber * pat.y) * lp * wC * 0.6 + (cBlue * pat.x + cCyan * pat.y) * lp * wS * 0.6;
+      tinta += (pat.x * 0.85 + pat.y * 0.6) * jr * max(wC, wS);
     }
-    // a frente da troca é uma linha de luz
-    if (uTroca > 0.0 && uTroca < 1.0) col += mix(cRec, cBlue, s) * exp(-pow((rT - RT) / 0.028, 2.0)) * 0.32 * (1.0 - uTroca);
-    // escurecimento para leitura, preso à tela (sem bordas que rolam junto com as seções)
-    col *= 1.0 - uLado * 0.62 * smoothstep(0.78, 0.02, uv.x);
-    col *= 1.0 - uBaixo * 0.86 * smoothstep(0.56, 0.0, uv.y);
-    col += (hash(uv * uRes + fract(t) * 37.0) - 0.5) * (0.018 + 0.03 * wC);
+    if (uPortal > 0.01) {
+      vec2 pc = padrao(0.0, p, f, t, uVelT, ar), ps = padrao(1.0, p, f, t, uVelT, ar);
+      tinta += ((pc.x * 0.85 + pc.y * 0.6) * wC + (ps.x * 0.85 + ps.y * 0.6) * wS) * uPortal;
+    }
+    float perto = 0.36 + 0.5 * exp(-rT * rT * 1.3);
+    col = mix(col, uOuro, clamp(tinta * perto * (1.0 + uLuz * 0.6), 0.0, 1.0) * 0.6 * calma);
+
+    // sombra de contato sob a logo: mais estreita quando ela está de pé, como bastão
+    if (uSombra > 0.001) {
+      float larg = uRaio * (1.0 - 0.55 * uForma);
+      vec2 q = p - f + vec2(0.0, uRaio * (1.2 + 0.2 * uForma));
+      float sh = exp(-(q.x * q.x) / (larg * larg * 0.62) - (q.y * q.y) / (uRaio * uRaio * 0.012));
+      col = mix(col, uTinta, sh * 0.12 * uSombra);
+    }
+    // quando a logo "fala": um anel fino de ouro atravessa a tela
+    if (uOnda > 0.0) {
+      float R = uOnda * 2.1;
+      col = mix(col, uOuro, exp(-pow((rl - R) / (0.01 + uOnda * 0.03), 2.0)) * pow(1.0 - uOnda, 1.6) * 0.5);
+      col = mix(col, uOuroClaro, smoothstep(R, R - 0.5, rl) * pow(1.0 - uOnda, 3.0) * 0.12);
+    }
+    // a frente da troca de capítulo é uma linha de ouro
+    if (uTroca > 0.0 && uTroca < 1.0) col = mix(col, uOuro, exp(-pow((rT - RT) / 0.012, 2.0)) * 0.5 * (1.0 - uTroca));
+    // véu de leitura preso à tela: papel limpo atrás do texto (esquerda no computador, pé da tela no celular)
+    col = mix(col, uPapel, uLado * 0.82 * smoothstep(0.72, 0.05, uv.x));
+    col = mix(col, uPapel, uBaixo * 0.9 * smoothstep(0.6, 0.05, uv.y));
+    col += (hash(uv * uRes + fract(t) * 37.0) - 0.5) * 0.012;
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
@@ -361,13 +223,13 @@ const CARD_FRAG = /* glsl */ `
     if (inside < 0.01) discard;
     float barH = 0.075 * uBar;
     vec2 iuv = vec2(vUv.x, vUv.y / (1.0 - barH));
-    vec3 col = uHasMap > 0.5 ? texture2D(uMap, iuv).rgb : mix(vec3(0.03, 0.05, 0.09), vec3(0.07, 0.1, 0.17), vUv.y);
+    vec3 col = uHasMap > 0.5 ? texture2D(uMap, iuv).rgb : mix(vec3(0.84, 0.81, 0.74), vec3(0.94, 0.92, 0.88), vUv.y);
     if (vUv.y > 1.0 - barH) {
-      col = vec3(0.035, 0.055, 0.1);
+      col = vec3(0.9, 0.88, 0.83);
       vec2 bp = vec2(vUv.x * uAspect, (vUv.y - (1.0 - barH * 0.5)));
       for (int i = 0; i < 3; i++) {
         float dd = length(bp - vec2(0.05 + float(i) * 0.045, 0.0));
-        col = mix(col, vec3(0.3, 0.38, 0.52), 1.0 - smoothstep(0.011, 0.015, dd));
+        col = mix(col, uEdge, 1.0 - smoothstep(0.011, 0.015, dd));
       }
     }
     float rim = 1.0 - smoothstep(0.0, aa * 2.5 + 0.004, abs(d));
@@ -379,7 +241,7 @@ const CARD_FRAG = /* glsl */ `
   }
 `;
 
-// clarão da logo: aura constante, raios e uma onda que sai da esfera a cada pulso (mistura aditiva)
+// aura da logo sobre o papel: um halo de ouro claro, raios finos (como gravação) quando ela "fala" e um anel que sai dela
 const LUZ_VERT = /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const LUZ_FRAG = /* glsl */ `
   uniform vec3 uCor; uniform float uK, uOnda, uT, uBase, uFade;
@@ -387,14 +249,13 @@ const LUZ_FRAG = /* glsl */ `
   void main() {
     vec2 p = (vUv - 0.5) * 8.0;
     float r = length(p), a = atan(p.y, p.x);
-    float k = uBase + uK;
-    float halo = exp(-max(r - 1.0, 0.0) * 2.0) * smoothstep(0.7, 1.05, r);
-    float nucleo = exp(-r * r * 0.8);
-    float raios = pow(0.5 + 0.5 * sin(a * 7.0 + uT * 0.7) * sin(a * 3.0 - uT * 0.45), 5.0) * exp(-max(r - 1.0, 0.0) * 0.9) * smoothstep(0.9, 1.3, r);
-    float onda = 0.0;
-    if (uOnda > 0.0) { float R = 1.05 + uOnda * 2.8; onda = exp(-pow((r - R) / (0.05 + uOnda * 0.16), 2.0)) * pow(1.0 - uOnda, 1.4); }
-    vec3 col = uCor * (halo * 0.6 * k + nucleo * 0.3 * uK + raios * 0.8 * uK + onda * 1.4) + vec3(1.0) * (halo * 0.18 * uK + onda * 0.3);
-    gl_FragColor = vec4(col * smoothstep(4.0, 3.0, r) * uFade, 1.0);
+    float halo = exp(-max(r - 1.0, 0.0) * 2.4) * smoothstep(0.8, 1.05, r);
+    float raios = pow(0.5 + 0.5 * sin(a * 24.0 + uT * 0.25), 30.0) * exp(-max(r - 1.0, 0.0) * 1.3) * smoothstep(1.1, 1.32, r);
+    float anel = 0.0;
+    if (uOnda > 0.0) { float R = 1.05 + uOnda * 2.8; anel = exp(-pow((r - R) / (0.02 + uOnda * 0.05), 2.0)) * pow(1.0 - uOnda, 1.4); }
+    float alfa = (halo * 0.16 * (uBase + uK) + raios * 0.55 * uK + anel * 0.5) * smoothstep(4.0, 3.0, r) * uFade;
+    gl_FragColor = vec4(uCor, clamp(alfa, 0.0, 1.0));
+    #include <colorspace_fragment>
   }
 `;
 
@@ -415,6 +276,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   // o nível vem do aparelho (tela física, ponteiro, núcleos), não da janela: janela estreita no computador continua "alta"
   let nivel = coarse || Math.min(screen.width, screen.height) < 700 || (navigator.hardwareConcurrency || 8) <= 4 ? "media" : "alta";
   const pedido = new URLSearchParams(location.search).get("qualidade");
+  const fixo = new URLSearchParams(location.search).get("bastao") === "1" ? 1 : 0;      // ?bastao=1 deixa a logo como bastão (para conferir)
   try {
     const sonda = document.createElement("canvas");
     const gl = sonda.getContext("webgl2") || sonda.getContext("webgl");
@@ -426,9 +288,6 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   if (["alta", "media", "baixa"].includes(pedido)) nivel = pedido;
   const leve = nivel !== "alta";
 
-  // relevo das linhas: precisa de malha densa; no nível baixo as linhas ficam lisas (só no shader)
-  var RELEVO = nivel === "alta" ? 1 : nivel === "media" ? 0.6 : 0;
-
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: nivel !== "baixa", alpha: false, powerPreference: "high-performance" });
@@ -436,8 +295,8 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   let dprMax = nivel === "alta" ? 1.5 : nivel === "media" ? 1.25 : 1;
   renderer.setPixelRatio(Math.min(devicePixelRatio, dprMax));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.setClearColor(CORES.deep);
-  // só os materiais físicos (celular, notebook) usam tom de câmera; os shaders da logo e do fundo não
+  renderer.setClearColor(CORES.papel);
+  // só os materiais físicos (celular, notebook) usam tom de câmera; os shaders do emblema e do fundo não
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
 
@@ -457,34 +316,34 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   camera.position.set(0, 0, CAM_Z);
 
   const C = (h) => new THREE.Color(h);
-  const MATCAPS = { g: { value: null }, s: { value: null }, c: { value: null }, tem: { value: 0 } };
+  const MATCAPS = { ouro: { value: null }, perola: { value: null }, tem: { value: 0 } };
 
   // ---------- fundo ----------
   const fundoU = {
     uRes: { value: new THREE.Vector2(1, 1) }, uTime: { value: 0 }, uMix: { value: 0 }, uPortal: { value: 1 },
     uPortrait: { value: 0 }, uDim: { value: 0 }, uSplitK: { value: 0.12 }, uFoco: { value: new THREE.Vector2(0.5, 0.5) },
-    uDeep: { value: C(CORES.deep) }, uNavy: { value: C(CORES.navy) }, uRec: { value: C(CORES.rec) },
-    uAmber: { value: C(CORES.amber) }, uBlue: { value: C(CORES.blue) }, uCyan: { value: C(CORES.cyan) },
-    uLuz: { value: 0 }, uOnda: { value: 0 }, uVelT: { value: 0 }, uCorLuz: { value: C(CORES.ice) },
-    uDeep2: { value: C(CORES.deep) }, uNavy2: { value: C(CORES.navy) }, uRec2: { value: C(CORES.rec) },
-    uAmber2: { value: C(CORES.amber) }, uBlue2: { value: C(CORES.blue) }, uCyan2: { value: C(CORES.cyan) },
-    uTroca: { value: 0 }, uLado: { value: 0 }, uBaixo: { value: 0 }, uPadA: { value: 0 }, uPadB: { value: 0 },
+    uPapel: { value: C(CORES.papel) }, uCreme: { value: C(CORES.creme) }, uTinta: { value: C(CORES.tinta) },
+    uOuro: { value: C(CORES.ouro) }, uOuroClaro: { value: C(CORES.ouroClaro) },
+    uLuz: { value: 0 }, uOnda: { value: 0 }, uVelT: { value: 0 }, uRaio: { value: 0.2 }, uForma: { value: 0 }, uSombra: { value: 0 },
+    uTroca: { value: 0 }, uLado: { value: 0 }, uBaixo: { value: 0 }, uPadA: { value: 0 }, uPadB: { value: 0 }, uTomA: { value: 0 }, uTomB: { value: 0 },
   };
-  // desenho do fundo por capítulo (a cor continua a do universo):
+  // desenho do fundo por capítulo, sempre em traço de ouro:
   // 0 riscos · 1 grade · 2 feed · 3 estilhaços · 4 trilhas · 5 corações · 6 pontos · 7 barras · 8 radar
   // 9 céu · 10 bolhas · 11 vapor · 12 raios · 13 carregando · 14 código
   const PADROES = {
     "c-problema": 2, "c-explode": 3, "c-montagem": 4, "c-sucesso": 5, numeros: 6, trabalhos: 12, "c-dinheiro": 7, anuncios: 6, "c-oportunidade": 8,
-    "s-problema": 13, "s-montagem": 14, "s-medgrind": 9, projetos: 6, "s-oportunidade": 10, "s-cafe": 11,
+    "s-problema": 13, "s-montagem": 14, "s-caso": 9, projetos: 6, "s-oportunidade": 10, "s-cafe": 11,
   };
+  // capítulos em que o papel fica no off-white quente (os outros ficam no branco): os dois tons se alternam pela página
+  const CREME = new Set(["c-problema", "c-montagem", "numeros", "c-dinheiro", "c-oportunidade", "s-problema", "s-caso", "s-oportunidade"]);
   const tomPara = (nome, imediato) => {
-    const id = PADROES[nome] ?? (st.universo === "sites" ? 1 : 0);
-    if (!imediato && id === fundoU.uPadB.value && st.tomChave === "ok") return;
+    const id = PADROES[nome] ?? (st.universo === "sites" ? 1 : 0), tom = CREME.has(nome) ? 1 : 0;
+    if (!imediato && id === fundoU.uPadB.value && tom === fundoU.uTomB.value && st.tomChave === "ok") return;
     st.tomChave = "ok";
-    if (imediato || reduce) { fundoU.uPadA.value = fundoU.uPadB.value = id; st.troca = 0; return; }
-    // se a troca anterior ainda corre, parte do padrão que domina a tela
-    if (st.troca > 0.5) fundoU.uPadA.value = fundoU.uPadB.value;
-    fundoU.uPadB.value = id; st.troca = 0.0001;
+    if (imediato || reduce) { fundoU.uPadA.value = fundoU.uPadB.value = id; fundoU.uTomA.value = fundoU.uTomB.value = tom; st.troca = 0; return; }
+    // se a troca anterior ainda corre, parte do desenho que domina a tela
+    if (st.troca > 0.5) { fundoU.uPadA.value = fundoU.uPadB.value; fundoU.uTomA.value = fundoU.uTomB.value; }
+    fundoU.uPadB.value = id; fundoU.uTomB.value = tom; st.troca = 0.0001;
     st.pulso = Math.max(st.pulso, 0.85); st.onda = 0.001;
   };
   const triGeo = new THREE.BufferGeometry();
@@ -496,48 +355,25 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   fundo.frustumCulled = false; fundo.renderOrder = -10;
   scene.add(fundo);
 
-  // ---------- logo ----------
+  // ---------- logo: o emblema (esfera de pérola, arcos de ouro) que vira o bastão de Asclépio ----------
   const logoPos = new THREE.Group(), tilt = new THREE.Group(), spin = new THREE.Group();
   logoPos.add(tilt); tilt.add(spin); scene.add(logoPos);
-
-  const u = (extra) => ({
-    uTime: { value: 0 }, uNoise: { value: 0 }, uExtra: { value: 0 }, uWarp: { value: 0 }, uPhase: { value: 0 },
-    uHW: { value: HW }, uPtr: { value: new THREE.Vector3(0, 0, 9) }, uR: { value: 1 }, uRidge: { value: RIDGE * RELEVO },
-    uRim: { value: 1 }, uColA: { value: C(CORES.ice) }, uColB: { value: C(CORES.ice) }, uBodyCol: { value: C("#0c1628") },
-    uRimCol: { value: C(CORES.blue) }, uGridCol: { value: C(CORES.cyan) }, uLineA: { value: 1 }, uBody: { value: 0 },
-    uFlip: { value: 1 }, uGrid: { value: 0 }, uScan: { value: 0 }, uGlow: { value: 0 }, uFade: { value: 1 },
-    uMatG: MATCAPS.g, uMatS: MATCAPS.s, uMatC: MATCAPS.c, uTemMat: MATCAPS.tem, uWc: { value: 0 }, uWs: { value: 0 }, ...extra,
-  });
-  const mat = (uniforms, side) => new THREE.ShaderMaterial({
-    uniforms, vertexShader: LOGO_VERT, fragmentShader: LOGO_FRAG, side,
-    transparent: true, depthWrite: false, extensions: { derivatives: true },
-  });
-  const seg = nivel === "alta" ? 300 : nivel === "media" ? 192 : 112;
-  const geo = new THREE.SphereGeometry(1, seg, Math.round(seg * 0.75));
-  const geoLo = new THREE.SphereGeometry(1, seg / 2, Math.round(seg * 0.375));
-  const backU = u({ uFlip: { value: -1 } });
-  const back = new THREE.Mesh(geo, mat(backU, THREE.BackSide)); back.renderOrder = 0;
-  const innerU = u({ uR: { value: 0.72 }, uPhase: { value: 1.7 }, uRim: { value: 0 }, uRidge: { value: 0 } });
-  const inner = new THREE.Mesh(geoLo, mat(innerU, THREE.DoubleSide)); inner.renderOrder = 1;
-  const innerG = new THREE.Group(); innerG.add(inner);
-  const frontU = u();
-  const front = new THREE.Mesh(geo, mat(frontU, THREE.FrontSide)); front.renderOrder = 5;
-  spin.add(back, innerG, front);
-  const logoUs = [frontU, backU, innerU];
-  // clarão atrás da esfera + uma luz pontual que acende celular e notebook quando a logo fala
-  const luzU = { uCor: { value: C(CORES.ice) }, uK: { value: 0 }, uOnda: { value: 0 }, uT: { value: 0 }, uBase: { value: 0.15 }, uFade: { value: 1 } };
+  const emblema = criarEmblema({ nivel, matcaps: MATCAPS });
+  spin.add(emblema.grupo);
+  // aura atrás do emblema + uma luz pontual que acende celular e notebook quando a logo fala
+  const luzU = { uCor: { value: C(CORES.ouro) }, uK: { value: 0 }, uOnda: { value: 0 }, uT: { value: 0 }, uBase: { value: 0.15 }, uFade: { value: 1 } };
   const luz = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.ShaderMaterial({
-    uniforms: luzU, vertexShader: LUZ_VERT, fragmentShader: LUZ_FRAG, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+    uniforms: luzU, vertexShader: LUZ_VERT, fragmentShader: LUZ_FRAG, transparent: true, depthWrite: false, depthTest: false,
   }));
   luz.position.z = -0.6; luz.renderOrder = -2; logoPos.add(luz);
-  const luzP = new THREE.PointLight("#ffffff", 0, 9, 1.4); luzP.position.z = 0.8; logoPos.add(luzP);
-  // matcaps: carregam depois da primeira imagem; até lá a logo usa a luz calculada no shader
+  const luzP = new THREE.PointLight("#fff1d6", 0, 9, 1.4); luzP.position.z = 0.8; logoPos.add(luzP);
+  // matcaps (ouro e pérola, assados no Blender): chegam depois da primeira imagem; até lá o emblema usa uma luz simples
   {
     const tl = new THREE.TextureLoader(); let n = 0;
-    for (const [k, nome] of [["g", "gelo"], ["s", "sites"], ["c", "criativos"]]) {
-      tl.load(matcaps[nome] || `/assets/tex/matcap-${nome}.jpg`, (tex) => {
+    for (const k of ["ouro", "perola"]) {
+      tl.load(matcaps[k] || `/assets/tex/matcap-${k}.webp`, (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace; MATCAPS[k].value = tex;
-        if (++n === 3) MATCAPS.tem.value = 1;
+        if (++n === 2) MATCAPS.tem.value = 1;
       });
     }
   }
@@ -551,7 +387,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
     const uni = {
       uMap: { value: null }, uHasMap: { value: 0 }, uOpacity: { value: 0 }, uAspect: { value: aspect }, uTime: { value: 0 },
       uBar: { value: tipo === "tela" ? 1 : 0 }, uSeed: { value: i * 0.173 },
-      uEdge: { value: C(tipo === "tela" ? CORES.cyan : CORES.amber) },
+      uEdge: { value: C(CORES.ouro) },
     };
     const m = new THREE.Mesh(cardGeoCache.get(key), new THREE.ShaderMaterial({
       uniforms: uni, vertexShader: CARD_VERT, fragmentShader: CARD_FRAG, transparent: true, depthWrite: false,
@@ -584,10 +420,15 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
     ptr: { x: 0, y: 0, tx: 0, ty: 0 },
     mergulho: 0, chegada: 0, ocioso: 0, glow: 0, pulso: 0,
     vivo: true, visivel: true, opacidade: 1,
+    morph: 0, emblema: 0, vida: 0, ptrVisto: false,   // morph: 0 = logo, 1 = bastão de Asclépio
   };
 
   let W = 1, H = 1, retrato = false;
-  const enquadrar = (cena) => (retrato ? { ...cena, ...cena.d } : innerWidth < 1400 ? { ...cena, ...(cena.m || {}) } : cena);
+  const enquadrar = (cena) => {
+    const c = retrato ? { ...cena, ...cena.d } : innerWidth < 1400 ? { ...cena, ...(cena.m || {}) } : cena;
+    // teto: no portal a logo fica entre duas palavras; em tela mais quadrada ela encolhe para não entrar no texto
+    return cena.teto && !retrato ? { ...c, s: Math.min(c.s, cena.teto * camera.aspect) } : c;
+  };
   function visivel() {
     const h = 2 * CAM_Z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     return { w: h * camera.aspect, h };
@@ -608,9 +449,10 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   // ponteiro (paralaxe amortecida, como no MedGrind: x .35, y .18)
   const onMove = (e) => {
     st.ptr.tx = (e.clientX / innerWidth) * 2 - 1; st.ptr.ty = (e.clientY / innerHeight) * 2 - 1;
-    st.ocioso = 0;
+    st.ocioso = 0; st.ptrVisto = true;
   };
   addEventListener("pointermove", onMove, { passive: true });
+  document.documentElement.addEventListener("pointerleave", () => { st.ptrVisto = false; });
 
   document.addEventListener("visibilitychange", () => { st.visivel = !document.hidden; if (st.visivel) clock.getDelta(); });
 
@@ -643,7 +485,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
           pos = tmpV.set(W * 0.16 + k * 0.3 + s * 0.12, k * 0.44 + Math.sin(t * 0.3 + i) * 0.03, -2.5 - Math.abs(k) * 0.3 + s * 0.8);
           rot = { x: 0.08, y: -0.55 + s * 0.12, z: 0.03 * k };
         }
-        op = (0.1 + 0.55 * s) * (1 - 0.85 * c); sc = retrato ? 0.42 : 0.66 + 0.08 * s;
+        op = 0.85 * s * (1 - 0.85 * c); sc = retrato ? 0.42 : 0.66 + 0.08 * s;
       } else if (st.universo === "sites" && cena.cards === "orbita") {
         const a = (i / n) * Math.PI * 2 + t * (reduce ? 0 : 0.12);
         pos = tmpV.set(st.lp.x + Math.cos(a) * orbitaRaio, st.lp.y + Math.sin(a) * orbitaRaio * 0.28 + 0.05, st.lp.z + Math.sin(a) * orbitaRaio * 0.6);
@@ -667,7 +509,7 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
           pos = tmpV.set(-W * 0.16 + k * 0.26 - c * 0.12, Math.sin(i * 2.1) * 0.85 + wob * 0.06, -2.4 - Math.abs(Math.cos(i * 1.3)) * 0.8 + c * 0.8);
           rot = { x: 0.05, y: 0.5 - c * 0.12, z: (i % 2 ? 1 : -1) * 0.12 + wob * 0.05 };
         }
-        op = (0.1 + 0.55 * c) * (1 - 0.85 * s); sc = retrato ? 0.36 : 0.58 + 0.08 * c;
+        op = 0.85 * c * (1 - 0.85 * s); sc = retrato ? 0.36 : 0.58 + 0.08 * c;
       } else if (st.universo === "criativos" && cena.cards === "orbita") {
         const a = (i / n) * Math.PI * 2 + t * (reduce ? 0 : 0.28);
         const r = orbitaRaio * 1.05;
@@ -687,7 +529,6 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
   const qId = new THREE.Quaternion();
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), inv = new THREE.Matrix4(), esfera = new THREE.Sphere();
   const ptr3 = new THREE.Vector3(0, 0, 9), ptrAlvo = new THREE.Vector3();
-  let warp = 0;
 
   function frame() {
     raf = requestAnimationFrame(frame);
@@ -740,71 +581,57 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
     if (st.onda > 0) { st.onda += dt * 0.7; if (st.onda >= 1) st.onda = 0; }
     if (st.troca > 0) {
       st.troca += dt * 0.62;
-      if (st.troca >= 1) { st.troca = 0; fundoU.uPadA.value = fundoU.uPadB.value; }
+      if (st.troca >= 1) { st.troca = 0; fundoU.uPadA.value = fundoU.uPadB.value; fundoU.uTomA.value = fundoU.uTomB.value; }
     }
     fundoU.uTroca.value = st.troca;
-    // leitura: escurece a esquerda no hero e o pé da tela no celular, sem faixas que rolam
+    // leitura: limpa o papel à esquerda no hero e no pé da tela no celular, sem faixas que rolam
     const retr = fundoU.uPortrait.value > 0.5, jornada = st.universo !== "portal";
     st.lado = damp(st.lado, jornada && !retr && st.cena === "hero" ? 1 : 0, 2.4, dt);
-    st.baixo = damp(st.baixo, jornada && retr && ["hero", "fundo", "painel", "globo"].includes(st.cena) ? 1 : 0, 2.4, dt);
+    st.baixo = damp(st.baixo, jornada && retr && ["hero", "fundo", "caso", "painel", "globo"].includes(st.cena) ? 1 : 0, 2.4, dt);
     fundoU.uLado.value = st.lado; fundoU.uBaixo.value = st.baixo;
     st.velT = (st.velT || 0) + dt * Math.abs(st.vel || 0) * 0.6;
     const fala = Math.sin(Math.min(1, st.pulso) * Math.PI * 0.5);
     logoPos.position.copy(st.lp);
     logoPos.scale.setScalar(st.ls * (1 + md * 0.4) * (1 + fala * 0.07));
 
-    // giro: Sites = rotação lenta e exata; Criativos = mais rápido, com balanço
-    const spinV = reduce ? 0 : 0.05 + (c * 0.55 + s * 0.12) * (st.universo === "portal" ? 1 : 0.25);
-    spin.rotation.y += spinV * dt * (1 - 0.7 * Math.max(0, 1 - Math.abs(st.mix) * 3) * (st.universo === "portal" ? 1 : 0));
-    if ((st.universo === "portal" && Math.abs(st.mix) < 0.15) || st.universo !== "portal") spin.quaternion.slerp(qId, 1 - Math.exp(-dt * (st.universo === "portal" ? 2.5 : 1.2)));
-    tilt.rotation.y = damp(tilt.rotation.y, st.ptr.x * 0.35 * breath, 4, dt);
-    tilt.rotation.x = damp(tilt.rotation.x, st.ptr.y * 0.22 * breath + c * Math.sin(t * 1.4) * 0.08, 4, dt);
-    tilt.rotation.z = damp(tilt.rotation.z, c * Math.sin(t * 0.9) * 0.12, 4, dt);
-    innerG.rotation.y = Math.sin(t * 0.5) * 0.9 * c;
-    innerG.rotation.x = Math.cos(t * 0.37) * 0.4 * c;
-
-    // ponteiro deforma as linhas (só onde toca a esfera)
+    // o mouse sobre a logo a transforma no bastão de Asclépio (a área de toque é a esfera inteira, mesmo com o bastão fino)
     scene.updateMatrixWorld();
     let hit = false;
-    if (!coarse && !reduce && st.mergulho === 0) {
+    if (!coarse && st.mergulho === 0 && st.opacidade > 0.5) {
       ndc.set(st.ptr.tx, -st.ptr.ty); ray.setFromCamera(ndc, camera);
-      front.getWorldPosition(esfera.center); esfera.radius = logoPos.scale.x;
-      const pt = ray.ray.intersectSphere(esfera, ptrAlvo);
-      if (pt) { inv.copy(front.matrixWorld).invert(); ptrAlvo.applyMatrix4(inv).normalize(); hit = true; }
+      emblema.grupo.getWorldPosition(esfera.center); esfera.radius = logoPos.scale.x;
+      hit = !!ray.ray.intersectSphere(esfera, ptrAlvo) && st.ptrVisto;
     }
-    warp = damp(warp, hit ? 1 : 0, 4, dt);
-    if (hit) ptr3.lerp(ptrAlvo, 0.15);
+    // quem chega vê a transformação uma vez; no toque (sem mouse) ela volta a acontecer de tempos em tempos
+    st.vida += dt;
+    const grande = st.ls > 0.3 && st.lo > 0.6;
+    const apresenta = !reduce && grande && st.vida > 1.6 && st.vida < 4.4;
+    const ciclo = coarse && !reduce && grande && st.vida > 9 && (st.vida % 11) > 7.6;
+    const alvoMorph = Math.max(hit ? 1 : 0, st.emblema, apresenta || ciclo ? 1 : 0, fixo);
+    st.morph = damp(st.morph, alvoMorph, reduce ? 12 : alvoMorph > st.morph ? 2.3 : 1.9, dt);
+    const mf = st.morph;
 
-    // cores e linhas por universo
-    const pulse = reduce ? 0 : Math.pow(Math.max(0, Math.sin(t * Math.PI * 1.6)), 6) * c;   // batida
-    const kF = st.universo === "portal" ? 1 : 0.12;
-    const noise = c * 0.42 * kF;
-    const hw = HW * (1 - (s * 0.32 - c * 0.35 - pulse * 0.25) * kF) * (1 + fala * 0.45);
-    const colB = tmpCol.set(CORES.ice).lerp(tmpCol2.set(CORES.rec), c).lerp(tmpCol2.set(CORES.blue), s);
-    const colA = tmpCol3.set(CORES.ice).lerp(tmpCol2.set("#fff1e8"), c);
-    const rimCol = tmpCol4.set(CORES.blue).lerp(tmpCol2.set(CORES.rec), c);
+    // giro: no portal a logo acompanha o lado escolhido e volta de frente; como bastão, fica de pé girando devagar
+    const spinV = reduce ? 0 : (0.05 + (c * 0.3 + s * 0.12) * (st.universo === "portal" ? 1 : 0.25)) * (1 - mf) + (alvoMorph > 0 ? mf * 0.5 : 0);
+    spin.rotation.y += spinV * dt * (1 - 0.7 * Math.max(0, 1 - Math.abs(st.mix) * 3) * (st.universo === "portal" ? 1 : 0) * (1 - mf));
+    // de volta à logo, ela gira para ficar de frente enquanto os arcos se abrem (chega reconhecível)
+    if (alvoMorph === 0 && ((st.universo === "portal" && Math.abs(st.mix) < 0.15) || st.universo !== "portal" || mf > 0.02)) spin.quaternion.slerp(qId, 1 - Math.exp(-dt * (st.universo === "portal" ? 2.5 : 1.6) * (1 + 2.4 * mf)));
+    tilt.rotation.y = damp(tilt.rotation.y, st.ptr.x * 0.35 * breath * (1 - mf * 0.6), 4, dt);
+    tilt.rotation.x = damp(tilt.rotation.x, st.ptr.y * 0.22 * breath * (1 - mf * 0.6) + mf * 0.06, 4, dt);
+    tilt.rotation.z = damp(tilt.rotation.z, 0, 4, dt);
+
+    // traço e brilho: a logo engrossa e acende de leve quando "fala"
     const fade = Math.min(1, st.lo + fala * 0.45) * st.opacidade * (1 - Math.max(0, md - 0.75) * 4);
-    for (const x of logoUs) {
-      x.uTime.value = t; x.uNoise.value = noise; x.uExtra.value = c * 0.85 * kF;
-      x.uWarp.value = warp; x.uPtr.value.copy(ptr3); x.uHW.value = hw;
-      x.uColA.value.copy(colA); x.uColB.value.copy(colB); x.uRimCol.value.copy(rimCol);
-      x.uGlow.value = st.glow + md * 0.8 + fala * 0.9; x.uFade.value = Math.max(0, fade);
-    }
-    frontU.uGrid.value = s * 0.9 * kF; backU.uGrid.value = s * 0.35 * kF;
-    for (const x of logoUs) { x.uWc.value = c; x.uWs.value = s * (kF < 1 ? 0.55 : 1); }
-    frontU.uScan.value = s * (0.3 + 0.7 * kF); frontU.uBody.value = 0.12 + (s * 0.42 + c * 0.1) * kF;
-    backU.uLineA.value = 0.35 + s * 0.2 + c * 0.25;
-    innerU.uLineA.value = c * 0.7 * kF; inner.visible = c * kF > 0.02;
-    innerU.uColA.value.set(CORES.amber); innerU.uColB.value.set(CORES.rec);
+    emblema.atualizar({ morph: mf, fade: Math.max(0, fade), grossura: 1 + fala * 0.35, luz: st.glow * 0.4 + fala * 0.12 });
 
-    // luz emitida: cor do universo, mais forte quando a logo fala
-    const corLuz = st.universo === "portal" ? tmpCol5.set(CORES.ice).lerp(tmpCol2.set("#ff7a3d"), c).lerp(tmpCol2.set("#5aa8ff"), s)
-      : tmpCol5.copy(c > s ? fundoU.uRec2.value : fundoU.uBlue2.value).lerp(tmpCol2.set("#ffffff"), 0.22);
+    // luz emitida: ouro, mais forte quando a logo fala
     const someLuz = Math.max(0, 1 - md * 1.6) * st.opacidade * Math.min(1, st.lo * 1.4);
-    luzU.uCor.value.copy(corLuz); luzU.uK.value = fala * 1.15; luzU.uOnda.value = st.onda; luzU.uT.value = t;
-    luzU.uBase.value = st.universo === "portal" ? 0.08 : 0.2; luzU.uFade.value = someLuz;
-    luzP.color.copy(corLuz); luzP.intensity = (0.4 + fala * 9) * someLuz;
-    fundoU.uCorLuz.value.copy(corLuz); fundoU.uLuz.value = fala * someLuz; fundoU.uOnda.value = st.onda * (someLuz > 0.05 ? 1 : 0); fundoU.uVelT.value = st.velT;
+    luzU.uK.value = fala * 1.15; luzU.uOnda.value = st.onda; luzU.uT.value = t;
+    luzU.uBase.value = st.universo === "portal" ? 0.5 : 0.8; luzU.uFade.value = someLuz;
+    luzP.intensity = (0.4 + fala * 7) * someLuz;
+    fundoU.uLuz.value = fala * someLuz; fundoU.uOnda.value = st.onda * (someLuz > 0.05 ? 1 : 0); fundoU.uVelT.value = st.velT;
+    fundoU.uRaio.value = logoPos.scale.x / H; fundoU.uForma.value = mf;
+    fundoU.uSombra.value = Math.max(0, fade) * (1 - md) * Math.min(1, st.ls * 2.2);
 
     // fundo
     fundoU.uTime.value = t; fundoU.uMix.value = st.mix;
@@ -835,12 +662,13 @@ export function criarMundo(canvas, { telas = [], reels = [], midia = {}, matcaps
       for (const [o, v, f] of mudados) { o.visible = v; o.frustumCulled = f; }
     }
   }
-  const tmpCol = new THREE.Color(), tmpCol2 = new THREE.Color(), tmpCol3 = new THREE.Color(), tmpCol4 = new THREE.Color(), tmpCol5 = new THREE.Color();
 
   // ---------- API ----------
   const api = {
     get estado() { return st; },
     setLean(m) { st.lean = Math.max(-1, Math.min(1, m)); st.ocioso = 0; },
+    // pede a transformação em bastão de fora da cena (o mouse sobre a logo do topo, por exemplo)
+    setEmblema(on) { st.emblema = on ? 1 : 0; },
     setAutoBalanco(on) { st.autoBalanco = on; },
     setUniverso(nome, { imediato = false } = {}) {
       st.universo = nome;

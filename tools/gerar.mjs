@@ -11,9 +11,13 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const C = await import(pathToFileURL(join(RAIZ, "conteudo/site.mjs")).href + "?v=" + Date.now());
-const { marca, whatsapp, medicao, portal, sites, vagas } = C;
+const { marca, whatsapp, medicao, portal, vagas } = C;
 import { criarJornadas } from "./jornadas.mjs";
-const criativos = { ...C.criativos, series: C.criativos.series.filter((s) => s.publicar !== false) };
+// publicar: false (série, projeto) e oculto: true (vídeo) deixam o item guardado no conteúdo, fora do site
+const noAr = (l) => (l || []).filter((x) => x.publicar !== false && !x.oculto);
+const criativos = { ...C.criativos, series: noAr(C.criativos.series), anuncios: { ...C.criativos.anuncios, videos: noAr(C.criativos.anuncios?.videos) } };
+const sites = { ...C.sites, projetos: noAr(C.sites.projetos), maisProjetos: noAr(C.sites.maisProjetos) };
+const clientes = noAr(C.clientes);
 
 // endereço com a marca do conteúdo (soma o arquivo e a versão -leve, se houver): só muda quando o arquivo muda.
 // CSS, JS e fontes ficam guardados por um ano no navegador (.htaccess), então tudo que a página pede leva ?v=
@@ -43,12 +47,12 @@ const leve = (p) => {
 };
 
 // todo módulo é pedido pelo importmap com a versão do conteúdo (import estático, import() e as libs do Three)
-const MODULOS = ["/assets/vendor/addons/RoomEnvironment.js", ...["mundo", "dispositivos", "cafe-forma", "cursor", "medicao", "logo3d"].map((m) => `/assets/js/${m}.js`)];
+const MODULOS = ["/assets/vendor/addons/RoomEnvironment.js", ...["mundo", "dispositivos", "emblema", "cafe-forma", "cursor", "medicao", "logo3d"].map((m) => `/assets/js/${m}.js`)];
 const IMPORTMAP = JSON.stringify({ imports: { three: hv("/assets/vendor/three.module.min.js"), ...Object.fromEntries(MODULOS.map((m) => [m, hv(m)])) } });
 // fontes servidas pelo próprio site (antes vinham do Google: duas conexões a mais e o IP do visitante para fora)
 // O <head> pré-carrega só as duas que aparecem grandes no topo (título e texto); a mono dos rótulos chega logo depois
 // sem disputar a rede lenta com elas (a troca dela não mexe no layout: os rótulos têm altura de linha fixa)
-const FONTES_TOPO = ["anybody-latin-v13", "schibsted-grotesk-latin-v7"];
+const FONTES_TOPO = ["cormorant-garamond-latin-v21", "dm-sans-latin-v17"];
 
 // política de segurança (CSP): só roda script do próprio site e os blocos inline desta página (pelo hash).
 // GA4, GTM e Plausible entram sozinhos quando têm ID em conteudo/site.mjs; outra tag dentro do GTM (ex.: Pixel da Meta)
@@ -120,10 +124,32 @@ const img = (src, alt, { cls = "", lazy = true, sizes = "" } = {}) => {
 };
 
 // ---------- peças comuns ----------
+// ---------- emblema do topo: a logo que vira o bastão de Asclépio (o mesmo gesto da logo 3D) ----------
+// A serpente sobe em S em volta da haste, com o mesmo peso de traço da logo. Ela é cortada em quatro arcos:
+// os que passam por trás da haste são interrompidos por ela (máscara m-tras) e os da frente interrompem a haste (m-haste).
+const BASTAO = (() => {
+  const X = 212, Y0 = 378, Y1 = 134, FIM = 1.13, HASTE = "M212 56V402";
+  const pt = (t) => {
+    const A = 30 + 36 * Math.min(1, t * 2.2), sobra = Math.max(0, t - 1) / (FIM - 1);
+    return [X - A * Math.sin(Math.PI * (0.5 + 3.5 * t)), Y0 + (Y1 - Y0) * Math.min(t, 1) - 24 * sobra];
+  };
+  const arco = (a, b) => Array.from({ length: 33 }, (_, i) => pt(a + ((b - a) * i) / 32)).map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join("");
+  const arcos = [[0, 2 / 7], [2 / 7, 4 / 7], [4 / 7, 6 / 7], [6 / 7, FIM]].map(([a, b]) => arco(a, b));    // de baixo para cima
+  const [cx, cy] = pt(FIM), [px, py] = pt(FIM - 0.02), giro = (Math.atan2(cy - py, cx - px) * 180) / Math.PI;
+  const s = (i) => `<path class="emb__s" style="--o:${i}" pathLength="1" d="${arcos[i]}"/>`;
+  return {
+    mascaras: `<mask id="m-haste" maskUnits="userSpaceOnUse" x="0" y="0" width="424" height="422"><rect width="424" height="422" fill="#fff"/><g fill="none" stroke="#000" stroke-width="37" stroke-linecap="round"><path d="${arcos[1]}"/><path d="${arcos[3]}"/></g></mask>
+<mask id="m-tras" maskUnits="userSpaceOnUse" x="0" y="0" width="424" height="422"><rect width="424" height="422" fill="#fff"/><path d="${HASTE}" fill="none" stroke="#000" stroke-width="37"/></mask>`,
+    svg: `<svg class="emb" viewBox="0 0 424 422" aria-hidden="true"><g class="emb__logo"><use href="#wzs-mark"/></g><g class="emb__bastao" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><g mask="url(#m-tras)">${s(0)}${s(2)}</g><g mask="url(#m-haste)"><path class="emb__haste" d="${HASTE}"/><circle class="emb__pomo" cx="212" cy="36" r="17"/></g>${s(1)}${s(3)}<ellipse class="emb__cabeca" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="17" ry="10.5" transform="rotate(${giro.toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)})" fill="currentColor" stroke="none"/></g></svg>`,
+  };
+})();
+
 const SPRITE = `<svg class="sprite" aria-hidden="true" focusable="false"><defs>
 <clipPath id="disc"><circle cx="537" cy="432" r="206.5"/></clipPath><clipPath id="r0"><rect x="780" y="240" width="700" height="232"/></clipPath><clipPath id="r1"><rect x="780" y="474" width="700" height="160"/></clipPath>
 <symbol id="wzs-mark" viewBox="325 222 424 422"><g fill="none" stroke="currentColor" stroke-width="13"><circle cx="537" cy="432" r="200" transform="rotate(-90 537 432)"/><g clip-path="url(#disc)"><circle cx="537" cy="432" r="200"/><circle cx="581.44" cy="432" r="200"/><circle cx="625.89" cy="432" r="200"/><circle cx="670.33" cy="432" r="200"/><circle cx="714.78" cy="432" r="200"/><circle cx="759.22" cy="432" r="200"/><circle cx="803.67" cy="432" r="200"/><circle cx="848.11" cy="432" r="200"/><circle cx="892.56" cy="432" r="200"/><circle cx="937.00" cy="432" r="200"/></g></g></symbol>
-<symbol id="wzs-logo" viewBox="325 222 1160 422"><use href="#wzs-mark" x="325" y="222" width="424" height="422"/><g fill="currentColor"><g clip-path="url(#r0)"><path d="M795.2 260.8 L808.2 315.5 L808.5 318.0 L814.2 340.2 L824.8 385.8 L837.8 438.8 L841.5 456.2 L842.8 460.0 L843.8 460.5 L896.8 460.5 L898.5 459.5 L921.0 376.5 L931.5 339.2 L932.5 337.8 L933.0 337.8 L933.8 338.8 L936.0 347.0 L963.0 459.8 L964.5 460.5 L1018.2 460.5 L1019.5 460.2 L1020.5 459.2 L1040.0 384.0 L1072.8 262.2 L1072.5 260.2 L1021.2 260.0 L1020.2 260.8 L1011.0 301.5 L1000.0 344.2 L995.8 362.8 L993.0 372.0 L990.0 385.5 L989.2 387.0 L988.8 387.0 L987.8 385.5 L985.2 373.8 L975.5 336.2 L974.5 330.8 L957.0 260.8 L955.8 260.0 L911.5 260.2 L910.5 262.2 L900.8 300.2 L891.0 335.8 L889.0 341.5 L877.0 385.5 L876.0 387.2 L874.8 385.8 L872.5 373.5 L859.8 316.2 L855.5 294.0 L848.2 260.8 L847.0 260.0 L796.5 260.0Z"/><path d="M1090.5 260.5 L1090.0 264.5 L1090.0 294.5 L1090.2 295.5 L1091.0 296.0 L1181.0 296.2 L1181.8 297.2 L1178.0 302.5 L1081.8 421.0 L1081.0 422.8 L1081.2 459.8 L1082.5 460.5 L1245.8 460.5 L1247.0 460.0 L1247.2 424.0 L1246.2 423.2 L1145.2 423.2 L1143.8 422.5 L1145.2 419.8 L1170.2 389.0 L1247.0 296.5 L1247.0 260.8 L1245.8 260.0 L1092.2 260.0Z"/><path d="M1289.0 267.5 L1280.5 273.8 L1274.8 280.2 L1270.0 289.0 L1268.2 294.2 L1267.2 299.2 L1267.0 334.0 L1269.0 343.5 L1271.0 348.8 L1273.2 353.0 L1276.8 357.8 L1280.2 361.5 L1287.8 367.2 L1296.2 371.8 L1306.8 375.2 L1318.5 377.0 L1368.5 377.0 L1371.2 377.5 L1374.8 379.0 L1377.2 380.8 L1379.2 383.0 L1381.5 388.0 L1381.8 414.0 L1380.0 418.5 L1376.2 422.5 L1373.0 424.2 L1369.5 425.2 L1327.5 425.2 L1324.2 424.2 L1319.8 422.0 L1313.2 417.8 L1304.5 411.0 L1303.0 411.0 L1270.5 430.5 L1269.5 431.8 L1270.2 433.2 L1277.2 441.2 L1288.2 450.2 L1296.0 454.5 L1303.2 457.5 L1308.8 459.2 L1315.0 460.5 L1319.8 461.0 L1378.2 461.0 L1383.5 460.5 L1390.8 459.2 L1400.5 456.2 L1409.2 452.2 L1414.8 448.8 L1422.0 442.2 L1427.2 435.2 L1430.8 428.0 L1433.0 419.2 L1433.0 382.0 L1430.8 373.0 L1426.0 364.0 L1419.2 356.2 L1412.8 351.2 L1402.5 346.0 L1392.5 343.0 L1381.5 341.5 L1330.2 341.5 L1325.0 339.8 L1320.8 336.2 L1319.2 333.8 L1318.2 330.5 L1318.0 306.8 L1319.0 302.5 L1321.5 298.5 L1324.5 296.0 L1330.0 294.0 L1368.2 294.0 L1378.2 298.0 L1389.5 304.2 L1392.5 305.2 L1417.5 278.5 L1417.5 277.2 L1411.5 272.2 L1405.0 268.0 L1398.8 264.8 L1385.5 260.2 L1375.0 258.8 L1315.2 259.0 L1307.8 260.2 L1302.0 261.8 L1294.2 264.8Z"/></g><g clip-path="url(#r1)"><path d="M819.8 485.0 L814.8 488.2 L809.2 493.8 L806.2 498.5 L804.2 504.5 L803.5 509.0 L803.5 532.0 L804.5 537.5 L807.5 544.8 L810.0 548.2 L816.5 554.2 L821.8 557.2 L828.8 559.8 L836.8 561.2 L869.0 561.2 L871.5 561.5 L875.2 563.0 L877.8 565.2 L879.0 567.2 L879.8 569.8 L879.8 587.0 L878.8 590.2 L877.5 592.2 L875.2 594.2 L871.2 595.8 L844.5 595.8 L839.0 593.5 L833.8 589.8 L829.5 586.0 L827.5 585.2 L806.2 598.8 L805.2 599.8 L805.2 601.0 L808.2 605.0 L812.2 609.0 L818.5 613.8 L827.0 618.0 L832.0 619.5 L837.5 620.5 L880.0 620.5 L884.8 619.8 L892.2 617.5 L899.2 614.0 L903.0 611.2 L908.5 605.5 L911.0 601.5 L913.8 593.8 L914.5 586.8 L914.2 565.8 L912.2 558.0 L909.8 552.8 L906.5 548.5 L900.8 543.5 L895.2 540.5 L888.5 538.2 L880.2 537.0 L845.0 537.0 L842.2 536.0 L839.8 534.0 L837.8 530.0 L837.5 512.0 L838.8 508.5 L841.5 505.5 L846.0 503.8 L869.8 503.8 L874.8 505.5 L884.0 510.5 L887.2 511.8 L890.2 509.0 L903.8 493.5 L903.8 492.2 L900.2 489.2 L892.0 484.2 L884.5 481.5 L875.2 480.0 L838.0 480.0 L827.5 482.0Z"/><path d="M917.5 482.0 L917.0 483.0 L917.0 504.8 L917.5 505.8 L951.0 506.0 L951.8 506.2 L952.8 507.8 L953.0 619.2 L953.8 619.8 L988.2 619.5 L988.8 618.8 L989.0 507.2 L990.0 506.2 L992.5 506.0 L1024.2 505.8 L1024.8 505.0 L1024.5 482.0 L925.2 481.5Z"/><path d="M1038.5 482.0 L1038.0 483.0 L1038.0 587.5 L1039.2 594.8 L1040.2 597.8 L1044.0 605.0 L1049.5 611.2 L1054.5 614.8 L1063.8 618.8 L1072.2 620.5 L1111.5 620.5 L1117.8 619.5 L1123.2 617.8 L1128.2 615.5 L1133.8 612.0 L1138.2 607.8 L1142.2 602.2 L1145.0 595.5 L1146.8 587.0 L1146.8 482.5 L1146.0 481.8 L1112.8 481.8 L1112.0 482.2 L1111.5 586.8 L1109.2 591.5 L1107.0 593.5 L1104.2 594.8 L1081.5 595.0 L1079.5 594.5 L1077.0 593.0 L1075.0 590.8 L1073.8 587.2 L1073.8 482.8 L1072.2 481.5Z"/><path d="M1163.8 481.8 L1163.0 482.8 L1163.2 619.2 L1164.2 619.8 L1233.8 619.8 L1241.2 618.5 L1246.5 616.8 L1253.2 613.5 L1256.8 611.2 L1264.0 604.5 L1266.5 601.0 L1269.8 594.8 L1272.0 585.2 L1272.0 516.0 L1271.5 512.5 L1269.8 506.5 L1267.5 501.5 L1265.0 497.5 L1258.2 490.8 L1252.5 487.0 L1245.5 484.0 L1236.5 482.0ZM1200.0 506.2 L1226.8 506.5 L1228.5 507.0 L1232.0 509.0 L1234.8 512.2 L1236.0 515.2 L1236.5 517.5 L1236.5 583.5 L1235.5 587.2 L1233.0 591.0 L1230.5 593.0 L1226.5 594.5 L1199.8 594.8 L1198.5 593.8 L1198.5 507.5Z"/><path d="M1321.5 481.8 L1288.2 481.8 L1287.5 482.5 L1287.5 619.0 L1288.5 619.8 L1321.2 619.8 L1322.5 618.2 L1322.5 483.0Z"/><path d="M1354.2 486.5 L1347.2 491.8 L1343.0 497.0 L1339.8 503.5 L1337.8 513.0 L1337.8 588.5 L1339.5 597.0 L1342.0 602.8 L1345.8 608.0 L1349.0 611.2 L1352.8 614.0 L1361.2 618.2 L1371.0 620.5 L1412.2 620.5 L1420.8 618.8 L1429.5 615.0 L1435.0 611.2 L1438.8 607.5 L1441.5 603.8 L1445.0 595.8 L1446.2 588.8 L1446.5 515.2 L1446.0 510.2 L1445.0 506.0 L1442.2 499.2 L1439.2 494.8 L1434.8 490.2 L1430.8 487.2 L1423.5 483.8 L1417.8 482.0 L1412.5 481.0 L1373.5 480.8 L1364.8 482.2 L1359.5 484.0ZM1379.8 506.0 L1403.0 505.8 L1407.5 508.0 L1409.2 510.0 L1410.5 513.0 L1411.0 515.5 L1411.0 586.5 L1410.0 590.0 L1409.0 591.8 L1406.8 594.0 L1404.0 595.2 L1399.2 595.8 L1380.2 595.5 L1377.8 594.5 L1375.0 592.0 L1373.0 587.8 L1372.8 514.8 L1373.5 511.8 L1375.0 509.2 L1376.2 508.0Z"/></g></g></symbol>
+<symbol id="wzs-letras" viewBox="786 250 668 380"><g fill="currentColor"><g clip-path="url(#r0)"><path d="M795.2 260.8 L808.2 315.5 L808.5 318.0 L814.2 340.2 L824.8 385.8 L837.8 438.8 L841.5 456.2 L842.8 460.0 L843.8 460.5 L896.8 460.5 L898.5 459.5 L921.0 376.5 L931.5 339.2 L932.5 337.8 L933.0 337.8 L933.8 338.8 L936.0 347.0 L963.0 459.8 L964.5 460.5 L1018.2 460.5 L1019.5 460.2 L1020.5 459.2 L1040.0 384.0 L1072.8 262.2 L1072.5 260.2 L1021.2 260.0 L1020.2 260.8 L1011.0 301.5 L1000.0 344.2 L995.8 362.8 L993.0 372.0 L990.0 385.5 L989.2 387.0 L988.8 387.0 L987.8 385.5 L985.2 373.8 L975.5 336.2 L974.5 330.8 L957.0 260.8 L955.8 260.0 L911.5 260.2 L910.5 262.2 L900.8 300.2 L891.0 335.8 L889.0 341.5 L877.0 385.5 L876.0 387.2 L874.8 385.8 L872.5 373.5 L859.8 316.2 L855.5 294.0 L848.2 260.8 L847.0 260.0 L796.5 260.0Z"/><path d="M1090.5 260.5 L1090.0 264.5 L1090.0 294.5 L1090.2 295.5 L1091.0 296.0 L1181.0 296.2 L1181.8 297.2 L1178.0 302.5 L1081.8 421.0 L1081.0 422.8 L1081.2 459.8 L1082.5 460.5 L1245.8 460.5 L1247.0 460.0 L1247.2 424.0 L1246.2 423.2 L1145.2 423.2 L1143.8 422.5 L1145.2 419.8 L1170.2 389.0 L1247.0 296.5 L1247.0 260.8 L1245.8 260.0 L1092.2 260.0Z"/><path d="M1289.0 267.5 L1280.5 273.8 L1274.8 280.2 L1270.0 289.0 L1268.2 294.2 L1267.2 299.2 L1267.0 334.0 L1269.0 343.5 L1271.0 348.8 L1273.2 353.0 L1276.8 357.8 L1280.2 361.5 L1287.8 367.2 L1296.2 371.8 L1306.8 375.2 L1318.5 377.0 L1368.5 377.0 L1371.2 377.5 L1374.8 379.0 L1377.2 380.8 L1379.2 383.0 L1381.5 388.0 L1381.8 414.0 L1380.0 418.5 L1376.2 422.5 L1373.0 424.2 L1369.5 425.2 L1327.5 425.2 L1324.2 424.2 L1319.8 422.0 L1313.2 417.8 L1304.5 411.0 L1303.0 411.0 L1270.5 430.5 L1269.5 431.8 L1270.2 433.2 L1277.2 441.2 L1288.2 450.2 L1296.0 454.5 L1303.2 457.5 L1308.8 459.2 L1315.0 460.5 L1319.8 461.0 L1378.2 461.0 L1383.5 460.5 L1390.8 459.2 L1400.5 456.2 L1409.2 452.2 L1414.8 448.8 L1422.0 442.2 L1427.2 435.2 L1430.8 428.0 L1433.0 419.2 L1433.0 382.0 L1430.8 373.0 L1426.0 364.0 L1419.2 356.2 L1412.8 351.2 L1402.5 346.0 L1392.5 343.0 L1381.5 341.5 L1330.2 341.5 L1325.0 339.8 L1320.8 336.2 L1319.2 333.8 L1318.2 330.5 L1318.0 306.8 L1319.0 302.5 L1321.5 298.5 L1324.5 296.0 L1330.0 294.0 L1368.2 294.0 L1378.2 298.0 L1389.5 304.2 L1392.5 305.2 L1417.5 278.5 L1417.5 277.2 L1411.5 272.2 L1405.0 268.0 L1398.8 264.8 L1385.5 260.2 L1375.0 258.8 L1315.2 259.0 L1307.8 260.2 L1302.0 261.8 L1294.2 264.8Z"/></g><g clip-path="url(#r1)"><path d="M819.8 485.0 L814.8 488.2 L809.2 493.8 L806.2 498.5 L804.2 504.5 L803.5 509.0 L803.5 532.0 L804.5 537.5 L807.5 544.8 L810.0 548.2 L816.5 554.2 L821.8 557.2 L828.8 559.8 L836.8 561.2 L869.0 561.2 L871.5 561.5 L875.2 563.0 L877.8 565.2 L879.0 567.2 L879.8 569.8 L879.8 587.0 L878.8 590.2 L877.5 592.2 L875.2 594.2 L871.2 595.8 L844.5 595.8 L839.0 593.5 L833.8 589.8 L829.5 586.0 L827.5 585.2 L806.2 598.8 L805.2 599.8 L805.2 601.0 L808.2 605.0 L812.2 609.0 L818.5 613.8 L827.0 618.0 L832.0 619.5 L837.5 620.5 L880.0 620.5 L884.8 619.8 L892.2 617.5 L899.2 614.0 L903.0 611.2 L908.5 605.5 L911.0 601.5 L913.8 593.8 L914.5 586.8 L914.2 565.8 L912.2 558.0 L909.8 552.8 L906.5 548.5 L900.8 543.5 L895.2 540.5 L888.5 538.2 L880.2 537.0 L845.0 537.0 L842.2 536.0 L839.8 534.0 L837.8 530.0 L837.5 512.0 L838.8 508.5 L841.5 505.5 L846.0 503.8 L869.8 503.8 L874.8 505.5 L884.0 510.5 L887.2 511.8 L890.2 509.0 L903.8 493.5 L903.8 492.2 L900.2 489.2 L892.0 484.2 L884.5 481.5 L875.2 480.0 L838.0 480.0 L827.5 482.0Z"/><path d="M917.5 482.0 L917.0 483.0 L917.0 504.8 L917.5 505.8 L951.0 506.0 L951.8 506.2 L952.8 507.8 L953.0 619.2 L953.8 619.8 L988.2 619.5 L988.8 618.8 L989.0 507.2 L990.0 506.2 L992.5 506.0 L1024.2 505.8 L1024.8 505.0 L1024.5 482.0 L925.2 481.5Z"/><path d="M1038.5 482.0 L1038.0 483.0 L1038.0 587.5 L1039.2 594.8 L1040.2 597.8 L1044.0 605.0 L1049.5 611.2 L1054.5 614.8 L1063.8 618.8 L1072.2 620.5 L1111.5 620.5 L1117.8 619.5 L1123.2 617.8 L1128.2 615.5 L1133.8 612.0 L1138.2 607.8 L1142.2 602.2 L1145.0 595.5 L1146.8 587.0 L1146.8 482.5 L1146.0 481.8 L1112.8 481.8 L1112.0 482.2 L1111.5 586.8 L1109.2 591.5 L1107.0 593.5 L1104.2 594.8 L1081.5 595.0 L1079.5 594.5 L1077.0 593.0 L1075.0 590.8 L1073.8 587.2 L1073.8 482.8 L1072.2 481.5Z"/><path d="M1163.8 481.8 L1163.0 482.8 L1163.2 619.2 L1164.2 619.8 L1233.8 619.8 L1241.2 618.5 L1246.5 616.8 L1253.2 613.5 L1256.8 611.2 L1264.0 604.5 L1266.5 601.0 L1269.8 594.8 L1272.0 585.2 L1272.0 516.0 L1271.5 512.5 L1269.8 506.5 L1267.5 501.5 L1265.0 497.5 L1258.2 490.8 L1252.5 487.0 L1245.5 484.0 L1236.5 482.0ZM1200.0 506.2 L1226.8 506.5 L1228.5 507.0 L1232.0 509.0 L1234.8 512.2 L1236.0 515.2 L1236.5 517.5 L1236.5 583.5 L1235.5 587.2 L1233.0 591.0 L1230.5 593.0 L1226.5 594.5 L1199.8 594.8 L1198.5 593.8 L1198.5 507.5Z"/><path d="M1321.5 481.8 L1288.2 481.8 L1287.5 482.5 L1287.5 619.0 L1288.5 619.8 L1321.2 619.8 L1322.5 618.2 L1322.5 483.0Z"/><path d="M1354.2 486.5 L1347.2 491.8 L1343.0 497.0 L1339.8 503.5 L1337.8 513.0 L1337.8 588.5 L1339.5 597.0 L1342.0 602.8 L1345.8 608.0 L1349.0 611.2 L1352.8 614.0 L1361.2 618.2 L1371.0 620.5 L1412.2 620.5 L1420.8 618.8 L1429.5 615.0 L1435.0 611.2 L1438.8 607.5 L1441.5 603.8 L1445.0 595.8 L1446.2 588.8 L1446.5 515.2 L1446.0 510.2 L1445.0 506.0 L1442.2 499.2 L1439.2 494.8 L1434.8 490.2 L1430.8 487.2 L1423.5 483.8 L1417.8 482.0 L1412.5 481.0 L1373.5 480.8 L1364.8 482.2 L1359.5 484.0ZM1379.8 506.0 L1403.0 505.8 L1407.5 508.0 L1409.2 510.0 L1410.5 513.0 L1411.0 515.5 L1411.0 586.5 L1410.0 590.0 L1409.0 591.8 L1406.8 594.0 L1404.0 595.2 L1399.2 595.8 L1380.2 595.5 L1377.8 594.5 L1375.0 592.0 L1373.0 587.8 L1372.8 514.8 L1373.5 511.8 L1375.0 509.2 L1376.2 508.0Z"/></g></g></symbol>
+<symbol id="wzs-logo" viewBox="325 222 1160 422"><use href="#wzs-mark" x="325" y="222" width="424" height="422"/><use href="#wzs-letras" x="786" y="250" width="668" height="380"/></symbol>
+${BASTAO.mascaras}
 <symbol id="cur-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M14 2.2A10 10 0 0 0 14 21.8"/><path d="M16.5 3.07A10 10 0 0 0 16.5 20.93"/><path d="M19 4.86A10 10 0 0 0 19 19.14"/></g></symbol>
 <symbol id="i-zap" viewBox="0 0 24 24"><path d="M3.6 20.4l1.25-4.1A8.6 8.6 0 1 1 8 19.3z"/><path d="M9.1 8.4c.2-.5.6-.6 1-.5l.9 2-.6.8c.5 1 1.3 1.8 2.3 2.3l.8-.6 2 .9c.1.4 0 .8-.5 1-1.6.8-6.5-1.8-5.9-5.9z"/></symbol>
 <symbol id="i-seta" viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></symbol>
@@ -140,7 +166,7 @@ const MUNDO = `<div class="mundo" aria-hidden="true"><canvas class="mundo__canva
 function topo(pagina) {
   const atual = (u) => (pagina === u ? ' aria-current="page"' : "");
   return `<header class="topo" id="topo">
-  <a class="topo__marca" href="/" aria-label="${esc(marca.nome)}, voltar ao início" data-cursor-link><svg class="marca-logo" viewBox="0 0 1160 422" aria-hidden="true"><use href="#wzs-logo"/></svg><svg class="marca-mark" viewBox="0 0 424 422" aria-hidden="true"><use href="#wzs-mark"/></svg></a>
+  <a class="topo__marca" href="/" aria-label="${esc(marca.nome)}, voltar ao início" data-cursor-link data-emblema>${BASTAO.svg}<svg class="marca-letras" viewBox="0 0 668 380" aria-hidden="true"><use href="#wzs-letras"/></svg></a>
   <nav class="troca" id="troca" aria-label="Especialidades">
     <span class="troca__pilula" aria-hidden="true"></span>
     <a href="/criativos/" data-universo="criativos" data-ir="criativos"${atual("criativos")}><i aria-hidden="true"></i>Criativos</a>
@@ -182,7 +208,7 @@ function doc({ pagina, universo, seo, main, dadosMundo, jsonld = [], zapFixo }) 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(seo.titulo)}</title>
 <meta name="description" content="${esc(seo.descricao)}">
-<meta name="theme-color" content="#0a1220">
+<meta name="theme-color" content="#ffffff">
 <link rel="canonical" href="${url}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
@@ -240,35 +266,40 @@ const orgLd = () => ({
 });
 
 // ---------- dados do mundo 3D ----------
-const CENAS_MG = ["abertura", "revelacao", "construcao", "plantonista", "questoes", "amigos"];
+// caso em destaque de Sites: a landing gravada rolando (tools/voo.mjs <projeto>) e seis quadros parados enquanto o voo baixa
+const CASO = sites.historia.caso.projeto;
+const CENAS_CASO = [0, 1, 2, 3, 4, 5].map((i) => `c${i}`);
+const cliente = clientes[0];
 const cartoes = JSON.parse(readFileSync(join(RAIZ, "media/tex/cards/lista.json"), "utf8"));
 const dadosMundo = {
   // miniaturas leves para os quadros que orbitam a logo (geradas em media/tex/cards)
   telas: cartoes.telas.map(midiaV), reels: cartoes.reels.map(midiaV),
-  matcaps: Object.fromEntries(["gelo", "sites", "criativos"].map((n) => [n, midiaV(`/assets/tex/matcap-${n}.jpg`)])),
+  matcaps: Object.fromEntries(["ouro", "perola"].map((n) => [n, hv(`/assets/tex/matcap-${n}.webp`)])),
   midia: {
     // vídeos das telas 3D, sem som, em /media/tex: 720×1280 para telas grandes e "-leve" (540×960) para as demais
     videoMontagem: hv("/media/tex/montagem.mp4"), posterMontagem: midiaV("/media/tex/montagem.jpg"),
-    videoSucesso: hv("/media/tex/sucesso.mp4"), videoAnuncio: hv("/media/tex/anuncio.mp4"),
+    // o vídeo do cliente (Dr. Lucas Tosi, "Mioma: vira câncer?", 20 s sem som) no celular de "Para anunciar" e da oportunidade de Sites
+    videoSucesso: hv("/media/tex/sucesso.mp4"), videoCliente: hv("/media/tex/cliente.mp4"), avatarCliente: cliente ? midiaV(cliente.foto) : null,
     // quadro parado enquanto o vídeo abre (antes a tela ficava preta)
-    posterSucesso: midiaV("/media/tex/sucesso.jpg"), posterAnuncio: midiaV("/media/tex/anuncio.jpg"),
+    posterSucesso: midiaV("/media/tex/sucesso.jpg"), posterCliente: midiaV("/media/tex/cliente.jpg"),
     // frente e verso das cédulas de R$ 100 e R$ 50 (imagens do Banco Central) numa folha só, para as notas 3D do anúncio
     cedulas: midiaV("/media/tex/cedulas.webp"),
     // xícara do capítulo do café: luz e sombra assadas no Blender (tools/blender/cafe_assar.py)
     cafe: Object.fromEntries(["xicara", "pires", "alca", "liquido", "chao"].map((n) => [n, midiaV(`/media/tex/cafe/${n}.webp`)])),
     feed: [
-      { v: hv("/media/tex/feed-1.mp4"), poster: midiaV("/media/tex/feed-1.jpg"), conta: "felipen.med", legenda: "Estenose × insuficiência aórtica", cor: "#3b82f6" },
-      { v: hv("/media/tex/feed-2.mp4"), poster: midiaV("/media/tex/feed-2.jpg"), conta: "felipen.med", legenda: "O último plantão", cor: "#3b82f6" },
-      { v: hv("/media/tex/feed-3.mp4"), poster: midiaV("/media/tex/feed-3.jpg"), conta: "wzs_studio", legenda: "Ninguém sabe que ele existe", cor: "#1f5fd6" },
-      { v: hv("/media/tex/feed-4.mp4"), poster: midiaV("/media/tex/feed-4.jpg"), conta: "felipen.med", legenda: "DPP × placenta prévia", cor: "#3b82f6" },
-      { v: hv("/media/tex/feed-5.mp4"), poster: midiaV("/media/tex/feed-5.jpg"), conta: "medgrind_oficial", legenda: "Bora atender", cor: "#14a2ff" },
-      { v: hv("/media/tex/feed-6.mp4"), poster: midiaV("/media/tex/feed-6.jpg"), conta: "felipen.med", legenda: "Soro no traumatismo craniano", cor: "#3b82f6" },
+      { v: hv("/media/tex/feed-1.mp4"), poster: midiaV("/media/tex/feed-1.jpg"), conta: "felipen.med", legenda: "“Eu quero antibiótico!”", cor: "#b8923a" },
+      { v: hv("/media/tex/feed-2.mp4"), poster: midiaV("/media/tex/feed-2.jpg"), conta: "felipen.med", legenda: "“Doutor, é só um atestado!”", cor: "#b8923a" },
+      { v: hv("/media/tex/feed-3.mp4"), poster: midiaV("/media/tex/feed-3.jpg"), conta: "felipen.med", legenda: "Falta de ar depois do camarão", cor: "#b8923a" },
+      { v: hv("/media/tex/feed-4.mp4"), poster: midiaV("/media/tex/feed-4.jpg"), conta: "felipen.med", legenda: "“O ChatGPT disse que é tumor.”", cor: "#b8923a" },
+      { v: hv("/media/tex/feed-5.mp4"), poster: midiaV("/media/tex/feed-5.jpg"), conta: "felipen.med", legenda: "Estenose × insuficiência aórtica", cor: "#b8923a" },
+      { v: hv("/media/tex/feed-6.mp4"), poster: midiaV("/media/tex/feed-6.jpg"), conta: "felipen.med", legenda: "Parou. Choca ou não choca?", cor: "#b8923a" },
     ],
-    ch: { foto: midiaV("/media/sites/crosshard/foto-musculacao.webp"), logo: midiaV("/media/sites/crosshard/logo-branco.png"), desk: midiaV("/media/sites/crosshard/desk-1.webp"), cel: midiaV("/media/sites/crosshard/cel-1.webp") },
-    cenas: CENAS_MG.map((c) => midiaV(`/media/sites/medgrind/cenas/${c}-wide.webp`)),
-    cenasTall: CENAS_MG.map((c) => midiaV(`/media/sites/medgrind/cenas/${c}-tall.webp`)),
-    // a landing do MedGrind gravada rolando (computador e celular), em quadros prontos (tools/voo.mjs) que seguem a rolagem do capítulo
-    vooMg: hv("/media/sites/medgrind/voo.bin"), vooMgCel: hv("/media/sites/medgrind/voo-cel.bin"), vooRitmo: JSON.parse(readFileSync(join(RAIZ, "midia/medgrind/voo-ritmo.json"), "utf8")),
+    // o site de consultório montado no capítulo "Como eu construo": o mármore da abertura (recortes das capturas) e as capturas reais
+    obra: { faixa: midiaV("/media/sites/valter/obra-desk.webp"), faixaCel: midiaV("/media/sites/valter/obra-cel.webp"), desk: midiaV("/media/sites/valter/desk-1.webp"), cel: midiaV("/media/sites/valter/cel-1.webp") },
+    cenas: CENAS_CASO.map((c) => midiaV(`/media/sites/${CASO}/cenas/${c}-wide.webp`)),
+    cenasTall: CENAS_CASO.map((c) => midiaV(`/media/sites/${CASO}/cenas/${c}-tall.webp`)),
+    // a landing do caso em destaque gravada rolando (computador e celular), em quadros prontos (tools/voo.mjs) que seguem a rolagem do capítulo
+    voo: hv(`/media/sites/${CASO}/voo.bin`), vooCel: hv(`/media/sites/${CASO}/voo-cel.bin`), vooRitmo: JSON.parse(readFileSync(join(RAIZ, `midia/${CASO}/voo-ritmo.json`), "utf8")),
   },
 };
 
@@ -379,7 +410,7 @@ function escrever(rel, html) {
   console.log("  ✓", rel, (html.length / 1024).toFixed(1) + " KB");
 }
 escrever("index.html", paginaPortal());
-const J = criarJornadas({ esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, vagas, faqHtml, casoHtml, serieHtml, doc, orgLd, faqLd, dadosMundo, hv, midiaV, leve });
+const J = criarJornadas({ esc, rico, palavras, zap, ico, img, lista, marca, whatsapp, sites, criativos, clientes, vagas, faqHtml, casoHtml, serieHtml, doc, orgLd, faqLd, dadosMundo, hv, midiaV, leve });
 escrever("sites/index.html", J.paginaSites());
 escrever("criativos/index.html", J.paginaCriativos());
 const hoje = new Date().toISOString().slice(0, 10);

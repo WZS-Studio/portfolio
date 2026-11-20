@@ -1,4 +1,4 @@
-# Renderiza matcaps (esfera iluminada em estúdio, câmera ortográfica) para a logo WZS.
+# Renderiza matcaps (esfera iluminada em estúdio, câmera ortográfica) para a logo WZS: ouro e pérola.
 # blender --background --factory-startup --python matcaps.py -- <pasta-saida>
 import bpy, sys, os, math
 
@@ -31,10 +31,17 @@ def cena(cfg):
     sc.cycles.device = "CPU"
     sc.render.resolution_x = sc.render.resolution_y = 512
     sc.render.film_transparent = False
-    sc.view_settings.view_transform = "AgX"
-    sc.view_settings.look = "AgX - Punchy"
+    sc.view_settings.view_transform = cfg.get("vista", "AgX")
+    sc.view_settings.look = "None" if cfg.get("vista") == "Standard" else "AgX - Punchy"
     w = bpy.data.worlds.new("w"); sc.world = w; w.use_nodes = True
     bg = w.node_tree.nodes["Background"]; bg.inputs[0].default_value = (*cfg["mundo"], 1); bg.inputs[1].default_value = cfg.get("mundo_k", 1.0)
+    if "ceu" in cfg:  # degradê do chão ao teto: o metal reflete escuro embaixo e claro em cima
+        nt = w.node_tree
+        tc = nt.nodes.new("ShaderNodeTexCoord"); sx = nt.nodes.new("ShaderNodeSeparateXYZ"); mr = nt.nodes.new("ShaderNodeMapRange"); cr = nt.nodes.new("ShaderNodeValToRGB")
+        mr.inputs[1].default_value = -1.0; mr.inputs[2].default_value = 1.0
+        cr.color_ramp.elements[0].color = (*cfg["ceu"][0], 1); cr.color_ramp.elements[1].color = (*cfg["ceu"][1], 1)
+        cr.color_ramp.elements[0].position = 0.25; cr.color_ramp.elements[1].position = 0.8
+        nt.links.new(tc.outputs["Generated"], sx.inputs[0]); nt.links.new(sx.outputs["Z"], mr.inputs[0]); nt.links.new(mr.outputs[0], cr.inputs[0]); nt.links.new(cr.outputs[0], bg.inputs[0])
 
     bpy.ops.mesh.primitive_uv_sphere_add(segments=128, ring_count=64, radius=1)
     esf = bpy.context.active_object
@@ -60,31 +67,19 @@ def cena(cfg):
     sc.render.filepath = os.path.join(out, cfg["nome"] + ".png")
     bpy.ops.render.render(write_still=True)
 
-BRANCO = (1, 1, 1)
 CONFIGS = [
-    # neutro: cerâmica gelo, luz de estúdio limpa (reconhecimento da logo)
-    {"nome": "matcap-gelo", "base": (0.86, 0.88, 0.92), "metal": 0.0, "rough": 0.28, "coat": 0.6,
-     "mundo": (0.035, 0.05, 0.09), "luzes": [
-        {"loc": (-2.5, -3.5, 3.2), "tam": (3, 2), "e": 900, "cor": (1, 0.98, 0.96)},
-        {"loc": (3.2, -1.5, 0.8), "tam": (1, 3), "e": 350, "cor": (0.55, 0.72, 1.0)},
-        {"loc": (0, 2.5, -2.5), "tam": (4, 1), "e": 260, "cor": (0.4, 0.55, 1.0)},
-        {"loc": (0, -3, -3), "tam": (3, 0.6), "e": 120, "cor": (0.9, 0.92, 1.0)},
+    # ouro polido da marca (arcos da logo, serpente e haste): teto claro e chão escuro para o metal ter contraste e brilho sem estourar
+    {"nome": "matcap-ouro", "base": (0.98, 0.64, 0.16), "metal": 1.0, "rough": 0.13,
+     "mundo": (0.5, 0.5, 0.5), "mundo_k": 1.0, "ceu": ((0.26, 0.17, 0.07), (1.0, 0.93, 0.80)), "vista": "AgX", "luzes": [
+        {"loc": (-2.4, -3.2, 3.4), "tam": (4.0, 3.0), "e": 260, "cor": (1.0, 0.97, 0.92)},
+        {"loc": (3.4, -1.2, 0.4), "tam": (0.6, 5.0), "e": 170, "cor": (1.0, 0.94, 0.84)},
+        {"loc": (-3.4, -0.4, -0.6), "tam": (0.4, 4.0), "e": 90, "cor": (1.0, 0.92, 0.78)},
     ]},
-    # Sites: cromo azulado, reflexos recortados e exatos (softboxes em faixas)
-    {"nome": "matcap-sites", "base": (0.8, 0.88, 1.0), "metal": 1.0, "rough": 0.16,
-     "mundo": (0.02, 0.05, 0.12), "mundo_k": 1.0, "luzes": [
-        {"loc": (-2.6, -2.2, 0.6), "tam": (0.45, 5), "e": 900, "cor": (0.85, 0.93, 1.0)},
-        {"loc": (2.8, -1.6, -0.2), "tam": (0.35, 5), "e": 650, "cor": (0.4, 0.72, 1.0)},
-        {"loc": (-0.6, -1.4, 3.4), "tam": (2.6, 1.6), "e": 520, "cor": (1, 1, 1)},
-        {"loc": (0, -2.4, -3.2), "tam": (4.5, 0.5), "e": 380, "cor": (0.45, 0.8, 1.0)},
-    ]},
-    # Criativos: laca quente e brilhante, luz de palco vermelha e âmbar
-    {"nome": "matcap-criativos", "base": (1.0, 0.86, 0.8), "metal": 0.0, "rough": 0.18, "coat": 1.0,
-     "mundo": (0.07, 0.02, 0.02), "luzes": [
-        {"loc": (-2.8, -3.0, 2.4), "tam": (2.5, 2.5), "e": 900, "cor": (1.0, 0.92, 0.85)},
-        {"loc": (3.0, -1.2, 0.6), "tam": (1.2, 3.5), "e": 650, "cor": (1.0, 0.3, 0.15)},
-        {"loc": (-1.0, -1.0, -3.4), "tam": (3.5, 1.2), "e": 520, "cor": (1.0, 0.65, 0.2)},
-        {"loc": (0, 3.0, 1.0), "tam": (4, 4), "e": 380, "cor": (1.0, 0.25, 0.35)},
+    # pérola (corpo da esfera): cerâmica quase branca e quente; sombra suave embaixo para a esfera se destacar do fundo branco
+    {"nome": "matcap-perola", "base": (0.90, 0.885, 0.85), "metal": 0.0, "rough": 0.38, "coat": 0.35, "sss": 0.1,
+     "mundo": (0.5, 0.5, 0.5), "mundo_k": 1.0, "ceu": ((0.50, 0.47, 0.42), (0.97, 0.955, 0.93)), "vista": "Standard", "luzes": [
+        {"loc": (-2.6, -3.2, 3.4), "tam": (4.0, 3.0), "e": 150, "cor": (1.0, 0.985, 0.96)},
+        {"loc": (3.2, -1.4, 0.4), "tam": (1.2, 3.6), "e": 40, "cor": (1.0, 0.95, 0.88)},
     ]},
 ]
 so = os.environ.get("SO")

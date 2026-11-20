@@ -14,7 +14,7 @@ export const marca = {
   cidade: "Vila Flores, RS",
   dominio: "https://wzsstudio.com.br",
   email: "wzs.studio11@gmail.com",
-  assinatura: "Criativos que prendem a atenção e sites que transformam visita em conversa.",
+  assinatura: "Vídeos e sites para médicos e clínicas, com base clínica e dentro das regras de publicidade do CFM.",
   redes: [
     { rotulo: "Instagram @wzs_studio", url: "https://www.instagram.com/wzs_studio/" },
     { rotulo: "GitHub", url: "https://github.com/WZS-Studio" },
@@ -42,6 +42,23 @@ export const vagas = {
 };
 
 // IDs de medição. Vazio = eventos só vão para window.dataLayer.
+// Clientes que aparecem como prova social (cartão com foto ao lado dos números de Criativos e no caso em destaque de Sites).
+// Números do perfil público, com a data: são do perfil do cliente, não resultado do trabalho.
+export const clientes = [
+  {
+    slug: "lucas-tosi", nome: "Dr. Lucas Tosi", especialidade: "Ginecologista e obstetra",
+    // conferidos no Guia Médico do CREMESP em 19/11/2026 (Lucas de Almeida Tosi, inscrição ativa)
+    registro: "CRM-SP 165212 · RQE 109323",
+    // foto do perfil dele no Instagram (baixada em 20/11/2026, com a autorização do Felipe)
+    foto: "/media/clientes/dr-lucastosi.jpg",
+    instagram: "https://www.instagram.com/dr.lucastosi/", arroba: "@dr.lucastosi", verificado: true,
+    numeros: [{ valor: "130 mil", rotulo: "seguidores" }, { valor: "2.299", rotulo: "publicações" }],
+    fonte: "Perfil público no Instagram em 20/11/2026. Os números são do perfil dele, não resultado dos vídeos.",
+    feito: ["Vídeos com animação 3D sobre *estrogênio, mioma e canetas emagrecedoras*", "A landing do livro *“A revolução da mulher 40+”*, com o livro em 3D"],
+    site: "https://wzsstudio.com.br/LUCASTOSI/",
+  },
+];
+
 export const medicao = {
   ga4: "",          // ex.: "G-XXXXXXXXXX"
   gtm: "",          // ex.: "GTM-XXXXXXX"
@@ -53,45 +70,45 @@ export const medicao = {
 // ============================================================================
 export const portal = {
   seo: {
-    titulo: "WZS Studio · Criativos e conteúdos virais · Sites que convertem",
-    descricao: "Vídeos curtos para anunciar ou viralizar e sites que transformam visitas em conversas no WhatsApp. Veja os trabalhos e fale direto pelo WhatsApp.",
+    titulo: "WZS Studio · Vídeos e sites para médicos e clínicas",
+    descricao: "Vídeos curtos de conteúdo médico e sites para consultórios e clínicas, com base clínica e dentro das regras de publicidade do CFM. Veja os trabalhos e fale pelo WhatsApp.",
     og: "/media/og/og-portal.jpg",
   },
-  rotulo: "WZS Studio · uma marca, duas especialidades",
+  rotulo: "WZS Studio · conteúdo e sites para médicos",
   titulo: "Escolha por onde começar.",
   criativos: {
-    palavra: "Criativos", complemento: "e conteúdos virais",
-    texto: "Vídeos curtos com gancho, ritmo e roteiro, para anunciar uma oferta ou para ganhar alcance.",
+    palavra: "Criativos", complemento: "e conteúdo médico",
+    texto: "Vídeos curtos que explicam medicina com clareza e seguram quem assiste, para o seu perfil ou para os seus anúncios.",
     cta: "Entrar em Criativos",
   },
   sites: {
-    palavra: "Sites", complemento: "que convertem",
-    texto: "Landing pages e sites escritos do zero para o visitante entender, confiar e chamar você.",
+    palavra: "Sites", complemento: "para médicos e clínicas",
+    texto: "Sites escritos do zero para o paciente encontrar você, entender como você atende e agendar.",
     cta: "Entrar em Sites",
   },
   resumo: {
-    titulo: "Atenção e conversão, no mesmo estúdio.",
-    texto: "De um lado, vídeos que fazem a pessoa parar de rolar. Do outro, sites que transformam essa visita em conversa no WhatsApp. Dá para contratar um, o outro ou os dois.",
-    criativos: "Criativos para anúncios e conteúdo para alcance orgânico, com trabalhos reais e números públicos.",
-    sites: "Landing page, reformulação ou site do zero, com estudos de caso de projetos reais.",
+    titulo: "Medicina bem explicada, do vídeo ao agendamento.",
+    texto: "De um lado, vídeos que fazem a pessoa parar de rolar e entender um assunto de saúde. Do outro, o site que recebe essa atenção e leva o paciente até a sua agenda. Dá para contratar um, o outro ou os dois.",
+    criativos: "Conteúdo médico em 3D, pixel art e motion, com roteiro conferido na fonte, trabalhos reais e números públicos.",
+    sites: "Site de consultório ou clínica, landing page ou reformulação, com CRM e RQE à vista e estudos de caso reais.",
   },
 };
 
 // ============================================================================
-//  SITES QUE CONVERTEM
+//  SITES PARA MÉDICOS E CLÍNICAS
 // ============================================================================
 export const sites = {
   seo: {
-    titulo: "Sites que convertem · Landing pages e sites do zero · WZS Studio",
-    descricao: "Landing pages, reformulação de sites e sites do zero, pensados primeiro para o celular e com um caminho claro até o WhatsApp. Veja estudos de caso reais.",
+    titulo: "Sites para médicos e clínicas · Consultório, clínica e landing page · WZS Studio",
+    descricao: "Sites para consultórios e clínicas, pensados primeiro para o celular, com CRM e RQE à vista e um caminho claro até o agendamento pelo WhatsApp. Veja estudos de caso reais.",
     og: "/media/og/og-sites.jpg",
   },
   hero: {
-    rotulo: "Sites que convertem",
-    titulo: "Sites escritos do zero para o seu cliente *achar, entender e chamar você.*",
-    texto: "Um bom site junta posicionamento, design, conteúdo, experiência de uso e uma estrutura que facilita a ação do visitante. Eu desenho e programo cada uma dessas partes, sem template e pensando primeiro na tela do celular.",
+    rotulo: "Sites para médicos e clínicas",
+    titulo: "Sites escritos do zero para o paciente *encontrar, confiar e agendar.*",
+    texto: "O site de um médico precisa explicar com clareza, passar confiança e respeitar as regras de publicidade do CFM, tudo ao mesmo tempo. Eu desenho e programo cada parte, sem template e pensando primeiro na tela do celular.",
     cta: "Conversar sobre meu site",
-    linha: "Eu desenho e programo landing pages e sites que funcionam primeiro no celular e levam o visitante até o WhatsApp.",
+    linha: "Eu desenho e programo sites para consultórios e clínicas: abrem rápido no celular, mostram quem atende e levam o paciente até o agendamento.",
     ctaSecundario: "Ver projetos",
     nota: "Orçamento sem compromisso, direto no WhatsApp.",
   },
@@ -99,48 +116,51 @@ export const sites = {
   // A jornada é contada em capítulos presos na tela enquanto a pessoa rola.
   // Cada passo aparece numa faixa da rolagem do capítulo; textos curtos funcionam melhor.
   historia: {
-    abertura: "Seu cliente pesquisou você. O que ele encontrou?",
+    abertura: "O paciente pesquisou o seu nome. O que ele encontrou?",
     problema: {
       rotulo: "O problema",
       passos: [
         { titulo: "Demorou para abrir. Ele fechou." },
-        { titulo: "Abriu, mas não entendeu o que você faz." },
-        { titulo: "Gostou, mas não achou o botão." },
-        { titulo: "E chamou o concorrente." },
+        { titulo: "Abriu, mas não achou a sua especialidade." },
+        { titulo: "Gostou, mas não achou como agendar." },
+        { titulo: "E marcou com outro médico." },
       ],
     },
     montagem: {
       rotulo: "Como eu construo",
-      titulo: "O site da CrossHard, camada por camada.",
+      titulo: "O site de um consultório, camada por camada.",
+      // a tela 3D deste capítulo monta o site do Dr. Valter Dias (assets/js/dispositivos.js) e termina na captura real
       camadas: [
-        { nome: "Mensagem", arquivo: "index.html", texto: "O que você oferece e para quem, na primeira tela.",
-          codigo: ['<h1 class="titulo">', '  Construa seu corpo', '</h1>', '<p>build your body</p>'] },
-        { nome: "Design", arquivo: "estilo.css", texto: "Cores, fonte e espaço com a cara do negócio.",
-          codigo: [':root { --azul: #1e6bff; }', 'body { background: #0b0f14; }', '.titulo { font: 900 96px "Roboto Flex"; }'] },
-        { nome: "Conteúdo", arquivo: "index.html", texto: "Fotos reais e o texto que responde a quem chega.",
-          codigo: ['<img src="musculacao.webp" alt="Sala de musculação">', '<p>Sete modalidades, uma equipe', '   que sabe o seu nome.</p>'] },
+        { nome: "Mensagem", arquivo: "index.html", texto: "O que você trata e para quem, na primeira tela.",
+          codigo: ['<h1 class="titulo">', '  Estética que começa', '  pela sua saúde', '</h1>'] },
+        { nome: "Design", arquivo: "estilo.css", texto: "Cores, tipografia e espaço com a sobriedade que a saúde pede.",
+          codigo: [':root { --ouro: #b99a5b; }', 'body { background: #f7f4ee; }', '.titulo { font: 400 56px "Fraunces"; }'] },
+        { nome: "Conteúdo", arquivo: "index.html", texto: "Quem atende, como atende e o que o paciente precisa saber antes de ir.",
+          codigo: ['<p>Antes de indicar qualquer', '   procedimento, avalio sua pele,', '   sua rotina e os remédios.</p>'] },
         { nome: "Celular", arquivo: "celular.css", texto: "A mesma página pensada para a tela em pé.",
-          codigo: ['@media (max-width: 760px) {', '  .titulo { font-size: 56px; }', '}'] },
-        { nome: "Ação", arquivo: "acao.html", texto: "O botão certo à vista, levando direto ao WhatsApp.",
-          codigo: ['<a class="btn" href="https://wa.me/...">', '  Agendar minha visita', '</a>'] },
+          codigo: ['@media (max-width: 760px) {', '  .titulo { font-size: 36px; }', '}'] },
+        { nome: "Ação", arquivo: "acao.html", texto: "O botão de agendar sempre à vista, levando direto ao WhatsApp.",
+          codigo: ['<a class="btn" href="https://wa.me/...">', '  Agendar minha avaliação', '</a>'] },
       ],
     },
-    medgrind: {
+    // caso em destaque: a landing gravada rolando voa na tela do notebook (tools/voo.mjs) e o projeto abre o estudo de caso
+    caso: {
       rotulo: "Caso em destaque",
+      projeto: "lucas-tosi",
       passos: [
-        { titulo: "MedGrind", texto: "Um jogo de estudos de medicina apresentado como um mundo 3D." },
-        { titulo: "12 capítulos, uma câmera.", texto: "Ela voa entre as ilhas e entra no hospital." },
-        { titulo: "Feito para o celular também.", texto: "Cada cena tem um enquadramento próprio na tela em pé." },
-        { titulo: "Cerca de 3× mais rápido.", texto: "Carga completa no celular depois da otimização dos modelos 3D.", barras: { antes: "17,8–21,6 s", depois: "5,6–8,2 s", proporcao: 0.38, fonte: "Teste do projeto em 10/10/2026, Chrome com celular emulado." } },
-        { titulo: "Do clique à assinatura.", texto: "Botão de assinar sempre à vista e Pixel da Meta só depois do aceite de cookies.", acoes: true },
+        { titulo: "Dr. Lucas Tosi", texto: "A landing do livro “A revolução da mulher 40+”.", cliente: true },
+        { titulo: "O livro acompanha a leitura.", texto: "Fechado na abertura, aberto nos sete pilares e em pé na hora da compra, em 3D ao vivo." },
+        { titulo: "Feito para o celular também.", texto: "Na tela em pé, o livro aberto ocupa a largura toda e as páginas viram com o dedo." },
+        { titulo: "Leve até no 3G.", texto: "Título na tela em 0,8 s; o livro 3D chega depois, sem travar a página.", barras: { antes: "5,0 s", depois: "3,7 s", proporcao: 0.74, rotulo: "Livro 3D na tela, celular em 3G", fonte: "Teste do projeto em 19/11/2026: celular emulado, rede 3G, sem cache." } },
+        { titulo: "Da leitura à compra.", texto: "As duas lojas sempre à vista, com CRM e RQE no rodapé e nenhuma promessa de resultado.", acoes: true },
       ],
     },
     oportunidade: {
       rotulo: "A oportunidade",
       passos: [
-        { titulo: "Quem vê o seu anúncio chega pelo celular." },
-        { numero: "65 de 70", texto: "cadastros da campanha do MedGrind vieram do Instagram.", fonte: "Gerenciador de Anúncios da Meta, 08 a 20/10/2026." },
-        { titulo: "O site é onde a visita vira conversa.", texto: "WhatsApp a um toque, com a mensagem já escrita." },
+        { titulo: "Quem vê o seu vídeo chega pelo celular." },
+        { numero: "130 mil", texto: "seguidores do Dr. Lucas Tosi no Instagram: o link da bio precisa abrir rápido na tela em pé.", fonte: "Perfil @dr.lucastosi no Instagram em 20/11/2026." },
+        { titulo: "O site é onde o interesse vira agendamento.", texto: "WhatsApp do consultório a um toque, com a mensagem já escrita." },
       ],
     },
     cafe: {
@@ -164,28 +184,79 @@ export const sites = {
     titulo: "Escolha o seu ponto de partida.",
     itens: [
       { slug: "landing-page", nome: "Landing page", interesse: "landing page", cta: "Quero uma landing page",
-        resumo: "Uma página para uma oferta, campanha ou objetivo.",
+        resumo: "Uma página para um tratamento, um procedimento ou uma campanha.",
         inclui: ["Texto e estrutura para uma única ação", "Design e código do zero", "WhatsApp com mensagem pronta"] },
       { slug: "reformulacao", nome: "Reformulação", interesse: "reformulação de site", cta: "Quero reformular meu site",
-        resumo: "O site que você já tem, mais claro e mais rápido.",
+        resumo: "O site que você já tem, mais claro, mais rápido e revisado pelas regras do CFM.",
         inclui: ["Leitura do site atual", "Nova organização e novo visual", "Publicação no mesmo domínio"] },
       { slug: "site-do-zero", nome: "Site do zero", interesse: "site do zero", cta: "Quero um site do zero",
-        resumo: "Uma presença própria, alinhada ao seu negócio.",
-        inclui: ["Organização das informações", "Versão pensada primeiro para o celular", "Ajuda com o domínio e publicação"] },
+        resumo: "O endereço próprio do consultório ou da clínica.",
+        inclui: ["Equipe, especialidades e como agendar", "CRM e RQE à vista em todas as páginas", "Ajuda com o domínio e publicação"] },
     ],
   },
 
   projetosCab: {
-    titulo: "Cada projeto começou com um problema de negócio.",
+    titulo: "Cada projeto começou com um problema real.",
     lead: "Abra um estudo de caso para ver para quem foi feito, o que precisava resolver, as decisões de design e as telas reais no computador e no celular.",
   },
 
   // peso: "destaque" (largura total) | "medio" | "compacto"
   // capturas: caminhos a partir da raiz do site; a primeira de cada lista é a principal
   // resultados: [{ valor, rotulo, fonte, data, contexto }] — só dados medidos
+  // publicar: false = o projeto fica guardado aqui, mas não aparece no site (desde 20/11/2026 o site mostra só a área da saúde)
   projetos: [
     {
-      slug: "medgrind", nome: "MedGrind", peso: "destaque", interesse: "landing page",
+      slug: "lucas-tosi", nome: "Dr. Lucas Tosi", peso: "destaque", interesse: "landing page",
+      tipo: "Landing page 3D · livro de ginecologista",
+      linha: "A landing do livro “A revolução da mulher 40+”, com o livro em 3D que acompanha a leitura e as duas lojas a um toque.",
+      url: "https://wzsstudio.com.br/LUCASTOSI/", urlRotulo: "wzsstudio.com.br/LUCASTOSI",
+      oQueE: "Página de venda do e-book “A revolução da mulher 40+”, do Dr. Lucas Tosi, ginecologista e obstetra que atende menopausa, reposição hormonal e emagrecimento no interior de São Paulo e em Alphaville.",
+      paraQuem: "Mulheres a partir dos 40 anos que querem entender o que muda no corpo e chegar à próxima consulta com perguntas melhores.",
+      desafio: "Mostrar um livro digital, que não tem objeto para fotografar, e levar à compra em duas lojas sem prometer resultado de tratamento.",
+      feito: "Uma página única com o livro em 3D ao vivo: fechado na abertura, aberto nos sete pilares, folheando até o plano de 90 dias e em pé no fim. Dá para girar o livro e virar as páginas arrastando. Depois vêm o ponto de partida do livro, os capítulos, quem escreve (consultório, Instituto Tosi, MenoRun e o Instagram) e os botões das duas lojas.",
+      decisoes: [
+        "Preto, branco quente e o rosa da capa; Instrument Serif nos títulos e Inter no texto.",
+        "O livro muda de pose pelo tempo, não pela rolagem: a página nunca fica presa esperando a animação.",
+        "No celular o livro aberto ocupa a largura da tela e a rolagem vertical continua livre enquanto a página vira.",
+        "Sem WebGL, com “reduzir movimento” ou em economia de dados, aparece a capa plana no lugar do 3D.",
+        "CRM e RQE no rodapé, “Conteúdo informativo. Não substitui a consulta médica.” e nenhuma promessa de resultado (Resolução CFM nº 2.336/2023).",
+      ],
+      stack: ["HTML", "CSS", "JavaScript", "Three.js", "Lenis"],
+      capturas: {
+        desktop: ["/media/sites/lucas-tosi/desk-1.webp", "/media/sites/lucas-tosi/desk-2.webp", "/media/sites/lucas-tosi/desk-3.webp", "/media/sites/lucas-tosi/desk-4.webp"],
+        celular: ["/media/sites/lucas-tosi/cel-1.webp", "/media/sites/lucas-tosi/cel-2.webp", "/media/sites/lucas-tosi/cel-3.webp"],
+      },
+      resultados: [
+        { valor: "0,8 s", rotulo: "até o título aparecer num celular em 3G, sem cache", fonte: "Teste de carga do projeto, celular emulado com processador 4× mais lento", data: "19/11/2026" },
+        { valor: "3,7 s", rotulo: "até o livro 3D aparecer no 3G, contra 5,0 s da primeira versão", fonte: "Teste de carga do projeto", data: "19/11/2026" },
+        { valor: "440 KB", rotulo: "baixados até o livro aparecer, contra 572 KB antes", fonte: "Teste de carga do projeto", data: "19/11/2026" },
+      ],
+      nota: "Fotos do palco: @oandrewillian (encontro do Clube VERO). A lombada, a contracapa e as páginas do livro em 3D são ilustrativas.",
+    },
+    {
+      slug: "valter", nome: "Dr. Valter Dias", peso: "compacto", interesse: "site do zero",
+      tipo: "Site · farmácia clínica e estética",
+      linha: "Um site de 32 páginas para um farmacêutico clínico e esteta de Adamantina-SP, com a avaliação individual como ponto de partida.",
+      oQueE: "Consultório do Dr. Valter Dias, farmacêutico clínico e esteta em Adamantina-SP: estética facial e corporal e farmácia clínica, com atendimento particular e hora marcada.",
+      paraQuem: "Quem procura estética facial ou corporal em Adamantina e quer que a avaliação considere a saúde e os remédios em uso, e quem precisa revisar medicamentos e suplementos.",
+      feito: "Início com mármore animado, apresentação do Dr. Valter, as três frentes (Rosto, Corpo, Farmácia clínica) em painéis que se abrem, oito queixas para começar, processo em cinco passos, artigos, perguntas frequentes e localização; 16 páginas de tratamento e agendamento que monta a mensagem pronta no WhatsApp.",
+      decisoes: [
+        "Mármore com veios dourados gerado em WebGL no lugar de um vídeo, com botão de pausa e parado quando o sistema pede menos movimento.",
+        "Creme e dourado, Fraunces nos títulos e Inter no texto.",
+        "Registro profissional e responsável técnico no rodapé, e em cada tratamento o aviso de que a indicação e os resultados variam de pessoa para pessoa.",
+        "O mapa só carrega depois de um clique (LGPD), e o agendamento só monta a mensagem para o WhatsApp.",
+      ],
+      stack: ["HTML", "CSS", "JavaScript", "WebGL"],
+      capturaNota: "versão pronta, ainda não publicada",
+      capturas: {
+        desktop: ["/media/sites/valter/desk-1.webp", "/media/sites/valter/desk-3.webp", "/media/sites/valter/desk-4.webp"],
+        celular: ["/media/sites/valter/cel-1.webp", "/media/sites/valter/cel-2.webp"],
+      },
+      resultados: [],
+      nota: "Site pronto e ainda não publicado: o domínio ainda não foi definido.",
+    },
+    {
+      slug: "medgrind", publicar: false, nome: "MedGrind", peso: "destaque", interesse: "landing page",
       tipo: "Landing page 3D · produto digital",
       linha: "Um mundo 3D dirigido por capítulos para apresentar um jogo de estudos de medicina.",
       url: "https://www.medgrind.com.br/landing", urlRotulo: "medgrind.com.br/landing",
@@ -212,7 +283,7 @@ export const sites = {
       ],
     },
     {
-      slug: "dolce", nome: "Dolce Migliavaca", peso: "compacto", interesse: "site do zero",
+      slug: "dolce", publicar: false, nome: "Dolce Migliavaca", peso: "compacto", interesse: "site do zero",
       tipo: "Site · confeitaria caseira",
       linha: "Um site de uma página com cheesecake em 3D para girar e encomenda pelo WhatsApp.",
       url: "https://dolce-migliavaca.pages.dev", urlRotulo: "dolce-migliavaca.pages.dev",
@@ -234,7 +305,7 @@ export const sites = {
       nota: "Modelo 3D do cheesecake: “Cheese Cake”, de rebuilderai (Sketchfab), licença CC BY 4.0, com crédito no site.",
     },
     {
-      slug: "1upmed", nome: "1UPmed", peso: "medio", interesse: "landing page",
+      slug: "1upmed", publicar: false, nome: "1UPmed", peso: "medio", interesse: "landing page",
       tipo: "Landing page de venda · jogo com IA",
       linha: "Uma landing em 11 cenas de pixel art que demonstra o produto enquanto explica.",
       url: "https://www.1upmed.com.br/landing", urlRotulo: "1upmed.com.br/landing",
@@ -256,7 +327,7 @@ export const sites = {
       resultados: [],
     },
     {
-      slug: "jr-miller", nome: "JR Miller", peso: "compacto", interesse: "site do zero",
+      slug: "jr-miller", publicar: false, nome: "JR Miller", peso: "compacto", interesse: "site do zero",
       tipo: "Portfólio · criador de conteúdo",
       linha: "Um portfólio com busto 3D e métricas reais para um criador de conteúdo de Caxias do Sul apresentar o trabalho às marcas.",
       oQueE: "Junior Miller (@himiller9_) é criador de conteúdo de Caxias do Sul, RS: humor sobre casamento, futebol e dia a dia.",
@@ -277,7 +348,7 @@ export const sites = {
       resultados: [],
     },
     {
-      slug: "crosshard", nome: "CrossHard", peso: "medio", interesse: "reformulação de site",
+      slug: "crosshard", publicar: false, nome: "CrossHard", peso: "medio", interesse: "reformulação de site",
       tipo: "Landing page imersiva · academia",
       linha: "Uma landing com 3D, vídeo e tipografia em movimento para uma academia de Adamantina-SP.",
       oQueE: "Academia CrossHard, em Adamantina-SP: sete modalidades, o plano DNA 50+ e equipe própria.",
@@ -300,7 +371,7 @@ export const sites = {
       nota: "Versão nova entregue e ainda não publicada: o domínio da academia continua com o site anterior.",
     },
     {
-      slug: "hyperframe", nome: "Hyper Frame Studio", peso: "compacto", interesse: "site do zero",
+      slug: "hyperframe", publicar: false, nome: "Hyper Frame Studio", peso: "compacto", interesse: "site do zero",
       tipo: "Site · estúdio de fotografia",
       linha: "Um site com a cara de um estúdio de eventos, ensaios e cosplay.",
       oQueE: "Hyper Frame Studio, estúdio de fotografia de eventos, ensaios e cosplay.",
@@ -318,29 +389,7 @@ export const sites = {
       nota: "Fotos: acervo do Hyper Frame Studio. Imagens tiradas do vídeo de demonstração do site.",
     },
     {
-      slug: "valter", nome: "Dr. Valter Dias", peso: "compacto", interesse: "site do zero",
-      tipo: "Site · farmácia clínica e estética",
-      linha: "Um site de 32 páginas para um farmacêutico clínico e esteta de Adamantina-SP, com a avaliação individual como ponto de partida.",
-      oQueE: "Consultório do Dr. Valter Dias, farmacêutico clínico e esteta em Adamantina-SP: estética facial e corporal e farmácia clínica, com atendimento particular e hora marcada.",
-      paraQuem: "Quem procura estética facial ou corporal em Adamantina e quer que a avaliação considere a saúde e os remédios em uso, e quem precisa revisar medicamentos e suplementos.",
-      feito: "Início com mármore animado, apresentação do Dr. Valter, as três frentes (Rosto, Corpo, Farmácia clínica) em painéis que se abrem, oito queixas para começar, processo em cinco passos, artigos, perguntas frequentes e localização; 16 páginas de tratamento e agendamento que monta a mensagem pronta no WhatsApp.",
-      decisoes: [
-        "Mármore com veios dourados gerado em WebGL no lugar de um vídeo, com botão de pausa e parado quando o sistema pede menos movimento.",
-        "Creme e dourado, Fraunces nos títulos e Inter no texto.",
-        "Registro profissional e responsável técnico no rodapé, e em cada tratamento o aviso de que a indicação e os resultados variam de pessoa para pessoa.",
-        "O mapa só carrega depois de um clique (LGPD), e o agendamento só monta a mensagem para o WhatsApp.",
-      ],
-      stack: ["HTML", "CSS", "JavaScript", "WebGL"],
-      capturaNota: "versão pronta, ainda não publicada",
-      capturas: {
-        desktop: ["/media/sites/valter/desk-1.webp", "/media/sites/valter/desk-3.webp", "/media/sites/valter/desk-4.webp"],
-        celular: ["/media/sites/valter/cel-1.webp", "/media/sites/valter/cel-2.webp"],
-      },
-      resultados: [],
-      nota: "Site pronto e ainda não publicado: o domínio ainda não foi definido.",
-    },
-    {
-      slug: "nicolao", nome: "Burgão do Nicolão", peso: "compacto", interesse: "site do zero",
+      slug: "nicolao", publicar: false, nome: "Burgão do Nicolão", peso: "compacto", interesse: "site do zero",
       tipo: "Proposta de site · hamburgueria delivery",
       linha: "O cardápio inteiro no celular, com o pedido a um toque.",
       oQueE: "Proposta de site para o Burgão do Nicolão, hamburgueria delivery de Adamantina-SP.",
@@ -363,8 +412,8 @@ export const sites = {
 
   // lista curta no fim da seção de projetos (some se ficar vazia)
   maisProjetos: [
-    { nome: "JurisConta", desc: "Sistema web para escritórios de advocacia: intimações pela OAB, calculadoras e modelos de documento.", rotulo: "sistema" },
-    { nome: "App de treino", desc: "Aplicativo instalável (PWA) com registro de cargas, evolução por exercício e ranking entre amigos.", rotulo: "PWA" },
+    { nome: "JurisConta", publicar: false, desc: "Sistema web para escritórios de advocacia: intimações pela OAB, calculadoras e modelos de documento.", rotulo: "sistema" },
+    { nome: "App de treino", publicar: false, desc: "Aplicativo instalável (PWA) com registro de cargas, evolução por exercício e ranking entre amigos.", rotulo: "PWA" },
   ],
 
   anatomia: {
@@ -470,11 +519,14 @@ export const sites = {
     titulo: "O que costumam perguntar.",
     itens: [
       { p: "Quanto custa um site?", r: "Depende do tamanho e das funções. Você conta o que precisa pelo WhatsApp e recebe um orçamento fechado, sem compromisso." },
-      { p: "Qual a diferença entre landing page e site?", r: "A landing page tem um objetivo só, como uma campanha ou uma oferta, e leva o visitante a uma ação. O site apresenta o negócio inteiro. Se não souber qual escolher, me conte o objetivo e eu indico." },
-      { p: "Quanto tempo leva para ficar pronto?", r: "Uma landing page sai mais rápido que um sistema com login. O prazo vem junto com o orçamento, combinado antes de começar." },
-      { p: "Você usa template?", r: "Não. Cada site é escrito do zero em HTML, CSS e JavaScript, com o visual e as funções que o seu negócio pede." },
-      { p: "O site funciona bem no celular?", r: "Sim. Todo projeto começa pela tela do celular, porque é de lá que vem a maior parte das visitas de um negócio local." },
-      { p: "Vou aparecer no Google?", r: "O site sai com títulos, descrições, velocidade e estrutura que o Google lê bem. Ninguém pode garantir a primeira posição, mas a base fica certa." },
+      { p: "O site segue as regras de publicidade médica?", r: "Sim, o projeto já nasce com a Resolução CFM nº 2.336/2023 em vista: nome, CRM e RQE à vista, diretor técnico identificado quando é clínica, texto informativo e nenhuma promessa de resultado. Como a responsabilidade pela publicidade é do médico, você aprova cada página antes de publicar." },
+      { p: "Qual a diferença entre landing page e site?", r: "A landing page tem um objetivo só, como um tratamento, um procedimento ou uma campanha, e leva o visitante a uma ação. O site apresenta o consultório ou a clínica inteira: equipe, especialidades, localização e agendamento. Se não souber qual escolher, me conte o objetivo e eu indico." },
+      { p: "O agendamento pode ser pelo WhatsApp?", r: "Sim. O botão abre o WhatsApp do consultório com a mensagem já escrita, por exemplo com o tratamento que a pessoa estava lendo. Se você usa um sistema de agenda online, o botão pode levar para ele." },
+      { p: "E a LGPD?", r: "O site não pede dado de saúde em formulário: o contato vai direto para o seu WhatsApp. Mapa e ferramentas de medição só carregam depois que o visitante aceita." },
+      { p: "Quanto tempo leva para ficar pronto?", r: "Uma landing page sai mais rápido que um site de clínica com muitas páginas. O prazo vem junto com o orçamento, combinado antes de começar." },
+      { p: "Você usa template?", r: "Não. Cada site é escrito do zero em HTML, CSS e JavaScript, com o visual e as funções que o seu consultório pede." },
+      { p: "O site funciona bem no celular?", r: "Sim. Todo projeto começa pela tela do celular, porque é de lá que vem a maior parte das visitas." },
+      { p: "Vou aparecer no Google?", r: "O site sai com títulos, descrições, velocidade, endereço e estrutura que o Google lê bem. Ninguém pode garantir a primeira posição, mas a base fica certa." },
       { p: "Preciso ter domínio e hospedagem?", r: "Não precisa chegar com nada. Eu ajudo a registrar o domínio e publico o site. A hospedagem é paga à parte, e a WZS tem parceria com a MasterSite." },
       { p: "Consigo mudar textos e fotos depois?", r: "Sim. Combinamos no orçamento se eu faço as atualizações ou se o site ganha um jeito simples de você mesmo editar." },
       { p: "Atende fora de Vila Flores?", r: "Sim. O atendimento acontece pelo WhatsApp e pelo e-mail, então a distância não muda nada." },
@@ -494,51 +546,51 @@ export const sites = {
 };
 
 // ============================================================================
-//  CRIATIVOS E CONTEÚDOS VIRAIS
+//  CRIATIVOS E CONTEÚDO MÉDICO
 // ============================================================================
 export const criativos = {
   seo: {
-    titulo: "Criativos e conteúdos virais · Vídeos para anunciar ou viralizar · WZS Studio",
-    descricao: "Criativos para anúncios e conteúdos para alcance orgânico: roteiro, gancho e edição para Reels, TikTok e Shorts. Veja trabalhos reais com números públicos.",
+    titulo: "Criativos para médicos e clínicas · Conteúdo médico em vídeo · WZS Studio",
+    descricao: "Vídeos curtos de conteúdo médico para Reels, TikTok e anúncios: roteiro com fonte, animação e edição, seguindo as regras de publicidade do CFM. Veja trabalhos reais com números públicos.",
     og: "/media/og/og-criativos.jpg",
   },
   hero: {
-    rotulo: "Criativos e conteúdos virais",
-    titulo: "Vídeo curto com *gancho, ritmo e roteiro.*",
-    texto: "Crio criativos para anunciar uma oferta e conteúdos para ganhar alcance orgânico. São objetivos diferentes, com roteiros, formatos e métricas diferentes, e todo vídeo começa pelo público que precisa assistir.",
+    rotulo: "Criativos para médicos e clínicas",
+    titulo: "Conteúdo médico com *gancho, ritmo e rigor.*",
+    texto: "Crio vídeos curtos para o perfil do seu consultório e criativos para as suas campanhas. O roteiro nasce de uma fonte clínica, a animação faz a pessoa ficar até o fim e nada promete resultado.",
     cta: "Conversar sobre criativos",
-    linha: "Roteiro, edição e formato para Reels, TikTok e anúncios: do gancho à chamada final.",
+    linha: "Roteiro com fonte, animação e edição para Reels, TikTok e anúncios, do gancho à chamada final, seguindo as regras de publicidade do CFM.",
     ctaSecundario: "Ver trabalhos",
     prova: [
-      { valor: "4 mi+", rotulo: "visualizações em 12 reels do @niloeoinfinito" },
-      { valor: "36 mil", rotulo: "visualizações num perfil de 142 seguidores (@wzs_studio)" },
-      { valor: "4,56%", rotulo: "CTR do melhor vídeo de anúncio do MedGrind" },
+      { valor: "759 mil", rotulo: "visualizações em um reel do @felipen.med" },
+      { valor: "2,1 mi", rotulo: "visualizações em 13 reels publicados em uma semana" },
+      { valor: "10,7 mil", rotulo: "seguidores no perfil: eram 4.578 em 03/11" },
     ],
-    fonteProva: "Instagram (contador público, 03/11/2026) e Gerenciador de Anúncios da Meta (08 a 20/10/2026). Visualização mede alcance e CTR mede clique: nenhum dos dois é venda.",
+    fonteProva: "Contadores públicos do Instagram do @felipen.med em 19/11/2026: 13 reels publicados de 12 a 18/11/2026 somam 2,16 milhões de visualizações; o perfil tinha 4.578 seguidores em 03/11/2026. Visualização mede alcance: não é consulta marcada nem venda.",
   },
 
   historia: {
-    abertura: "Você também rola o feed. Quantos vídeos você pulou hoje?",
+    abertura: "Seu paciente rola o feed todo dia. Quantos vídeos de saúde ele pulou hoje?",
     problema: {
       rotulo: "O problema",
       passos: [
         { titulo: "O feed não espera.", texto: "A pessoa decide em segundos se fica ou passa para o próximo vídeo." },
         { titulo: "Sem gancho, ela rola." },
-        { titulo: "Sem ritmo, sai no meio." },
-        { titulo: "Sem roteiro, assiste e não faz nada." },
+        { titulo: "Com termo técnico demais, sai no meio." },
+        { titulo: "Sem roteiro, assiste e não lembra de quem era." },
       ],
     },
-    explode: { titulo: "É aqui que eu entro.", texto: "Eu monto o vídeo inteiro para segurar quem assiste, do gancho à chamada." },
+    explode: { titulo: "É aqui que eu entro.", texto: "Eu monto o vídeo inteiro: a ideia, o roteiro conferido na fonte, a animação e a edição." },
     montagem: {
       rotulo: "Como eu monto",
-      titulo: "Um reel que segura, camada por camada.",
+      titulo: "Um reel de medicina, camada por camada.",
       arquivo: "reel_fa_x_fv.mp4",
       camadas: [
         { nome: "Corte", trilha: "V1", texto: "Escolho os melhores trechos e corto no ritmo." },
         { nome: "Gancho", trilha: "T1", texto: "Uma frase forte nos primeiros segundos." },
         { nome: "Legenda", trilha: "TXT", texto: "Palavra por palavra, para quem assiste sem som." },
         { nome: "Som", trilha: "A1", texto: "Trilha e efeitos no tempo dos cortes." },
-        { nome: "Chamada", trilha: "FX", texto: "Um pedido claro no final: comentar, salvar ou chamar." },
+        { nome: "Chamada", trilha: "FX", texto: "Um pedido claro no final: comentar, salvar ou mandar para um colega." },
       ],
       quadros: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `/media/criativos/quadros/fa-${i}.jpg`),
       video: "/media/criativos/fa-x-fv.mp4", poster: "/media/criativos/fa-x-fv.jpg",
@@ -546,26 +598,26 @@ export const criativos = {
     sucesso: {
       titulo: "Publicado. Agora ele roda sozinho.",
       meio: "Curtidas, comentários e seguidores chegando.",
-      contador: 481000, numero: "481 mil", rotuloNumero: "visualizações",
-      legenda: "@niloeoinfinito · “Medo de voltar” · 82.584 curtidas",
-      fonte: "Contador público do Instagram em 03/11/2026.",
-      video: "/media/criativos/nilo-medo-de-voltar.mp4", poster: "/media/criativos/nilo-medo-de-voltar.jpg",
+      contador: 759000, numero: "759 mil", rotuloNumero: "visualizações",
+      legenda: "@felipen.med · “Eu quero antibiótico!” · 50 mil curtidas",
+      fonte: "Contador público do Instagram em 19/11/2026. Publicado em 15/11/2026.",
+      video: "/media/criativos/pov-antibiotico.mp4", poster: "/media/criativos/pov-antibiotico.jpg",
     },
     dinheiro: {
       rotulo: "Para anunciar",
       passos: [
         { titulo: "No anúncio, cada clique custa dinheiro." },
         { titulo: "Um criativo que prende a atenção paga menos por visita." },
-        { numero: "R$ 0,15", texto: "por visita à página no vídeo Plantão do MedGrind, com CTR de 4,56%.", fonte: "Gerenciador de Anúncios da Meta, campanha de 08 a 20/10/2026. Mede clique e visita, não venda." },
+        { titulo: "Um vídeo, várias aberturas.", texto: "Testo ganchos diferentes para o mesmo vídeo e fico com o que segura o seu público por menos." },
       ],
-      video: "/media/criativos/ad05v-plantao.mp4",
+      video: "/media/criativos/lucas-mioma.mp4", poster: "/media/criativos/lucas-mioma.jpg",
     },
     oportunidade: {
       rotulo: "A oportunidade",
       passos: [
         { titulo: "O algoritmo entrega o seu vídeo para quem ainda não te segue." },
-        { numero: "36 mil", texto: "visualizações em um reel do @wzs_studio, um perfil com 142 seguidores.", fonte: "Instagram, 03/11/2026." },
-        { numero: "4 mi+", texto: "visualizações em 12 reels do @niloeoinfinito, publicados em menos de duas semanas.", fonte: "Instagram, 03/11/2026." },
+        { numero: "70×", texto: "o tamanho do perfil: 759 mil visualizações num reel do @felipen.med, que tem 10,7 mil seguidores.", fonte: "Instagram, 19/11/2026." },
+        { numero: "6 reels", texto: "do @felipen.med passaram de 100 mil visualizações, num perfil de 10,7 mil seguidores.", fonte: "Contadores públicos do Instagram em 19/11/2026." },
       ],
     },
     convite: "Vamos montar o seu?",
@@ -573,41 +625,36 @@ export const criativos = {
 
   // números de cada fonte (cartões grandes)
   fontes: [
-    { conta: "@niloeoinfinito", url: "https://www.instagram.com/niloeoinfinito/reels/", tema: "Fé e filosofia", numero: "4 mi+", rotulo: "visualizações em 12 reels", extras: ["733 mil no reel mais visto", "44,6 mil seguidores"] },
-    { conta: "@felipen.med", url: "https://www.instagram.com/felipen.med/reels/", tema: "Medicina em pixel art", numero: "87,5 mil", rotulo: "visualizações no reel mais visto", extras: ["3 reels acima de 75 mil", "4.578 seguidores"] },
-    { conta: "@wzs_studio", url: "https://www.instagram.com/wzs_studio/reels/", tema: "Sites, SEO e WhatsApp", numero: "36,6 mil", rotulo: "visualizações com 142 seguidores", extras: ["32 mil em outro reel"] },
-    { conta: "MedGrind", tema: "Anúncio na Meta", numero: "4,56%", rotulo: "CTR do vídeo Plantão", extras: ["R$ 0,15 por visita à página", "campanha de 08 a 20/10/2026"] },
+    { conta: "@felipen.med", url: "https://www.instagram.com/felipen.med/reels/", tema: "Medicina em 3D e pixel art", numero: "759 mil", rotulo: "visualizações no reel mais visto", extras: ["6 reels acima de 100 mil", "10,7 mil seguidores"] },
   ],
-  fontesNota: "Números públicos dos perfis no Instagram em 03/11/2026 (reels do @wzs_studio em 04/11/2026) e do Gerenciador de Anúncios da Meta. Visualização mede alcance, CTR mede clique: nenhum dos dois é venda.",
-  // reels de destaque que estão só no Instagram (link, sem baixar o vídeo)
+  fontesNota: "Números públicos do Instagram do @felipen.med em 19/11/2026. Visualização mede alcance: não é consulta marcada nem venda.",
+  // reels de destaque, com link para conferir o contador no Instagram
   noInstagram: [
-    { conta: "@niloeoinfinito", titulo: "Deus tem senso de humor?", numero: "733 mil", url: "https://www.instagram.com/niloeoinfinito/reel/DfA64eUyhsA/" },
-    { conta: "@niloeoinfinito", titulo: "Deus é metido?", numero: "704 mil", url: "https://www.instagram.com/niloeoinfinito/reel/DfPpz_2S3D2/" },
-    { conta: "@niloeoinfinito", titulo: "Meu amigo vai pro inferno?", numero: "612 mil", url: "https://www.instagram.com/niloeoinfinito/reel/DfLcLBXS9dt/" },
-    { conta: "@felipen.med", titulo: "AVC isquêmico × AVC hemorrágico", numero: "76,8 mil", url: "https://www.instagram.com/felipen.med/reel/DeupHnlG8R0/" },
-    { conta: "@wzs_studio", titulo: "Seu site é um fantasma?", numero: "36,6 mil", url: "https://www.instagram.com/wzs_studio/reel/DfLDpYnt53Z/" },
-    { conta: "@wzs_studio", titulo: "Seu link chega vazio no WhatsApp?", numero: "32 mil", url: "https://www.instagram.com/wzs_studio/reel/DfFEpa6FRsa/" },
+    { conta: "@felipen.med", titulo: "“Eu quero antibiótico!”", numero: "759 mil", url: "https://www.instagram.com/felipen.med/reel/DfxltmipNaq/" },
+    { conta: "@felipen.med", titulo: "“Eu sou da área da saúde, tá?”", numero: "393 mil", url: "https://www.instagram.com/felipen.med/reel/Df5UICQp9jP/" },
+    { conta: "@felipen.med", titulo: "“Doutor, é só um atestado!”", numero: "362 mil", url: "https://www.instagram.com/felipen.med/reel/Df2vWmZphMr/" },
+    { conta: "@felipen.med", titulo: "POV: o colega superinteligente", numero: "144 mil", url: "https://www.instagram.com/felipen.med/reel/DfuJ_9vJ0im/" },
   ],
 
   planos: {
     titulo: "Escolha o objetivo.",
     itens: [
-      { slug: "anunciar", nome: "Para anunciar", rotulo: "Tráfego pago", interesse: "anunciar", cta: "Quero anunciar",
-        resumo: "Criativos para campanhas pagas: vender uma oferta e testar ganchos.",
-        inclui: ["Roteiro com variações de gancho", "Edição em 9:16, 4:5 e 1:1", "Versão para o público de cada campanha"],
+      { slug: "viralizar", nome: "Para o perfil", rotulo: "Orgânico", interesse: "o perfil do consultório", cta: "Quero conteúdo para o perfil",
+        resumo: "Vídeos para o seu perfil crescer: alcance, salvamentos e seguidores da sua área.",
+        inclui: ["Ideia e roteiro com fonte, em série", "Animação e edição com legenda e som", "Sua revisão clínica antes de publicar"],
+        metrica: { rotulo: "Medido por", itens: ["Visualizações", "Envios e salvamentos", "Seguidores"] },
+        // celular atrás da caixa: o reel “Eu quero antibiótico!” do @felipen.med (contador público do Instagram, 19/11/2026)
+        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "felipen.med", cor: "#b8923a",
+          legenda: "Você prescreveria para ele?", curtidas: "50 mil", comentarios: "425", envios: "26,3 mil", selo: { rotulo: "Visualizações", valor: "759 mil", nota: "em um único reel" } } },
+      { slug: "anunciar", nome: "Para anunciar", rotulo: "Tráfego pago", interesse: "anúncios", cta: "Quero criativos para anúncios",
+        resumo: "Criativos para campanhas: apresentar a clínica, um serviço, um livro ou um evento e testar ganchos.",
+        inclui: ["Roteiro com variações de gancho", "Edição em 9:16, 4:5 e 1:1", "Texto revisado pelas regras do CFM"],
         metrica: { rotulo: "Medido por", itens: ["CTR", "Custo por resultado", "Conversão"] },
-        // celular atrás da caixa: o criativo Plantão rodando como anúncio (números do Gerenciador de Anúncios, 08 a 20/10/2026)
-        vitrine: { video: "/media/tex/anuncio-leve.mp4", poster: "/media/tex/anuncio.jpg", conta: "medgrind_oficial", cor: "#14a2ff",
-          legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", selo: { rotulo: "CTR do anúncio", valor: "4,56%", nota: "R$ 0,15 por visita" } } },
-      { slug: "viralizar", nome: "Para viralizar", rotulo: "Orgânico", interesse: "viralizar", cta: "Quero viralizar",
-        resumo: "Vídeos para crescer no orgânico: alcance, comentários e seguidores.",
-        inclui: ["Ideia e roteiro em formato de série", "Edição com legenda e som", "Pergunta no final para puxar comentários"],
-        metrica: { rotulo: "Medido por", itens: ["Visualizações", "Retenção", "Seguidores"] },
-        // celular atrás da caixa: o reel “Medo de voltar” do @niloeoinfinito (contador público do Instagram, 03/11/2026)
-        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "niloeoinfinito", cor: "#ffb547",
-          legenda: "Medo de voltar", curtidas: "82,5 mil", comentarios: "288", envios: "9,1 mil", selo: { rotulo: "Visualizações", valor: "481 mil", nota: "em um único reel" } } },
+        // celular atrás da caixa: um vídeo do Dr. Lucas Tosi (sem número de anúncio: o selo fica de fora)
+        vitrine: { video: "/media/tex/cliente-leve.mp4", poster: "/media/tex/cliente.jpg", conta: "dr.lucastosi", cor: "#b8923a", avatar: "/media/clientes/dr-lucastosi.jpg",
+          legenda: "Mioma: vira câncer?" } },
     ],
-    nota: "Ninguém controla o algoritmo: não existe garantia de viralização nem de vendas.",
+    nota: "Ninguém controla o algoritmo: não existe garantia de alcance nem de pacientes novos. E nenhum vídeo promete resultado de tratamento.",
   },
 
   objetivos: {
@@ -648,55 +695,138 @@ export const criativos = {
   // publicar: false = a série fica pronta aqui, mas não aparece no site (use enquanto falta confirmar algo)
   series: [
     {
+      slug: "dr-lucastosi", conta: "@dr.lucastosi", contaUrl: "https://www.instagram.com/dr.lucastosi/",
+      tema: "Ginecologia e menopausa", nome: "O médico explica, a animação mostra.",
+      descricao: [
+        "Vídeos para o perfil de um ginecologista com 130 mil seguidores: a fala dele no consultório ou no palco, intercalada com animação 3D do que acontece dentro do corpo.",
+        "Cada vídeo responde a uma dúvida que aparece na consulta, com legenda palavra por palavra e, quando há números, a referência na tela.",
+      ],
+      participacao: "animação 3D, legendas e edição sobre as gravações do Dr. Lucas.",
+      videos: [
+        { id: "lucas-mioma", grande: true, titulo: "Mioma: vira câncer?",
+          arquivo: "/media/criativos/lucas-mioma.mp4", poster: "/media/criativos/lucas-mioma.jpg",
+          objetivo: "Responder sem alarme a dúvida de quem acabou de receber o diagnóstico.", publico: "Mulheres com mioma e quem acompanha o tema.",
+          gancho: "“Mioma: vira câncer? Se você tem medo dele virar câncer, esse vídeo é pra você.”",
+          edicao: "O útero em 3D, o mioma e o sarcoma lado a lado, as imagens parecidas no ultrassom e um gráfico de casos por idade, com o Dr. Lucas explicando no consultório." },
+        { id: "lucas-canetas", titulo: "Canetas: como agem no seu corpo",
+          arquivo: "/media/criativos/lucas-canetas.mp4", poster: "/media/criativos/lucas-canetas.jpg",
+          objetivo: "Explicar o mecanismo antes da conversa sobre tratamento.", publico: "Quem pesquisa canetas emagrecedoras.",
+          gancho: "“Você sabe como as canetas emagrecedoras realmente agem no seu corpo?”",
+          edicao: "O sinal do GLP-1 do intestino ao cérebro em 3D, gráficos de glicose e de esvaziamento do estômago e a referência de cada trecho na tela (Drucker, Holst, Wilding e outros)." },
+        { id: "lucas-estrogenio", titulo: "Estrogênio: não é só o número",
+          arquivo: "/media/criativos/lucas-estrogenio.mp4", poster: "/media/criativos/lucas-estrogenio.jpg",
+          objetivo: "Levar a conversa do exame para o que o hormônio faz em cada tecido.", publico: "Mulheres na transição da menopausa.",
+          gancho: "“Estrogênio: não é só o número.”",
+          edicao: "A molécula, o corpo e as células em 3D, intercalados com o Dr. Lucas no palco de um evento sobre terapias hormonais." },
+      ],
+    },
+    {
       slug: "felipen-med", conta: "@felipen.med", contaUrl: "https://www.instagram.com/felipen.med/",
       tema: "Medicina em vídeos curtos", nome: "Medicina que dá vontade de assistir até o fim.",
       descricao: [
-        "Perfil próprio de conteúdo médico: comparações clínicas, casos e histórias de plantão em pixel art com simulação, voxel narrado, animação explicativa e formatos de escolha.",
-        "Os vídeos abrem com um contraste ou uma pergunta (*“FA: dá pra viver anos com ela. FV: você tem minutos.”*) e terminam pedindo um comentário A ou B.",
+        "Perfil próprio de conteúdo médico, com dois formatos que se completam: o *POV de plantão*, em 3D e primeira pessoa, traz alcance; o *caso clínico interativo* ensina uma conduta e traz seguidores da área.",
+        "Também há comparações em pixel art e animações explicativas. Toda afirmação clínica tem a fonte anotada no roteiro.",
       ],
       participacao: "ideia, roteiro, produção visual e edição (perfil próprio).",
       numeros: [
-        { valor: "87,5 mil", rotulo: "visualizações no reel mais visto" },
-        { valor: "3 reels", rotulo: "acima de 75 mil visualizações" },
-        { valor: "4.578", rotulo: "seguidores" },
+        { valor: "759 mil", rotulo: "visualizações no reel mais visto" },
+        { valor: "6 reels", rotulo: "acima de 100 mil visualizações" },
+        { valor: "10,7 mil", rotulo: "seguidores" },
       ],
-      fonte: "Contadores públicos do perfil no Instagram, consultados em 03/11/2026.",
+      fonte: "Contadores públicos do perfil no Instagram, consultados em 19/11/2026.",
+      // oculto: true = o vídeo fica guardado aqui, mas não entra no carrossel
       videos: [
-        { id: "estenose-insuficiencia", grande: true, selo: "75,9 mil", titulo: "Estenose × insuficiência aórtica",
+        { id: "pov-antibiotico", grande: true, selo: "759 mil", titulo: "“Eu quero antibiótico!”",
+          arquivo: "/media/criativos/pov-antibiotico.mp4", poster: "/media/criativos/pov-antibiotico.jpg", data: "2026-11-15",
+          metricas: [{ tipo: "visualizações", valor: "759 mil" }],
+          objetivo: "Alcance fora da bolha, com uma lição clínica que dá vontade de mandar para um colega.", publico: "Médicos, estudantes e quem já passou por um pronto-socorro.",
+          gancho: "O paciente abre a porta gritando: “Eu quero antibiótico!”",
+          edicao: "Cena 3D em primeira pessoa, com visual de videogame dos anos 90: 61 palavras em 42 s, loop perfeito e a fonte de cada afirmação clínica anotada no roteiro.",
+          fonte: "Contador público do Instagram em 19/11/2026. Publicado em 15/11/2026." },
+        { id: "pov-area-da-saude", selo: "393 mil", titulo: "“Eu sou da área da saúde, tá?”",
+          arquivo: "/media/criativos/pov-area-da-saude.mp4", poster: "/media/criativos/pov-area-da-saude.jpg",
+          metricas: [{ tipo: "visualizações", valor: "393 mil" }],
+          objetivo: "Alcance e envios entre colegas.", publico: "Médicos, estudantes e profissionais de saúde.",
+          gancho: "Ela entra apontando o crachá: “Eu sou da área da saúde, tá?”",
+          edicao: "Mesmo consultório, mesma câmera, personagem nova: a série reaproveita o cenário e muda só a situação. A piada é a segurança de quem fez um curso de 40 horas, nunca uma categoria profissional.",
+          fonte: "Contador público do Instagram em 19/11/2026." },
+        { id: "pov-atestado", selo: "362 mil", titulo: "“Doutor, é só um atestado!”",
+          arquivo: "/media/criativos/pov-atestado.mp4", poster: "/media/criativos/pov-atestado.jpg",
+          metricas: [{ tipo: "visualizações", valor: "362 mil" }],
+          objetivo: "Alcance e envios entre colegas.", publico: "Médicos, estudantes e profissionais de saúde.",
+          gancho: "Ele entra de boia de pato na cintura, puxando a mala: “Doutor, é só um atestado!”",
+          edicao: "25 s, nove falas e uma virada: a declaração de comparecimento de sete minutos. A regra por trás da piada (atestado sai do que o médico examina) vem do Código de Ética Médica.",
+          fonte: "Contador público do Instagram em 19/11/2026." },
+        { id: "pov-briga-no-ps", selo: "190 mil", titulo: "POV: seis horas de espera no PS",
+          arquivo: "/media/criativos/pov-briga-no-ps.mp4", poster: "/media/criativos/pov-briga-no-ps.jpg", data: "2026-11-12",
+          metricas: [{ tipo: "visualizações", valor: "190 mil" }],
+          objetivo: "Identificação: a cena que todo plantonista já viveu.", publico: "Médicos, estudantes e equipes de pronto-socorro.",
+          gancho: "A porta bate na parede: “Seis horas! Seis horas esperando!”",
+          edicao: "Primeira pessoa do começo ao fim: as mãos no teclado, a ficha no monitor e a voz interna do médico. Termina onde começa, para o vídeo rodar em loop.",
+          fonte: "Contador público do Instagram em 19/11/2026. Publicado em 12/11/2026." },
+        { id: "pov-google", selo: "131 mil", titulo: "“O ChatGPT disse que é tumor.”",
+          arquivo: "/media/criativos/pov-google.mp4", poster: "/media/criativos/pov-google.jpg", data: "2026-11-13",
+          metricas: [{ tipo: "visualizações", valor: "131 mil" }],
+          objetivo: "Alcance com um tema que médico e paciente reconhecem.", publico: "Médicos, estudantes e quem pesquisa sintoma de madrugada.",
+          gancho: "O paciente enfia o celular na câmera: “Doutor, eu já sei o que eu tenho.”",
+          edicao: "Sem música: o humor fica no tempo das falas. A receita do final (“dormir oito horas, largar o celular”) fecha a piada.",
+          fonte: "Contador público do Instagram em 19/11/2026. Publicado em 13/11/2026." },
+        { id: "caso-anafilaxia", selo: "47,4 mil", titulo: "Caso clínico: falta de ar depois do camarão",
+          arquivo: "/media/criativos/caso-anafilaxia.mp4", poster: "/media/criativos/caso-anafilaxia.jpg", data: "2026-11-14",
+          metricas: [{ tipo: "visualizações", valor: "47,4 mil" }],
+          objetivo: "Ensinar uma conduta e trazer seguidores da área.", publico: "Estudantes de medicina e médicos.",
+          gancho: "“Paciente com falta de ar. Três decisões. Você é o médico.”",
+          edicao: "Caso em 3D com sinais vitais na tela e três perguntas de A ou B. Uma ideia só por vídeo: na anafilaxia, a adrenalina no músculo vem primeiro. Fonte no primeiro comentário (World Allergy Organization, 2020).",
+          fonte: "Contador público do Instagram em 19/11/2026. Publicado em 14/11/2026." },
+        { id: "caso-queimadura", selo: "36,4 mil", titulo: "Caso clínico: queimou o corpo. Quanto por cento?",
+          arquivo: "/media/criativos/caso-queimadura.mp4", poster: "/media/criativos/caso-queimadura.jpg", data: "2026-11-17",
+          metricas: [{ tipo: "visualizações", valor: "36,4 mil" }],
+          objetivo: "Ensinar uma regra que se usa na prática.", publico: "Estudantes de medicina e médicos.",
+          gancho: "“Queimou o corpo. Quanto por cento?”",
+          edicao: "A regra dos nove desenhada sobre o corpo do paciente, a conta do soro na tela e uma pergunta para os comentários. Fontes no primeiro comentário (SBQ, Ministério da Saúde e ATLS).",
+          fonte: "Contador público do Instagram em 19/11/2026. Publicado em 17/11/2026." },
+        { id: "caso-parada", selo: "31,6 mil", titulo: "Caso clínico: parou. Choca ou não choca?",
+          arquivo: "/media/criativos/caso-parada.mp4", poster: "/media/criativos/caso-parada.jpg",
+          metricas: [{ tipo: "visualizações", valor: "31,6 mil" }],
+          objetivo: "Ensinar uma decisão de segundos.", publico: "Estudantes de medicina e médicos.",
+          gancho: "“Parou. Choca ou não choca?”",
+          edicao: "O monitor decide: cada ritmo aparece na tela e quem assiste responde antes da resposta. Segue o algoritmo de parada da AHA 2025, citado no primeiro comentário.",
+          fonte: "Contador público do Instagram em 19/11/2026." },
+        { id: "estenose-insuficiencia", selo: "75,9 mil", titulo: "Estenose × insuficiência aórtica",
           arquivo: "/media/criativos/estenose-insuficiencia.mp4", poster: "/media/criativos/estenose-insuficiencia.jpg",
           metricas: [{ tipo: "visualizações", valor: "75,9 mil" }],
           objetivo: "Alcance orgânico e salvamentos.", publico: "Estudantes de medicina.",
           gancho: "“Esse sangue não foi desenhado, foi calculado.”",
           edicao: "Pixel art com simulação de fluido dentro da própria anatomia: o jato e o refluxo saem da física. Loop de 40 s com trilha sincronizada.",
-          fonte: "Contador público do Instagram em 03/11/2026." },
-        { id: "fa-x-fv", titulo: "FA × FV: só um ainda bombeia sangue",
+          fonte: "Contador público do Instagram em 03/11/2026; o número atual pode ser maior." },
+        { id: "soro-tce", titulo: "Soro no traumatismo craniano",
+          arquivo: "/media/criativos/soro-tce.mp4", poster: "/media/criativos/soro-tce.jpg",
+          objetivo: "Explicar uma conduta e mostrar domínio do tema.", publico: "Estudantes de medicina.",
+          gancho: "Abre direto no caso: “Traumatismo craniano grave…”",
+          edicao: "Animação explicativa em estilo flat, com narração e efeitos sonoros sincronizados a cada cena." },
+        { id: "fa-x-fv", oculto: true, titulo: "FA × FV: só um ainda bombeia sangue",
           arquivo: "/media/criativos/fa-x-fv.mp4", poster: "/media/criativos/fa-x-fv.jpg",
           metricas: [{ tipo: "visualizações", valor: "31,2 mil" }],
           objetivo: "Alcance orgânico e comentários.", publico: "Estudantes de medicina.",
           gancho: "“FA: dá pra viver anos com ela. FV: você tem minutos.”",
           edicao: "Pixel art em 60 fps com os dois corações lado a lado, loop perfeito de 40 s e pergunta A ou B na legenda.",
           fonte: "Print do perfil em 16/10/2026; o número atual pode ser maior." },
-        { id: "dpp-x-placenta-previa", titulo: "DPP × placenta prévia",
+        { id: "dpp-x-placenta-previa", oculto: true, titulo: "DPP × placenta prévia",
           arquivo: "/media/criativos/dpp-x-placenta-previa.mp4", poster: "/media/criativos/dpp-x-placenta-previa.jpg", data: "2026-11-03",
           metricas: [{ tipo: "visualizações", valor: "12,1 mil" }],
           objetivo: "Alcance orgânico e salvamentos.", publico: "Estudantes de medicina.",
           gancho: "“As duas sangram, uma dói e a outra não.”",
           edicao: "Comparação em pixel art com zoom nos detalhes que diferenciam os dois quadros.",
           fonte: "Contador público em 03/11/2026, cerca de 11 horas depois da publicação." },
-        { id: "ultimo-plantao", titulo: "O último plantão",
+        { id: "ultimo-plantao", oculto: true, titulo: "O último plantão",
           arquivo: "/media/criativos/ultimo-plantao.mp4", poster: "/media/criativos/ultimo-plantao.jpg",
           objetivo: "Identificação e compartilhamento.", publico: "Estudantes e profissionais de saúde.",
           gancho: "“O último plantão: seis anos num hospital, num corredor só.”",
           edicao: "Voxel 3D narrado, cena a cena pelos setores do hospital; termina com uma pergunta para os comentários." },
-        { id: "soro-tce", titulo: "Soro no traumatismo craniano",
-          arquivo: "/media/criativos/soro-tce.mp4", poster: "/media/criativos/soro-tce.jpg",
-          objetivo: "Educação e autoridade no tema.", publico: "Estudantes de medicina.",
-          gancho: "Abre direto no caso: “Traumatismo craniano grave…”",
-          edicao: "Animação explicativa em estilo flat, com a voz real do autor e efeitos sonoros sincronizados a cada cena." },
       ],
     },
     {
-      slug: "wzs-studio", conta: "@wzs_studio", contaUrl: "https://www.instagram.com/wzs_studio/",
+      slug: "wzs-studio", publicar: false, conta: "@wzs_studio", contaUrl: "https://www.instagram.com/wzs_studio/",
       tema: "Conteúdo para atrair clientes", nome: "Vídeos que vendem a ideia de ter um site.",
       descricao: [
         "Série do próprio estúdio: explica, na linguagem de quem tem um negócio, por que um site ajuda a ser encontrado e a receber contatos.",
@@ -720,7 +850,7 @@ export const criativos = {
       ],
     },
     {
-      slug: "marcas-proprias", conta: "@medgrind_oficial e @1upmed_", contaUrl: "https://www.instagram.com/medgrind_oficial/",
+      slug: "marcas-proprias", publicar: false, conta: "@medgrind_oficial e @1upmed_", contaUrl: "https://www.instagram.com/medgrind_oficial/",
       tema: "Produtos próprios", nome: "Conteúdo para jogos de estudo.",
       descricao: [
         "Reels orgânicos para os jogos MedGrind e 1UPmed: gameplay real, narração e uma pergunta para o público responder.",
@@ -741,7 +871,7 @@ export const criativos = {
     // Perfis citados no briefing que ainda precisam de confirmação antes de aparecer no site.
     // Números públicos consultados em 03/11/2026; faltam os arquivos de vídeo e a confirmação de autoria.
     {
-      slug: "nilo", conta: "@niloeoinfinito", contaUrl: "https://www.instagram.com/niloeoinfinito/reels/",
+      slug: "nilo", publicar: false, conta: "@niloeoinfinito", contaUrl: "https://www.instagram.com/niloeoinfinito/reels/",
       tema: "Fé e filosofia", nome: "Perguntas pequenas, reflexões gigantes.",
       descricao: ["Diálogos curtos com Deus em voxel 3D: uma pergunta que todo mundo já fez, respondida em menos de dois minutos."],
       numeros: [
@@ -772,9 +902,10 @@ export const criativos = {
     },
   ],
 
-  // Anúncios e criativos de conversão: a seção só aparece quando houver vídeos aqui.
+  // Anúncios e criativos de conversão: a seção só aparece quando houver vídeos aqui sem oculto: true.
+  // Desde 20/11/2026 todos estão ocultos (MedGrind, @wzs_studio e peças de demonstração não são da área médica).
   anuncios: {
-    titulo: "Os criativos que vendem.",
+    titulo: "Criativos de campanha.",
     lead: "Anúncios e peças de motion feitos em código: ritmo, tipografia em movimento e a oferta clara no final.",
     conta: "Anúncios e motion", tema: "Criativos de conversão", slug: "anuncios", nomeSerie: "Feitos para vender.",
     descricao: [
@@ -786,50 +917,50 @@ export const criativos = {
     ],
     fonte: "Gerenciador de Anúncios da Meta, campanha de tráfego de 08 a 20/10/2026.",
     videos: [
-      { id: "ad05v-plantao", grande: true, selo: "CTR 4,56%", titulo: "Plantão: “Paciente na sala 1. A conduta é sua.”",
+      { id: "ad05v-plantao", oculto: true, grande: true, selo: "CTR 4,56%", titulo: "Plantão: “Paciente na sala 1. A conduta é sua.”",
         arquivo: "/media/criativos/ad05v-plantao.mp4", poster: "/media/criativos/ad05v-plantao.jpg",
         metricas: [{ tipo: "CTR", valor: "4,56%" }, { tipo: "por visita", valor: "R$ 0,15" }],
         objetivo: "Levar estudantes à página e à assinatura.", gancho: "“Paciente na sala 1.” → “A conduta é sua.”",
         edicao: "Imagens reais do Modo Plantonista com HUD animado, 15 s, em 9:16, 4:5 e 1:1.",
         fonte: "Meta Ads, 08 a 20/10/2026, medido na primeira versão deste vídeo; só o cartão final mudou." },
-      { id: "wzs-fantasma", conta: "@wzs_studio", selo: "36,6 mil", titulo: "Seu site é um fantasma?",
+      { id: "wzs-fantasma", oculto: true, conta: "@wzs_studio", selo: "36,6 mil", titulo: "Seu site é um fantasma?",
         arquivo: "/media/criativos/wzs-fantasma.mp4", poster: "/media/criativos/wzs-fantasma.jpg", data: "2026-10-31",
         metricas: [{ tipo: "visualizações", valor: "36,6 mil" }],
         objetivo: "Atrair donos de negócio para o serviço de sites.", publico: "Donos de negócio local.",
         gancho: "“Seu site é um fantasma?”",
         edicao: "Cena 3D em low poly com o teste no Google e a solução passo a passo.",
         fonte: "Contador público do Instagram em 04/11/2026." },
-      { id: "medgrind-meta-15s", titulo: "“4 horas estudando… e o seu progresso?”",
+      { id: "medgrind-meta-15s", oculto: true, titulo: "“4 horas estudando… e o seu progresso?”",
         arquivo: "/media/criativos/medgrind-meta-15s.mp4", poster: "/media/criativos/medgrind-meta-15s.jpg",
         objetivo: "Anúncio de 15 s para o MedGrind.", gancho: "Um cronômetro rodando: “4 horas estudando.”",
         edicao: "Motion graphics em HUD, tipografia cinética e trilha na batida." },
-      { id: "wzs-link-vazio", conta: "@wzs_studio", selo: "32 mil", titulo: "Seu link chega vazio no WhatsApp?",
+      { id: "wzs-link-vazio", oculto: true, conta: "@wzs_studio", selo: "32 mil", titulo: "Seu link chega vazio no WhatsApp?",
         arquivo: "/media/criativos/wzs-link-vazio.mp4", poster: "/media/criativos/wzs-link-vazio.jpg", data: "2026-10-29",
         metricas: [{ tipo: "visualizações", valor: "32 mil" }],
         objetivo: "Atrair donos de negócio para o serviço de sites.", publico: "Donos de negócio local.",
         gancho: "“Seu link chega assim?”",
         edicao: "Cena 3D em low poly que mostra o problema na conversa e a correção de três linhas no código.",
         fonte: "Contador público do Instagram em 04/11/2026." },
-      { id: "medgrind-showreel", titulo: "Showreel de lançamento do MedGrind",
+      { id: "medgrind-showreel", oculto: true, titulo: "Showreel de lançamento do MedGrind",
         arquivo: "/media/criativos/medgrind-showreel.mp4", poster: "/media/criativos/medgrind-showreel.jpg",
         objetivo: "Apresentar o produto em 16 s.", gancho: "“Você estuda horas. Nada evolui.”",
         edicao: "Interface real do jogo com cursor demonstrando cada recurso, cortes na trilha." },
-      { id: "wzs-advogado", conta: "@wzs_studio", selo: "4,4 mil", titulo: "Seu escritório existe. O cliente não te viu.",
+      { id: "wzs-advogado", oculto: true, conta: "@wzs_studio", selo: "4,4 mil", titulo: "Seu escritório existe. O cliente não te viu.",
         arquivo: "/media/criativos/wzs-advogado.mp4", poster: "/media/criativos/wzs-advogado.jpg", data: "2026-10-18",
         metricas: [{ tipo: "visualizações", valor: "4,4 mil" }],
         objetivo: "Falar com um nicho: escritórios de advocacia sem site.", publico: "Advogados.",
         gancho: "“Advogado perto de mim.”",
         edicao: "Animação 3D com um advogado que virou fantasma até aparecer no Google.",
         fonte: "Contador público do Instagram em 04/11/2026." },
-      { id: "motion-feito-em-codigo", titulo: "“Feito em código.”",
+      { id: "motion-feito-em-codigo", oculto: true, titulo: "“Feito em código.”",
         arquivo: "/media/criativos/motion-feito-em-codigo.mp4", poster: "/media/criativos/motion-feito-em-codigo.jpg",
         objetivo: "Peça de demonstração do estilo de motion.", gancho: "“Feito em código.”",
         edicao: "Molas, curvas de movimento e quatro formatos, tudo gerado em código e sincronizado com a música." },
-      { id: "exemplo-fluxo", titulo: "“Você ainda faz tudo à mão?”",
+      { id: "exemplo-fluxo", oculto: true, titulo: "“Você ainda faz tudo à mão?”",
         arquivo: "/media/criativos/exemplo-fluxo.mp4", poster: "/media/criativos/exemplo-fluxo.jpg",
         objetivo: "Exemplo de anúncio para um app de automação (marca de demonstração).", gancho: "“Você ainda faz tudo à mão?”",
         edicao: "Motion graphics de 15 s com formas, tipografia e cortes no compasso." },
-      { id: "ad08-hipocrates", titulo: "“Contratei o Hipócrates.”",
+      { id: "ad08-hipocrates", oculto: true, titulo: "“Contratei o Hipócrates.”",
         arquivo: "/media/criativos/ad08-hipocrates.mp4", poster: "/media/criativos/ad08-hipocrates.jpg",
         objetivo: "Apresentar a equipe de médicos do jogo.", gancho: "“Contratei o Hipócrates.”",
         edicao: "Uma carta vira e revela o médico lendário que entra para a equipe." },
@@ -862,11 +993,14 @@ export const criativos = {
   faq: {
     titulo: "Antes de começar.",
     itens: [
-      { p: "Você garante que o vídeo vai viralizar?", r: "Não. Ninguém controla o algoritmo. O trabalho é aumentar as chances: entender o público, escolher o ângulo, testar ganchos e editar com ritmo. Os números desta página são resultados reais de outros perfis, não uma promessa." },
-      { p: "Qual a diferença entre criativo para anúncio e conteúdo orgânico?", r: "O criativo para anúncio é mostrado para um público escolhido na campanha e é medido por cliques, custo e conversões. O conteúdo orgânico depende do algoritmo e é medido por visualizações, retenção, compartilhamentos e seguidores." },
-      { p: "Muitas visualizações significam mais vendas?", r: "Não necessariamente. Visualização mostra alcance. Venda depende da oferta, do público e do caminho até a compra. Por isso cada vídeo começa com um objetivo e uma métrica." },
+      { p: "O conteúdo segue as regras do CFM?", r: "Sim, é o ponto de partida. Os roteiros seguem a Resolução CFM nº 2.336/2023: caráter educativo, sem promessa de resultado e sem sensacionalismo, com a sua identificação profissional (nome, CRM e, se houver especialidade, RQE). Como a responsabilidade pela publicidade é do médico, nada vai ao ar sem a sua aprovação." },
+      { p: "Quem escreve o roteiro entende de medicina?", r: "Sim. Todo roteiro é escrito com a fonte de cada afirmação anotada (diretriz, artigo ou protocolo), e você revisa antes de publicar. A palavra final sobre o conteúdo clínico é sempre sua." },
+      { p: "Preciso aparecer no vídeo?", r: "Não. Dá para ter conteúdo só com animação e narração, como no @felipen.med. Se você quiser aparecer, a sua gravação ganha animação 3D do que acontece no corpo, como nos vídeos do Dr. Lucas Tosi." },
+      { p: "Você garante que o vídeo vai viralizar?", r: "Não. Ninguém controla o algoritmo. O trabalho é aumentar as chances: entender o público, escolher o ângulo, testar ganchos e editar com ritmo. Os números desta página são resultados reais, com fonte e data, não uma promessa." },
+      { p: "Muitas visualizações significam mais pacientes?", r: "Não necessariamente. Visualização mostra alcance. Consulta marcada depende do público certo, da especialidade, da região e do caminho até o agendamento. Por isso cada vídeo começa com um objetivo e uma métrica." },
+      { p: "Qual a diferença entre criativo para anúncio e conteúdo orgânico?", r: "O criativo para anúncio é mostrado para um público escolhido na campanha e é medido por cliques, custo e conversões. O conteúdo orgânico depende do algoritmo e é medido por visualizações, envios, salvamentos e seguidores." },
       { p: "Quanto custa?", r: "Depende do objetivo, do formato e da quantidade de vídeos. Você conta o que precisa pelo WhatsApp e recebe um orçamento sem compromisso." },
-      { p: "O que eu preciso enviar para começar?", r: "O que você vende, para quem, e exemplos de vídeos de que você gosta, seus ou de outros perfis. Se já tiver gravações, fotos ou a identidade visual da marca, elas ajudam." },
+      { p: "O que eu preciso enviar para começar?", r: "A sua especialidade, o público que você quer alcançar e os temas que mais aparecem no consultório. Se já tiver identidade visual, fotos ou gravações, elas ajudam." },
     ],
   },
 

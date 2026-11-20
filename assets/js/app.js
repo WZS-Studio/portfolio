@@ -5,7 +5,7 @@
 // - a rolagem: cada seção pede uma cena ao mundo e os objetos da página se reorganizam;
 // - estudos de caso, player de vídeo, cursor da marca e medição.
 // o mundo 3D (Three.js, ~150 KB comprimido) carrega depois do conteúdo: veja iniciar()
-const CORES = { deep: "#0a1220", navy: "#0f1a2b", blue: "#3b82f6", rec: "#ff4d2e" };
+const CORES = { papel: "#ffffff", creme: "#faf8f4", tinta: "#0f1724", ouro: "#b8923a", ouroClaro: "#e8d9b0", ouroEscuro: "#8a6b22" };
 const suportaWebGL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; } };
 // rede lenta ou economia de dados (Chrome/Android informam; Safari não): vídeos na versão leve
 const rede = navigator.connection || {};
@@ -45,7 +45,7 @@ function iniciar() {
     const carregar3d = () => {
       let mapa = {};
       try { mapa = JSON.parse($("script[type=importmap]")?.textContent || "{}").imports || {}; } catch { /* sem mapa */ }
-      for (const m of ["three", "/assets/js/mundo.js", "/assets/js/dispositivos.js", "/assets/vendor/addons/RoomEnvironment.js", "/assets/js/cafe-forma.js"]) {
+      for (const m of ["three", "/assets/js/mundo.js", "/assets/js/dispositivos.js", "/assets/js/emblema.js", "/assets/vendor/addons/RoomEnvironment.js", "/assets/js/cafe-forma.js"]) {
         if (!mapa[m]) continue;
         const l = Object.assign(document.createElement("link"), { rel: "modulepreload", href: mapa[m] });
         l.setAttribute("fetchpriority", "low"); document.head.appendChild(l);
@@ -135,6 +135,10 @@ function ligarGlobais() {
 
   addEventListener("popstate", () => navegar(location.pathname, { modo: "simples", push: false }));
 
+  // o mouse sobre a logo do topo transforma também a logo 3D no bastão de Asclépio
+  document.addEventListener("pointerover", (e) => { if (e.pointerType !== "touch" && e.target.closest?.("[data-emblema]")) mundo?.setEmblema(true); });
+  document.addEventListener("pointerout", (e) => { const a = e.target.closest?.("[data-emblema]"); if (a && !a.contains(e.relatedTarget)) mundo?.setEmblema(false); });
+
   // diálogos: rolagem do fundo para enquanto estão abertos
   $$("dialog").forEach((d) => {
     d.addEventListener("close", () => {
@@ -154,23 +158,22 @@ async function navegar(caminho, { modo = "circulo", x = innerWidth / 2, y = inne
   const destino = universoDe(caminho);
   const veu = $("#veu");
   const pedido = fetch(caminho, { headers: { "X-WZS": "1" } }).then((r) => (r.ok ? r.text() : Promise.reject(r.status)));
-  const cor = destino === "sites" ? CORES.blue : destino === "criativos" ? CORES.rec : CORES.navy;
   veu.style.setProperty("--vx", (x / innerWidth) * 100 + "%");
   veu.style.setProperty("--vy", (y / innerHeight) * 100 + "%");
 
   try {
     if (reduz() || modo === "simples") {
-      veu.className = "veu"; veu.style.setProperty("--veu-1", CORES.deep); veu.style.setProperty("--veu-2", CORES.deep);
+      veu.className = "veu"; veu.style.setProperty("--veu-1", CORES.creme); veu.style.setProperty("--veu-2", CORES.creme);
       await animar(veu, [{ opacity: 0 }, { opacity: 1 }], 220);
     } else if (modo === "mergulho" && mundo) {
-      // a câmera entra na logo; a luz do universo cobre a tela no fim do mergulho
+      // a câmera entra na logo; uma luz dourada cobre a tela no fim do mergulho
       mundo.setUniverso(destino);
-      veu.className = "veu"; veu.style.setProperty("--veu-1", "#ffffff"); veu.style.setProperty("--veu-2", cor);
+      veu.className = "veu"; veu.style.setProperty("--veu-1", CORES.papel); veu.style.setProperty("--veu-2", CORES.ouroClaro);
       document.body.style.pointerEvents = "none";
       await Promise.all([mundo.mergulhar(1.0), esperar(560).then(() => animar(veu, [{ opacity: 0 }, { opacity: 1 }], 440, "cubic-bezier(.6,0,.3,1)"))]);
     } else {
-      // círculo que cresce a partir do clique, na luz do destino
-      veu.className = "veu is-circulo"; veu.style.setProperty("--veu-2", destino === "portal" ? CORES.deep : mistura(cor));
+      // círculo de papel que cresce a partir do clique
+      veu.className = "veu is-circulo"; veu.style.setProperty("--veu-2", destino === "portal" ? CORES.creme : CORES.ouroClaro);
       const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
       await animar(veu, [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${raio}px at ${x}px ${y}px)` }], 620, "cubic-bezier(.7,0,.25,1)");
     }
@@ -401,7 +404,7 @@ function capitulos() {
           mundo?.setCena(prox && prox !== "-" ? (/oportunidade/.test(prox) ? "globo" : "fundo") : "leitura");
           mundo?.setCap(null);
         }
-        if (veu) veu.style.opacity = p < 0.5 ? faixa(p, 0.22, 0.5).toFixed(3) : (1 - faixa(p, 0.58, 0.96)).toFixed(3);
+        if (veu) veu.style.opacity = p < 0.5 ? faixa(p, 0.22, 0.5).toFixed(3) : (1 - faixa(p, 0.84, 1)).toFixed(3);   // a luz fica atrás da pergunta até o fim
       } else {
         mundo?.setCena(cap.dataset.cena);
         mundo?.setCap(nome, p);
@@ -490,10 +493,10 @@ function contarNumeros() {
 
 // caixas 3D dos planos: inclinam com o mouse e o botão solta corações, dinheiro ou código
 const FORMAS = {
-  coracoes: ['<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff3040"/></svg>', '<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff7aa2"/></svg>'],
+  coracoes: ['<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#b8923a"/></svg>', '<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#d9bd73"/></svg>'],
   // cédulas de verdade (frente das notas de R$ 100 e R$ 50, imagens do Banco Central)
   dinheiro: ['<img class="estouro__nota" src="/media/tex/cedula-100.webp" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-50.webp" alt="">', '<img class="estouro__nota" src="/media/tex/cedula-100.webp" alt="">'],
-  codigo: ['<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#8fd3ff" font-family="monospace">&lt;/&gt;</text></svg>', '<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10" fill="none" stroke="#3ddc97" stroke-width="3" stroke-linecap="round"/></svg>', '<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#ffcb6b" font-family="monospace">{ }</text></svg>'],
+  codigo: ['<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#8a6b22" font-family="monospace">&lt;/&gt;</text></svg>', '<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10" fill="none" stroke="#b8923a" stroke-width="3" stroke-linecap="round"/></svg>', '<svg viewBox="0 0 30 20"><text x="15" y="15" font-size="14" font-weight="700" text-anchor="middle" fill="#b8923a" font-family="monospace">{ }</text></svg>'],
 };
 function estourar(el, tipo, qtd = 16, forca = 1) {
   if (reduz() || !el) return;
@@ -566,7 +569,6 @@ function pilulaTroca() {
     const a = $('a[aria-current="page"]', nav);
     if (!a) { pil.style.opacity = "0"; return; }
     pil.style.opacity = "1"; pil.style.width = a.offsetWidth + "px"; pil.style.transform = `translateX(${a.offsetLeft}px)`;
-    pil.style.background = html.dataset.universo === "criativos" ? "#ffd2c6" : "#d6e6ff";
   };
   pos();
   const ro = new ResizeObserver(pos); ro.observe(nav);
@@ -599,7 +601,7 @@ function portal() {
   const marcar = (u) => {
     lados.forEach((l) => l.classList.toggle("is-ativo", l.dataset.escolha === u));
     tela.classList.toggle("tem-foco", !!u);
-    $("#cursor")?.style.setProperty("--cur", u === "criativos" ? "#ff8a73" : u === "sites" ? "#8fc1ff" : "");
+    $("#cursor")?.style.setProperty("--cur", u ? CORES.ouroEscuro : "");
   };
   const curva = (v) => Math.sign(v) * Math.min(1, Math.pow(Math.max(0, Math.abs(v) - 0.06) / 0.7, 0.85));
   const emPe = () => innerWidth / innerHeight < 0.9 || innerWidth <= 760;
@@ -787,11 +789,6 @@ function animar(el, quadros, dur, easing = "ease") {
   if (!el.animate) { Object.assign(el.style, quadros[quadros.length - 1]); return Promise.resolve(); }
   const a = el.animate(quadros, { duration: dur, easing, fill: "forwards" });
   return a.finished.then(() => { Object.assign(el.style, quadros[quadros.length - 1]); a.cancel(); }).catch(() => { });
-}
-function mistura(hex) {               // cor do destino escurecida para o círculo de travessia
-  const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, k = 0.28;
-  const d = [10, 18, 32];
-  return `rgb(${Math.round(d[0] + (r - d[0]) * k)}, ${Math.round(d[1] + (g - d[1]) * k)}, ${Math.round(d[2] + (b - d[2]) * k)})`;
 }
 
 iniciar();

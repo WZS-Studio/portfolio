@@ -4,12 +4,12 @@
 //   c-explode     o celular antigo explode e um novo chega com um reel bem feito
 //   c-montagem    prévia do editor: corte, gancho, legenda, som e chamada entram camada a camada
 //   c-sucesso     o reel publicado viraliza (contadores e corações dentro da tela)
-//   c-dinheiro    o mesmo formato como anúncio: cada clique custa, o criativo paga
+//   c-dinheiro    para anunciar: cada clique custa, o criativo paga (no celular, um vídeo do Dr. Lucas Tosi)
 //   c-oportunidade  o vídeo chega a quem não segue
 //   s-problema    um site genérico que perde o visitante
 //   s-montagem    o site sendo construído: mensagem, design, conteúdo, celular, ação
-//   s-medgrind    o caso MedGrind: o notebook abre e a landing de verdade voa pela rolagem; o celular sobe pela frente
-//   s-oportunidade  do anúncio no celular até a conversa no WhatsApp
+//   s-caso        o caso em destaque (landing do livro do Dr. Lucas Tosi): o notebook abre e a landing de verdade voa pela rolagem; o celular sobe pela frente
+//   s-oportunidade  do vídeo no celular até a conversa no WhatsApp
 import * as THREE from "three";
 import { FORMA_CAFE, geometriasCafe } from "./cafe-forma.js";
 
@@ -365,7 +365,7 @@ export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia
     if (cafeTexturas || !midia.cafe) return; cafeTexturas = true;
     const carregar = (src, ok) => loader.load(src, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; ok(t); });
     ["xicara", "pires", "alca"].forEach((k) => carregar(midia.cafe[k], (t) => { matsLouca[k].emissiveMap = t; }));
-    carregar(midia.cafe.chao, (t) => { sombraChao.material.map = t; sombraChao.material.opacity = 1; });
+    carregar(midia.cafe.chao, (t) => { sombraChao.material.map = t; sombraChao.material.opacity = 0.34; });
     loader.load(midia.cafe.liquido, (t) => { cafeU.uSombra.value = t; cafeU.uTemSombra.value = 1; });
   };
   {
@@ -384,7 +384,7 @@ export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia
   const NV = 48, vaporPos = new Float32Array(NV * 3), vaporSem = Array.from({ length: NV }, () => Math.random());
   const vaporGeo = new THREE.BufferGeometry(); vaporGeo.setAttribute("position", new THREE.BufferAttribute(vaporPos, 3));
   const vaporTex = (() => { const c = canvas(64, 64), x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, "rgba(255,255,255,.55)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return texCanvas(c); })();
-  const vapor = new THREE.Points(vaporGeo, new THREE.PointsMaterial({ size: 0.46, map: vaporTex, transparent: true, depthWrite: false, opacity: 0.3 }));
+  const vapor = new THREE.Points(vaporGeo, new THREE.PointsMaterial({ size: 0.46, map: vaporTex, color: "#b9ad96", transparent: true, depthWrite: false, opacity: 0.4 }));
   vapor.frustumCulled = false; cafe.add(vapor);
 
   // ---------- dinheiro: cédulas de verdade (R$ 100 e R$ 50, frente e verso, imagens do Banco Central) ----------
@@ -469,6 +469,8 @@ varying float vNota;`)
       }
     }
     x.fillStyle = o.corAvatar || "#ff4d2e"; x.beginPath(); x.arc(56, by, 26, 0, Math.PI * 2); x.fill();
+    const av = o.avatar && imgEl(o.avatar);
+    if (av && pronto(av)) { x.save(); x.beginPath(); x.arc(56, by, 26, 0, Math.PI * 2); x.clip(); x.drawImage(av, 30, by - 26, 52, 52); x.restore(); }
     x.fillStyle = "#fff"; x.font = "700 26px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; const u = o.usuario || "seu.perfil"; x.fillText(u, 96, by + 9);
     const wu = x.measureText(u).width;
     if (!o.patrocinado) { x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, 110 + wu, by - 20, 112, 40, 9); x.stroke(); x.font = "600 22px -apple-system, SF Pro Text, Roboto, Segoe UI, sans-serif"; x.fillText(o.seguindo ? "Seguindo" : "Seguir", 124 + wu, by + 8); }
@@ -512,16 +514,16 @@ varying float vNota;`)
   function desenharEdicao(p, cam, el) {
     const x = igx; x.setTransform(ESC, 0, 0, ESC, 0, 0); x.fillStyle = "#050608"; x.fillRect(0, 0, W, H); x.textAlign = "left";
     if (cam[0] > 0) { x.globalAlpha = cam[0]; cobrir(x, el, 0, 0, W, H, [0.18, 0.76]); x.globalAlpha = 1; }
-    else if (p < 0.12) { x.fillStyle = "rgba(255,255,255,.35)"; x.font = "500 28px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("linha do tempo vazia", W / 2, H / 2); x.textAlign = "left"; }
+    else if (p < 0.12) { x.fillStyle = "rgba(255,255,255,.35)"; x.font = "500 28px DM Sans, sans-serif"; x.textAlign = "center"; x.fillText("linha do tempo vazia", W / 2, H / 2); x.textAlign = "left"; }
     else { x.strokeStyle = "rgba(143,211,255,.12)"; x.lineWidth = 1; for (let i = 1; i < 6; i++) { x.beginPath(); x.moveTo((i * W) / 6, 0); x.lineTo((i * W) / 6, H); x.stroke(); } for (let i = 1; i < 12; i++) { x.beginPath(); x.moveTo(0, (i * H) / 12); x.lineTo(W, (i * H) / 12); x.stroke(); } }
     if (cam[1] > 0) {
       x.globalAlpha = cam[1]; x.textAlign = "center"; x.lineJoin = "round";
-      GANCHO.forEach((l, i) => { x.font = `800 62px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, W / 2, 230 + i * 72); x.fillStyle = i === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, W / 2, 230 + i * 72); });
+      GANCHO.forEach((l, i) => { x.font = `800 62px DM Sans, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, W / 2, 230 + i * 72); x.fillStyle = i === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, W / 2, 230 + i * 72); });
       x.textAlign = "left"; x.globalAlpha = 1;
     }
     if (cam[2] > 0) {
       x.globalAlpha = cam[2]; const k = Math.floor(p * 40) % LEG.length, frase = LEG.slice(Math.max(0, k - 2), k + 1);
-      x.font = "800 44px Schibsted Grotesk, sans-serif"; const tw = x.measureText(frase.join(" ")).width;
+      x.font = "800 44px DM Sans, sans-serif"; const tw = x.measureText(frase.join(" ")).width;
       x.fillStyle = "rgba(0,0,0,.55)"; rr(x, W / 2 - tw / 2 - 22, H - 470, tw + 44, 70, 14); x.fill();
       let c0 = W / 2 - tw / 2;
       frase.forEach((w, i) => { x.fillStyle = i === frase.length - 1 ? "#ffe14d" : "#fff"; x.fillText(w, c0, H - 422); c0 += x.measureText(w + " ").width; });
@@ -530,14 +532,14 @@ varying float vNota;`)
     if (cam[3] > 0) {
       x.globalAlpha = cam[3]; const b = Math.abs(Math.sin(p * 60));
       for (let i = 0; i < 18; i++) { const h = 8 + Math.abs(Math.sin(i * 1.7 + p * 50)) * 40 * (0.5 + b * 0.5); x.fillStyle = "#ffb547"; x.fillRect(40 + i * 12, H - 180 - h / 2, 6, h); }
-      x.fillStyle = "#fff"; x.font = "600 24px Schibsted Grotesk, sans-serif"; x.fillText("♫ trilha + efeitos", 270, H - 172); x.globalAlpha = 1;
+      x.fillStyle = "#fff"; x.font = "600 24px DM Sans, sans-serif"; x.fillText("♫ trilha + efeitos", 270, H - 172); x.globalAlpha = 1;
     }
     if (cam[4] > 0) {
       x.globalAlpha = cam[4]; x.fillStyle = "#ff4d2e"; rr(x, 70, H - 330, W - 140, 86, 43); x.fill();
-      x.fillStyle = "#0a1220"; x.font = "800 34px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("Comenta A ou B 👇", W / 2, H - 274); x.textAlign = "left"; x.globalAlpha = 1;
+      x.fillStyle = "#0a1220"; x.font = "800 34px DM Sans, sans-serif"; x.textAlign = "center"; x.fillText("Comenta A ou B 👇", W / 2, H - 274); x.textAlign = "left"; x.globalAlpha = 1;
     }
     x.fillStyle = "rgba(255,77,46,.95)"; x.beginPath(); x.arc(46, 52, 9, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#fff"; x.font = "600 22px Schibsted Grotesk, sans-serif"; x.fillText("PRÉVIA", 64, 60);
+    x.fillStyle = "#fff"; x.font = "600 22px DM Sans, sans-serif"; x.fillText("PRÉVIA", 64, 60);
     igT.needsUpdate = true;
   }
 
@@ -547,25 +549,25 @@ varying float vNota;`)
     const x = sx, w = siteC.width, h = siteC.height;
     x.textAlign = "left";
     x.fillStyle = "#e9ebef"; x.fillRect(0, 0, w, h); x.fillStyle = "#cfd3da"; x.fillRect(0, 0, w, 30);
-    x.fillStyle = "#fff"; rr(x, 90, 6, 520, 18, 9); x.fill(); x.fillStyle = "#8a909b"; x.font = "11px Schibsted Grotesk, sans-serif"; x.fillText("www.seunegocio.com.br", 104, 19);
+    x.fillStyle = "#fff"; rr(x, 90, 6, 520, 18, 9); x.fill(); x.fillStyle = "#8a909b"; x.font = "11px DM Sans, sans-serif"; x.fillText("www.seuconsultorio.com.br", 104, 19);
     if (p < 0.25) {
       const a = t * 5; x.strokeStyle = "#9aa1ad"; x.lineWidth = 6; x.beginPath(); x.arc(w / 2, h / 2, 34, a, a + 4.2); x.stroke();
-      x.fillStyle = "#9aa1ad"; x.font = "600 18px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("Carregando…", w / 2, h / 2 + 72); x.textAlign = "left";
+      x.fillStyle = "#9aa1ad"; x.font = "600 18px DM Sans, sans-serif"; x.textAlign = "center"; x.fillText("Carregando…", w / 2, h / 2 + 72); x.textAlign = "left";
       x.fillStyle = "#7f8794"; x.fillRect(0, h - 6, w * (0.12 + p * 2), 6);
     } else {
       x.fillStyle = "#3d4250"; x.fillRect(0, 30, w, 46);
       for (let i = 0; i < 9; i++) { x.fillStyle = "#aab0bb"; x.fillRect(260 + i * 74, 49, 52, 7); }
-      x.fillStyle = "#c3c8d0"; x.fillRect(30, 96, w - 60, 200); x.fillStyle = "#a9afb9"; x.font = "700 20px Schibsted Grotesk, sans-serif"; x.textAlign = "center"; x.fillText("BEM-VINDO AO NOSSO SITE", w / 2, 190); x.textAlign = "left";
+      x.fillStyle = "#c3c8d0"; x.fillRect(30, 96, w - 60, 200); x.fillStyle = "#a9afb9"; x.font = "700 20px DM Sans, sans-serif"; x.textAlign = "center"; x.fillText("BEM-VINDO AO NOSSO SITE", w / 2, 190); x.textAlign = "left";
       for (let c = 0; c < 3; c++) for (let l = 0; l < 9; l++) { x.fillStyle = "#c5cad2"; x.fillRect(40 + c * 300, 320 + l * 16, 240 - (l % 3) * 30, 6); }
-      x.fillStyle = "rgba(20,24,32,.88)"; rr(x, w - 300, h - 150, 270, 120, 10); x.fill(); x.fillStyle = "#fff"; x.font = "12px Schibsted Grotesk, sans-serif"; x.fillText("Usamos cookies para melhorar…", w - 284, h - 118);
+      x.fillStyle = "rgba(20,24,32,.88)"; rr(x, w - 300, h - 150, 270, 120, 10); x.fill(); x.fillStyle = "#fff"; x.font = "12px DM Sans, sans-serif"; x.fillText("Usamos cookies para melhorar…", w - 284, h - 118);
       x.fillStyle = "#5b6070"; rr(x, 40, h - 110, 210, 70, 10); x.fill(); x.fillStyle = "#fff"; x.fillText("Assine nossa newsletter!", 56, h - 72);
       if (p > 0.5) {
         const q = faixa(p, 0.52, 0.78), cx = w * 0.5 + (w * 0.47 - w * 0.5) * q, cy = h * 0.6 + (14 - h * 0.6) * q;
         x.fillStyle = "#111"; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + 14, cy + 36); x.lineTo(cx + 22, cy + 22); x.lineTo(cx + 38, cy + 18); x.closePath(); x.fill();
         if (p > 0.8) {
           x.globalAlpha = faixa(p, 0.8, 0.9); x.fillStyle = "#fff"; x.fillRect(0, 30, w, h - 30);
-          x.fillStyle = "#1a0dab"; x.font = "600 20px Schibsted Grotesk, sans-serif"; x.fillText("Concorrente · o que você procura", 60, 120);
-          x.fillStyle = "#4d5156"; x.font = "14px Schibsted Grotesk, sans-serif"; x.fillText("concorrente.com.br — Fale com a gente pelo WhatsApp", 60, 146);
+          x.fillStyle = "#1a0dab"; x.font = "600 20px DM Sans, sans-serif"; x.fillText("Outro consultório · a mesma especialidade", 60, 120);
+          x.fillStyle = "#4d5156"; x.font = "14px DM Sans, sans-serif"; x.fillText("outroconsultorio.com.br — Agende pelo WhatsApp", 60, 146);
           for (let l = 0; l < 4; l++) { x.fillStyle = "#dfe1e5"; x.fillRect(60, 200 + l * 70, 600, 10); x.fillRect(60, 220 + l * 70, 420, 8); }
           x.globalAlpha = 1;
         }
@@ -574,47 +576,75 @@ varying float vNota;`)
     siteT.needsUpdate = true;
   }
 
-  // o site da CrossHard sendo construído (k de 0 a 5): mensagem → design → conteúdo → celular → ação
+  // o site de um consultório sendo construído (k de 0 a 5): mensagem → design → conteúdo → celular → ação.
+  // É a abertura do site do Dr. Valter Dias; no fim a tela vira a captura real (midia.obra).
   const obraC = canvas(1008, 630), ox = obraC.getContext("2d"), obraT = texCanvas(obraC);
   const obraCelC = canvas(540 * ESC, 1170 * ESC), ocx = obraCelC.getContext("2d"), obraCelT = texCanvas(obraCelC);
-  const FONTE = '"Roboto Flex", "Arial Black", Anybody, sans-serif';
+  const SERIFA = '"Cormorant Garamond", Georgia, "Times New Roman", serif';
+  const OB = { ouro: "#b99a5b", ouroE: "#8a6b22", creme: "#f7f4ee", tinta: "#1d1a16", a: "Estética que começa", b: "pela sua saúde",
+    sobre: ["FARMÁCIA CLÍNICA & SAÚDE ESTÉTICA · ADAMANTINA"], sobreCel: ["FARMÁCIA CLÍNICA & SAÚDE", "ESTÉTICA · ADAMANTINA"],
+    texto: ["Antes de indicar qualquer procedimento, avalio sua pele,", "sua rotina e os remédios que você usa."],
+    textoCel: ["Antes de indicar qualquer", "procedimento, avalio sua pele, sua", "rotina e os remédios que você usa."], cta: "Agendar minha avaliação" };
+  // medidas de cada tela: barra do topo, faixa do mármore, estrela, sobretítulo, título, parágrafo e botão
+  const medObra = (ehCel) => (ehCel
+    ? { w: 540, h: 1170, topo: 78, faixa: 452, estrela: 590, sobre: 640, sobreTam: 15, ty: 748, tam: 53, passo: 60, par: 876, parTam: 25, parPasso: 37, bw: 400, bh: 84, by: 1014, ctaTam: 26 }
+    : { w: 1008, h: 630, topo: 48, faixa: 296, estrela: 380, sobre: 410, sobreTam: 10.5, ty: 462, tam: 45, passo: 0, par: 502, parTam: 16, parPasso: 24, bw: 276, bh: 44, by: 562, ctaTam: 15 });
+  const espacado = (x, txt, cx, y, sp) => { if ("letterSpacing" in x) x.letterSpacing = sp + "px"; x.fillText(txt, cx, y); if ("letterSpacing" in x) x.letterSpacing = "0px"; };
+  const estrela = (x, cx, cy, r) => { x.beginPath(); for (let i = 0; i < 8; i++) { const a = (i * Math.PI) / 4 - Math.PI / 2, q = i % 2 ? r * 0.3 : r; x.lineTo(cx + Math.cos(a) * q, cy + Math.sin(a) * q); } x.closePath(); x.fill(); };
+  function obraFundo(x, m, ehCel) {
+    const cx = m.w / 2;
+    x.fillStyle = OB.creme; x.fillRect(0, 0, m.w, m.h);
+    x.fillStyle = "#ebe5d8"; x.fillRect(0, m.topo, m.w, m.faixa);
+    x.fillStyle = "#fbfaf6"; x.fillRect(0, 0, m.w, m.topo); x.fillStyle = "rgba(29,26,22,.1)"; x.fillRect(0, m.topo - 1, m.w, 1);
+    x.textAlign = "center"; x.fillStyle = OB.tinta; x.font = "700 " + (ehCel ? 24 : 17) + "px DM Sans, sans-serif"; espacado(x, "VALTER DIAS", cx, m.topo * (ehCel ? 0.5 : 0.52), 1.5);
+    x.fillStyle = "rgba(29,26,22,.72)"; x.font = "600 " + (ehCel ? 11 : 8) + "px DM Sans, sans-serif"; espacado(x, "FARMÁCIA CLÍNICA • ESTÉTICA", cx, m.topo * (ehCel ? 0.78 : 0.82), 2.4);
+    x.fillStyle = OB.ouroE; estrela(x, cx, m.estrela, ehCel ? 13 : 9);
+    x.font = "600 " + m.sobreTam + "px DM Sans, sans-serif"; (ehCel ? OB.sobreCel : OB.sobre).forEach((l, i) => espacado(x, l, cx, m.sobre + i * 25, 2.4));
+  }
+  function obraConteudo(x, m, ehCel) {
+    cobrir(x, imgEl(ehCel ? midia.obra?.faixaCel : midia.obra?.faixa), 0, m.topo, m.w, m.faixa);
+    x.textAlign = "center"; x.fillStyle = "rgba(29,26,22,.74)"; x.font = "400 " + m.parTam + "px DM Sans, sans-serif";
+    (ehCel ? OB.textoCel : OB.texto).forEach((l, i) => x.fillText(l, m.w / 2, m.par + i * m.parPasso));
+  }
+  function obraTitulo(x, m, ehCel) {
+    x.textAlign = "center"; x.fillStyle = OB.tinta; x.font = "500 " + m.tam + "px " + SERIFA;
+    if (ehCel) { x.fillText(OB.a, m.w / 2, m.ty); x.fillText(OB.b, m.w / 2, m.ty + m.passo); } else x.fillText(OB.a + " " + OB.b, m.w / 2, m.ty);
+  }
+  function obraBotao(x, m, ehCel, pulso, brilho) {
+    x.save(); x.translate(m.w / 2, m.by + m.bh / 2); x.scale(pulso, pulso);
+    x.shadowColor = "rgba(185,154,91,.75)"; x.shadowBlur = 26 * brilho; x.fillStyle = OB.ouro; rr(x, -m.bw / 2, -m.bh / 2, m.bw, m.bh, m.bh / 2); x.fill(); x.shadowBlur = 0;
+    x.fillStyle = OB.tinta; x.textAlign = "center"; x.font = "600 " + m.ctaTam + "px DM Sans, sans-serif"; x.fillText(OB.cta + "  →", 0, m.ctaTam * 0.35); x.restore();
+    if (!ehCel) { x.fillStyle = OB.ouro; rr(x, m.w - 154, 11, 130, 26, 13); x.fill(); x.fillStyle = OB.tinta; x.textAlign = "center"; x.font = "600 10.5px DM Sans, sans-serif"; x.fillText("Agendar avaliação", m.w - 89, 28); }
+  }
   function desenharObra(k, t, ehCel) {
-    const x = ehCel ? ocx : ox, w = ehCel ? 540 : 1008, h = ehCel ? 1170 : 630;
+    const x = ehCel ? ocx : ox, m = medObra(ehCel), w = m.w, h = m.h;
     if (ehCel) x.setTransform(ESC, 0, 0, ESC, 0, 0);
     const design = clamp(k - 1), conteudo = clamp(k - 2), acao = clamp(k - 4);
-    x.textAlign = "left";
+    x.globalAlpha = 1; x.textAlign = "left";
     x.fillStyle = "#ffffff"; x.fillRect(0, 0, w, h);
-    if (design > 0) { x.globalAlpha = design; x.fillStyle = "#0b0f14"; x.fillRect(0, 0, w, h); x.globalAlpha = 1; }
-    // conteúdo: a foto da sala de musculação entra por trás, escurecida
-    if (conteudo > 0) { x.globalAlpha = conteudo; cobrir(x, imgEl(midia.ch?.foto), 0, 0, w, h); x.fillStyle = "rgba(6,9,14,.62)"; x.fillRect(0, 0, w, h); x.globalAlpha = 1; }
-    // design: a faixa azul em diagonal com BUILD YOUR BODY
-    if (design > 0) {
-      x.save(); x.globalAlpha = design; x.translate(w / 2, ehCel ? 170 : 70); x.rotate(-0.06);
-      x.fillStyle = "#1e6bff"; x.fillRect(-w, -26, w * 2, 52);
-      x.fillStyle = "#fff"; x.font = `italic 900 ${ehCel ? 30 : 28}px ${FONTE}`; x.textAlign = "center";
-      x.fillText("BUILD YOUR BODY  •  BUILD YOUR BODY  •  BUILD YOUR BODY", -((t * 40) % 120), 10); x.restore();
-      x.globalAlpha = design; const lg = imgEl(midia.ch?.logo); if (pronto(lg)) x.drawImage(lg, 28, ehCel ? 40 : 18, ehCel ? 150 : 120, (ehCel ? 150 : 120) * 0.67); x.globalAlpha = 1;
+    // design: creme, a barra do topo, a estrela e o sobretítulo em ouro
+    if (design > 0) { x.globalAlpha = design; obraFundo(x, m, ehCel); x.globalAlpha = 1; }
+    // conteúdo: o mármore da abertura e o texto de quem atende
+    if (conteudo > 0) { x.globalAlpha = conteudo; obraConteudo(x, m, ehCel); x.globalAlpha = 1; }
+    // mensagem: digitada sem estilo na primeira camada; com o design vira o título em serifa, no lugar
+    if (design > 0.5) obraTitulo(x, m, ehCel);
+    else {
+      const n = Math.floor(clamp(k) * (OB.a.length + OB.b.length)), ta = OB.a.slice(0, n), tb = OB.b.slice(0, Math.max(0, n - OB.a.length));
+      const tam = ehCel ? 56 : 54, ty = ehCel ? h * 0.36 : h * 0.44;
+      x.textAlign = "left"; x.font = "400 " + tam + 'px "Times New Roman", serif'; x.fillStyle = "#000"; x.fillText(ta, 40, ty); x.fillText(tb, 40, ty + tam * 1.12);
+      if (Math.floor(t * 2) % 2 && k < 1) { const seg = n > OB.a.length, ww = x.measureText(seg ? tb : ta).width; x.fillRect(44 + ww, (seg ? ty + tam * 1.12 : ty) - tam * 0.78, 4, tam * 0.92); }
     }
-    // mensagem: digitada na primeira camada (sem estilo), depois pesada e em caixa alta
-    const linhaA = "Construa", linhaB = "seu corpo", n = Math.floor(clamp(k) * (linhaA.length + linhaB.length));
-    const ta = linhaA.slice(0, n), tb = linhaB.slice(0, Math.max(0, n - linhaA.length));
-    const cx = w / 2, ty = ehCel ? h * 0.36 : h * 0.44, tam = ehCel ? 96 : 92;
-    x.textAlign = design > 0.5 ? "center" : "left";
-    if (design > 0.5) { x.font = `italic 900 ${tam}px ${FONTE}`; x.fillStyle = "#ffffff"; x.fillText(ta.toUpperCase(), cx, ty); x.fillText(tb.toUpperCase(), cx, ty + tam * 0.95); x.font = `italic 700 ${tam * 0.4}px ${FONTE}`; x.fillStyle = "#1e6bff"; x.fillText("build your body", cx, ty + tam * 1.5); }
-    else { x.font = `400 ${tam * 0.6}px "Times New Roman", serif`; x.fillStyle = "#000"; x.fillText(ta, 40, ty); x.fillText(tb, 40, ty + tam * 0.65); if (Math.floor(t * 2) % 2 && k < 1) { const ww = x.measureText(n > linhaA.length ? tb : ta).width; x.fillRect(44 + ww, (n > linhaA.length ? ty + tam * 0.65 : ty) - tam * 0.45, 4, tam * 0.55); } }
-    x.textAlign = "center";
-    if (conteudo > 0) { x.globalAlpha = conteudo; x.fillStyle = "rgba(255,255,255,.86)"; x.font = `400 ${ehCel ? 26 : 18}px Schibsted Grotesk, sans-serif`; x.fillText("Sete modalidades, uma equipe que sabe o seu nome.", cx, ty + tam * (ehCel ? 2.05 : 1.95)); x.globalAlpha = 1; }
-    // ação: os dois botões, o principal pulsando, e o cursor que clica
+    // ação: o botão de agendar pulsando e, no computador, o cursor que clica
     if (acao > 0) {
-      const bw = ehCel ? 380 : 300, bh = ehCel ? 84 : 54, by = ty + tam * (ehCel ? 2.4 : 2.25), pul = 1 + Math.sin(t * 6) * 0.04 * acao;
-      x.save(); x.translate(ehCel ? cx : cx - bw * 0.55, by + bh / 2); x.scale(pul, pul); x.globalAlpha = acao;
-      x.shadowColor = "rgba(30,107,255,.85)"; x.shadowBlur = 30 * acao; x.fillStyle = "#1e6bff"; rr(x, -bw / 2, -bh / 2, bw, bh, bh / 2); x.fill(); x.shadowBlur = 0;
-      x.fillStyle = "#fff"; x.font = `900 ${ehCel ? 26 : 19}px ${FONTE}`; x.fillText("AGENDAR MINHA VISITA", 0, ehCel ? 9 : 7); x.restore();
-      if (!ehCel) { x.globalAlpha = acao; x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, cx + 20, by, 220, bh, bh / 2); x.stroke(); x.fillStyle = "#fff"; x.font = `900 17px ${FONTE}`; x.fillText("VER MODALIDADES", cx + 130, by + 34);
-        const q = clamp(acao * 1.4), px = w * 0.8 - q * (w * 0.8 - (cx - bw * 0.35)), py = h * 0.9 - q * (h * 0.9 - (by + bh * 0.6)); x.globalAlpha = 1; x.fillStyle = "#fff"; x.strokeStyle = "#000"; x.lineWidth = 2; x.beginPath(); x.moveTo(px, py); x.lineTo(px + 12, py + 30); x.lineTo(px + 18, py + 19); x.lineTo(px + 31, py + 15); x.closePath(); x.fill(); x.stroke(); }
+      x.globalAlpha = acao; obraBotao(x, m, ehCel, 1 + Math.sin(t * 6) * 0.035 * acao, acao);
+      if (!ehCel) {
+        const q = clamp(acao * 1.4), px = w * 0.82 - q * (w * 0.82 - (w / 2 + m.bw * 0.22)), py = h * 0.97 - q * (h * 0.97 - (m.by + m.bh * 0.55));
+        x.globalAlpha = 1; x.fillStyle = OB.tinta; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.moveTo(px, py); x.lineTo(px + 12, py + 30); x.lineTo(px + 18, py + 19); x.lineTo(px + 31, py + 15); x.closePath(); x.fill(); x.stroke();
+      }
       x.globalAlpha = 1;
     }
-    if (design < 1) { x.globalAlpha = 0.3 * (1 - design); x.strokeStyle = "#5fb8ff"; x.lineWidth = 1; for (let i = 0; i < 12; i++) { x.beginPath(); x.moveTo((i * w) / 12, 0); x.lineTo((i * w) / 12, h); x.stroke(); } x.globalAlpha = 1; }
+    // guias de coluna enquanto o design não chegou
+    if (design < 1) { x.globalAlpha = 0.3 * (1 - design); x.strokeStyle = OB.ouro; x.lineWidth = 1; for (let i = 0; i < 12; i++) { x.beginPath(); x.moveTo((i * w) / 12, 0); x.lineTo((i * w) / 12, h); x.stroke(); } x.globalAlpha = 1; }
     (ehCel ? obraCelT : obraT).needsUpdate = true;
   }
 
@@ -657,9 +687,9 @@ varying float vNota;`)
     x.fillStyle = "#e9edef"; rr(x, 448, 34, 44, 20, 5); x.fill(); x.fillRect(494, 40, 4, 8); for (let i = 0; i < 4; i++) x.fillRect(390 + i * 10, 52 - i * 6, 7, 6 + i * 6);
     x.strokeStyle = "#e9edef"; x.lineWidth = 3.4; x.lineCap = "round"; x.lineJoin = "round"; x.beginPath(); x.moveTo(40, 104); x.lineTo(26, 120); x.lineTo(40, 136); x.stroke();
     const g = x.createLinearGradient(64, 92, 116, 148); g.addColorStop(0, "#5aa8ff"); g.addColorStop(1, "#1f5fd6"); x.fillStyle = g; x.beginPath(); x.arc(88, 120, 28, 0, Math.PI * 2); x.fill();
-    x.fillStyle = "#fff"; x.font = `700 24px ${UIF}`; x.textAlign = "center"; x.fillText("SN", 88, 129); x.textAlign = "left";
+    x.fillStyle = "#fff"; x.font = `700 24px ${UIF}`; x.textAlign = "center"; x.fillText("SC", 88, 129); x.textAlign = "left";
     const digitando = q > 0.34 && q < 0.56;
-    x.fillStyle = "#e9edef"; x.font = `600 28px ${UIF}`; x.fillText("Seu negócio", 132, 114);
+    x.fillStyle = "#e9edef"; x.font = `600 28px ${UIF}`; x.fillText("Seu consultório", 132, 114);
     x.fillStyle = digitando ? "#25d366" : "#8696a0"; x.font = `400 21px ${UIF}`; x.fillText(digitando ? "digitando…" : "online", 132, 144);
     x.strokeStyle = "#e9edef"; x.lineWidth = 2.8; rr(x, 398, 108, 34, 24, 6); x.stroke(); x.beginPath(); x.moveTo(432, 120); x.lineTo(446, 110); x.lineTo(446, 130); x.closePath(); x.stroke();
     x.beginPath(); x.arc(492, 118, 13, Math.PI * 0.6, Math.PI * 1.9); x.stroke();
@@ -704,7 +734,7 @@ varying float vNota;`)
     return { c, x, t, m, moldura, cw, ch };
   };
   // reel: V1 vídeo · T1 título · TXT legenda · A1 som · FX chamada
-  const RC = [["#3b82f6", "V1 · VÍDEO"], ["#ffb547", "T1 · TÍTULO"], ["#ffe14d", "TXT · LEGENDA"], ["#3ddc97", "A1 · SOM"], ["#ff4d2e", "FX · CHAMADA"]];
+  const RC = [["#5d7fb8", "V1 · VÍDEO"], ["#b8923a", "T1 · TÍTULO"], ["#93a0b7", "TXT · LEGENDA"], ["#4fb89a", "A1 · SOM"], ["#e2574c", "FX · CHAMADA"]];
   const camReel = RC.map(([cor, r], i) => placa(270, 585, TELA.w, TELA.h, cor, r, i));
   const telaZ = CEL.d / 2 + 0.0135;
   camReel.forEach((k, i) => { k.m.renderOrder = 30 + i; celular.add(k.m); });
@@ -712,25 +742,25 @@ varying float vNota;`)
     const k = camReel[i], x = k.x, w = 540, h = 1170;
     x.setTransform(0.5, 0, 0, 0.5, 0, 0); x.clearRect(0, 0, w, h); x.textAlign = "center"; x.lineJoin = "round";
     if (i === 0) { if (el) cobrir(x, el, 0, 0, w, h, [0.18, 0.76]); else { x.fillStyle = "#0b1426"; x.fillRect(0, 0, w, h); } }
-    if (i === 1) GANCHO.forEach((l, j) => { x.font = `900 64px Anybody, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, w / 2, 230 + j * 74); x.fillStyle = j === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, w / 2, 230 + j * 74); });
-    if (i === 2) { const n = Math.floor(p * 40) % LEG.length, fr = LEG.slice(Math.max(0, n - 2), n + 1).join(" "); x.font = "800 46px Schibsted Grotesk, sans-serif"; const tw = x.measureText(fr).width; x.fillStyle = "rgba(0,0,0,.6)"; rr(x, w / 2 - tw / 2 - 22, h - 470, tw + 44, 72, 14); x.fill(); x.fillStyle = "#ffe14d"; x.fillText(fr, w / 2, h - 420); }
-    if (i === 3) { for (let j = 0; j < 22; j++) { const hh = 14 + Math.abs(Math.sin(j * 1.7 + p * 50)) * 70; x.fillStyle = "#3ddc97"; x.fillRect(60 + j * 19, h / 2 - hh / 2, 10, hh); } x.fillStyle = "#fff"; x.font = "700 30px Schibsted Grotesk, sans-serif"; x.fillText("♫ trilha + efeitos", w / 2, h / 2 + 110); }
-    if (i === 4) { x.fillStyle = "#ff4d2e"; rr(x, 70, h - 330, w - 140, 90, 45); x.fill(); x.fillStyle = "#0a1220"; x.font = "800 36px Schibsted Grotesk, sans-serif"; x.fillText("Comenta A ou B 👇", w / 2, h - 272); }
+    if (i === 1) GANCHO.forEach((l, j) => { x.font = `900 64px DM Sans, "Arial Narrow", sans-serif`; x.strokeStyle = "#000"; x.lineWidth = 12; x.strokeText(l, w / 2, 230 + j * 74); x.fillStyle = j === 2 ? "#ff4d6e" : "#fff"; x.fillText(l, w / 2, 230 + j * 74); });
+    if (i === 2) { const n = Math.floor(p * 40) % LEG.length, fr = LEG.slice(Math.max(0, n - 2), n + 1).join(" "); x.font = "800 46px DM Sans, sans-serif"; const tw = x.measureText(fr).width; x.fillStyle = "rgba(0,0,0,.6)"; rr(x, w / 2 - tw / 2 - 22, h - 470, tw + 44, 72, 14); x.fill(); x.fillStyle = "#ffe14d"; x.fillText(fr, w / 2, h - 420); }
+    if (i === 3) { for (let j = 0; j < 22; j++) { const hh = 14 + Math.abs(Math.sin(j * 1.7 + p * 50)) * 70; x.fillStyle = "#3ddc97"; x.fillRect(60 + j * 19, h / 2 - hh / 2, 10, hh); } x.fillStyle = "#fff"; x.font = "700 30px DM Sans, sans-serif"; x.fillText("♫ trilha + efeitos", w / 2, h / 2 + 110); }
+    if (i === 4) { x.fillStyle = "#ff4d2e"; rr(x, 70, h - 330, w - 140, 90, 45); x.fill(); x.fillStyle = "#0a1220"; x.font = "800 36px DM Sans, sans-serif"; x.fillText("Comenta A ou B 👇", w / 2, h - 272); }
     x.textAlign = "left"; k.moldura(); k.t.needsUpdate = true;
   }
   // site: fundo e faixa · foto e texto · título · botões
-  const SC = [["#1e6bff", "DESIGN"], ["#8fd3ff", "CONTEÚDO"], ["#ffffff", "MENSAGEM"], ["#3ddc97", "AÇÃO"]];
+  const SC = [["#b8923a", "DESIGN"], ["#5d7fb8", "CONTEÚDO"], ["#e8d9b0", "MENSAGEM"], ["#4fb89a", "AÇÃO"]];
   const camSite = SC.map(([cor, r], i) => placa(504, 315, NB_TELA.w, NB_TELA.h, cor, r, i * 0.75));
   const nbTelaPos = new THREE.Vector3(0, NB.tampa / 2 + 0.01, 0.0155);
   camSite.forEach((k, i) => { k.m.renderOrder = 30 + i; dobradica.add(k.m); });
   const siteDesenhado = [false, false, false, false];
-  function desenharCamadaSite(i, t) {
-    const k = camSite[i], x = k.x, w = 1008, h = 630, ch = midia.ch || {}, F2 = FONTE;
-    x.setTransform(0.5, 0, 0, 0.5, 0, 0); x.clearRect(0, 0, w, h); x.textAlign = "center";
-    if (i === 0) { x.fillStyle = "#0b0f14"; x.fillRect(0, 0, w, h); x.save(); x.translate(w / 2, 70); x.rotate(-0.06); x.fillStyle = "#1e6bff"; x.fillRect(-w, -26, w * 2, 52); x.fillStyle = "#fff"; x.font = `italic 900 28px ${F2}`; x.fillText("BUILD YOUR BODY  •  BUILD YOUR BODY  •  BUILD YOUR BODY", -((t * 40) % 120), 10); x.restore(); const lg = imgEl(ch.logo); if (pronto(lg)) x.drawImage(lg, 28, 18, 120, 80); }
-    if (i === 1) { x.globalAlpha = 0.9; cobrir(x, imgEl(ch.foto), 0, 0, w, h); x.fillStyle = "rgba(6,9,14,.55)"; x.fillRect(0, 0, w, h); x.globalAlpha = 1; x.fillStyle = "rgba(255,255,255,.9)"; x.font = "400 20px Schibsted Grotesk, sans-serif"; x.fillText("Sete modalidades, uma equipe que sabe o seu nome.", w / 2, h * 0.44 + 92 * 1.95); }
-    if (i === 2) { const ty = h * 0.44; x.font = `italic 900 92px ${F2}`; x.fillStyle = "#fff"; x.fillText("CONSTRUA", w / 2, ty); x.fillText("SEU CORPO", w / 2, ty + 87); x.font = `italic 700 37px ${F2}`; x.fillStyle = "#1e6bff"; x.fillText("build your body", w / 2, ty + 138); }
-    if (i === 3) { const by = h * 0.44 + 92 * 2.25; x.shadowColor = "rgba(30,107,255,.85)"; x.shadowBlur = 30; x.fillStyle = "#1e6bff"; rr(x, w / 2 - 300 * 0.55 - 150, by, 300, 54, 27); x.fill(); x.shadowBlur = 0; x.fillStyle = "#fff"; x.font = `900 19px ${F2}`; x.fillText("AGENDAR MINHA VISITA", w / 2 - 165, by + 34); x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, w / 2 + 20, by, 220, 54, 27); x.stroke(); x.font = `900 17px ${F2}`; x.fillText("VER MODALIDADES", w / 2 + 130, by + 34); }
+  function desenharCamadaSite(i) {
+    const k = camSite[i], x = k.x, m = medObra(false);
+    x.setTransform(0.5, 0, 0, 0.5, 0, 0); x.clearRect(0, 0, m.w, m.h); x.globalAlpha = 1;
+    if (i === 0) obraFundo(x, m, false);
+    if (i === 1) obraConteudo(x, m, false);
+    if (i === 2) obraTitulo(x, m, false);
+    if (i === 3) obraBotao(x, m, false, 1, 1);
     x.textAlign = "left"; k.moldura(); k.t.needsUpdate = true;
   }
   // grade escura: a "tela em branco" do notebook enquanto as camadas estão no ar
@@ -828,11 +858,11 @@ varying float vNota;`)
       if (!reduce && p > 0.25 && corac.length < 30 && Math.random() < 0.55) corac.push({ x: W - 60 + (Math.random() - 0.5) * 40, y: H - 650, vy: 200 + Math.random() * 180, vx: (Math.random() - 0.5) * 100, s: 30 + Math.random() * 36, a: 1, cor: Math.random() < 0.8 ? "#ff3040" : "#ff7aa2" });
       corac.forEach((c) => { c.y -= c.vy * dt; c.x += c.vx * dt + Math.sin(c.y / 40) * 1.2; c.a -= dt * 0.5; });
       corac = corac.filter((c) => c.a > 0);
-      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar #jesus #deus", curtidas: 82584 * cresce, comentarios: 288 * cresce, envios: 9100 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#ffb547" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", legenda: "Você prescreveria para ele?", curtidas: 50000 * cresce, comentarios: 425 * cresce, envios: 26300 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#b8923a" });
     } else if (cap === "c-dinheiro") {
       cel.pos.set(px, py, 0); cel.rot.set(0.05, -0.3 + p * 0.25, 0.02); cel.s = escCel;
-      ig({ fonte: comPoster(midia.videoAnuncio, midia.posterAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff" });
-      // as cédulas saem do botão "Saiba mais", abrem em leque (o ar freia) e caem devagar, balançando como papel
+      ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, corAvatar: "#b8923a", seguindo: true });
+      // as cédulas saem da altura da legenda, abrem em leque (o ar freia) e caem devagar, balançando como papel
       if (!notas) criarNotas();
       const jorro = faixa(p, 0.15, 1);
       notas.visible = notasProntas && jorro > 0; notasU.uT.value = t;
@@ -851,33 +881,33 @@ varying float vNota;`)
       notas.instanceMatrix.needsUpdate = true;
     } else if (cap === "c-oportunidade") {
       cel.pos.set(retrato ? -VW * 0.2 : px + VW * 0.16, retrato ? topo(escCel * 0.6) - 0.2 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = escCel * 0.6;
-      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "niloeoinfinito", legenda: "Medo de voltar", curtidas: 82584, comentarios: 288, envios: 9100, curtido: true, seguindo: true, corAvatar: "#ffb547" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", legenda: "Você prescreveria para ele?", curtidas: 50000, comentarios: 425, envios: 26300, curtido: true, seguindo: true, corAvatar: "#b8923a" });
     } else if (cap === "s-problema") {
       const e = glide(faixa(p, 0, 0.12));
       nb.pos.set(px, py - 0.35 - (1 - e) * 2.5, 0); nb.rot.set(0.16, -0.34 + p * 0.26, 0); nb.s = escNb;
       if (redesenha) desenharSite(p, t); porNaTela(nbU, "A", siteT, NB_ASP, 1.6);
     } else if (cap === "s-montagem") {
-      // o site da CrossHard sendo escrito; no fim vira a captura real (computador e celular)
-      const kk = clamp(p * 1.08 - 0.02) * 5.2, ch = midia.ch || {};
+      // o site do consultório sendo escrito; no fim vira a captura real (computador e celular)
+      const kk = clamp(p * 1.08 - 0.02) * 5.2, ob = midia.obra || {};
       nb.pos.set(retrato ? 0 : VW * 0.2, py - 0.2, 0); nb.rot.set(0.12, -0.3 + p * 0.14, 0); nb.s = retrato ? escNb : escNb * 0.84;
       const fundeS = reduce ? 1 : faixa(kk, 4.45, 4.95);
       if (redesenha && fundeS > 0) desenharObra(kk, t, false);
       if (kk < 5) { porNaTela(nbU, "A", gradeT, NB_ASP, 1.6); porNaTela(nbU, "B", obraT, NB_ASP, 1.6); nbU.uMix.value = fundeS; }
-      else { porNaTela(nbU, "A", obraT, NB_ASP, 1.6); porNaTela(nbU, "B", imagem(ch.desk), NB_ASP, 1.6); nbU.uMix.value = faixa(kk, 5, 5.2); }
+      else { porNaTela(nbU, "A", obraT, NB_ASP, 1.6); porNaTela(nbU, "B", imagem(ob.desk), NB_ASP, 1.6); nbU.uMix.value = faixa(kk, 5, 5.2); }
       // ordem de chegada: mensagem (0–1), design (1–2), conteúdo (2–3), ação (4–5); a pilha vai do fundo (design) à frente (ação)
       if (!reduce) [[1, 1], [2, 2], [0, 0], [4, 3]].forEach(([ini, i]) => {
         const k = camSite[i], chega = faixa(kk, ini + 0.15, ini + 0.85);
-        if (chega > 0 && fundeS < 1 && (!siteDesenhado[i] || (i === 0 && redesenha))) { desenharCamadaSite(i, t); siteDesenhado[i] = true; }
+        if (chega > 0 && fundeS < 1 && !siteDesenhado[i]) { desenharCamadaSite(i); siteDesenhado[i] = i !== 1 || pronto(imgEl(ob.faixa)); }
         voar(k, i, nbTelaPos, chega, fundeS, t, 1.9);
       });
-      if (kk > 3.5) { pegarVoo(midia.vooMg); pegarVoo(midia.vooMgCel); } // o voo do MedGrind (próximo capítulo) já começa a baixar
+      if (kk > 3.5) { pegarVoo(midia.voo); pegarVoo(midia.vooCel); } // o voo do caso em destaque (próximo capítulo) já começa a baixar
       const celV = glide(faixa(kk, 3, 3.6));
       if (celV > 0) {
         if (redesenha) desenharObra(kk, t, true);
         const sai = 1 - celV;
         cel.pos.set((retrato ? 0.55 : VW * 0.2 + 1.2) + sai * (retrato ? 1.2 : 1.6), (retrato ? py - 0.05 : -0.42) - sai * 0.6, retrato ? 0.9 : 1.55);
         cel.rot.set(0.05, -0.4 - sai * 0.9, 0.03 - sai * 0.2); cel.s = escCel * (retrato ? 0.46 : 0.5) * Math.max(0.05, celV);
-        porNaTela(celU, "A", obraCelT, CEL_ASP, 540 / 1170); porNaTela(celU, "B", imagem(ch.cel), CEL_ASP, 9 / 19.5); celU.uMix.value = faixa(kk, 5, 5.2);
+        porNaTela(celU, "A", obraCelT, CEL_ASP, 540 / 1170); porNaTela(celU, "B", imagem(ob.cel), CEL_ASP, 9 / 19.5); celU.uMix.value = faixa(kk, 5, 5.2);
       }
     } else if (cap === "s-cafe") {
       // menos que um cafezinho: a colher mexe, o redemoinho gira e o vapor sobe
@@ -894,23 +924,23 @@ varying float vNota;`)
       const e = glide(faixa(p, 0, 0.12)), esc = retrato ? Math.min(1.25, VW * 0.46) : 1.5;
       cafe.position.set(retrato ? 0 : VW * 0.22, (retrato ? VH * 0.11 - esc * 0.3 : -0.68) - (1 - e) * 2, 0);
       cafe.rotation.set(0.42, -0.5 + p * 0.6, 0); cafe.scale.setScalar(esc * Math.max(0.05, e));
-    } else if (cap === "s-medgrind") {
+    } else if (cap === "s-caso") {
       // o notebook chega fechado, gira e abre; na tela, a landing de verdade voa pelos capítulos no ritmo da rolagem.
       // No meio, o celular sobe pela frente (nunca por dentro do notebook) com a versão em pé, no mesmo ponto do voo.
       const chega = glide(faixa(p, 0, 0.12)), abre = glide(faixa(p, 0.05, 0.19)), celEntra = glide(faixa(p, 0.4, 0.54)), gira = suave(faixa(p, 0.06, 1));
-      // no último passo a landing para na cena final (avaliações e "Saiba mais"); a curva dá mais rolagem aos trechos em que a câmera corre (tools/voo.mjs)
+      // no último passo a landing para na cena final (a compra); a curva dá mais rolagem aos trechos em que a página muda mais (tools/voo.mjs)
       const voo = curva(faixa(p, 0.13, 0.86), midia.vooRitmo), fora = 1 - chega;
       nb.pos.set(px - celEntra * (retrato ? 0 : 0.5) + fora * 1.4, py + (retrato ? -0.6 + celEntra * 0.25 : -0.45) - fora * 0.9, -1.6 * fora - celEntra * 0.55);
       nb.rot.set(0.2 - abre * 0.06, -0.8 + gira * 0.9, fora * 0.1); nb.s = escNb * (retrato ? 1 : 0.94 + 0.1 * (1 - celEntra));
       nb.tampa = 1.55 - 1.75 * abre; nbU.uLuz.value = faixa(p, 0.1, 0.19); nbU.uBordaK.value = Math.sin(faixa(p, 0.12, 0.26) * Math.PI) * 1.3;
       // as duas telas andam juntas pelo mesmo ponto, que persegue a rolagem com um leve atraso para não andar aos trancos
       vooPos = vooPos < 0 || reduce ? voo : damp(vooPos, voo, 8, dt);
-      if (!pegarVoo(midia.vooMg)?.mostrar(nbU, vooPos, NB_ASP, 16 / 9, dt)) { // enquanto os primeiros quadros não chegam: as cenas paradas, em sequência
+      if (!pegarVoo(midia.voo)?.mostrar(nbU, vooPos, NB_ASP, 16 / 9, dt)) { // enquanto os primeiros quadros não chegam: as cenas paradas, em sequência
         const cenas = midia.cenas || [], n = cenas.length || 1, pos = vooPos * (n - 1), i = Math.floor(pos);
         porNaTela(nbU, "A", imagem(cenas[i]), NB_ASP, 16 / 9); porNaTela(nbU, "B", imagem(cenas[Math.min(n - 1, i + 1)]), NB_ASP, 16 / 9); nbU.uMix.value = suave(pos - i);
       }
       // já decodifica um pouco antes de o celular aparecer, para ele entrar com o quadro certo
-      const celPronto = p > 0.34 && pegarVoo(midia.vooMgCel)?.mostrar(celU, vooPos, CEL_ASP, 540 / 1168, dt);
+      const celPronto = p > 0.34 && pegarVoo(midia.vooCel)?.mostrar(celU, vooPos, CEL_ASP, 540 / 1168, dt);
       if (celEntra > 0) {
         const sai = 1 - celEntra;
         cel.pos.set((retrato ? 0.5 : px + VW * 0.1) + sai * (retrato ? 1.1 : 1.5), (retrato ? py - 0.1 : -0.4) - sai * 0.9, retrato ? 0.95 : 1.5);
@@ -922,7 +952,7 @@ varying float vNota;`)
       if (p > 0.3) texturasCafe();
       const vira = faixa(p, 0.58, 0.72), giro = Math.sin(vira * Math.PI);
       cel.pos.set(px, py - giro * (retrato ? 0.12 : -0.06), giro * (retrato ? 0.2 : 0.45)); cel.rot.set(0.05 - giro * 0.05, -0.3 + p * 0.22 + suave(vira) * Math.PI * 2, 0.02 - giro * 0.04); cel.s = escCel * 1.02;
-      if (vira < 0.5) ig({ fonte: comPoster(midia.videoAnuncio, midia.posterAnuncio), usuario: "medgrind_oficial", legenda: "Seu plantão começa agora.", patrocinado: true, cta: "Saiba mais", corAvatar: "#14a2ff", toque: faixa(p, 0.5, 0.6) });
+      if (vira < 0.5) ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, corAvatar: "#b8923a", seguindo: p > 0.5 });
       else { if (redesenha) desenharChat(faixa(p, 0.66, 0.98), t); porNaTela(celU, "A", chatT, CEL_ASP, 540 / 1170); }
       celU.uBordaK.value = giro * 1.3;
     }

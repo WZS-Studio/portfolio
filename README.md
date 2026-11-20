@@ -1,6 +1,6 @@
 # WZS Studio · Portfólio
 
-**Uma marca, duas especialidades:** *Criativos e conteúdos virais* e *Sites que convertem*.
+**Conteúdo e sites para médicos e clínicas:** *Criativos e conteúdo médico* e *Sites para médicos e clínicas*.
 Site em HTML, CSS e JavaScript puros (sem build), com um mundo 3D em Three.js que continua vivo entre as páginas.
 
 **No ar:** https://wzsstudio.com.br · Antes de publicar, confira o `PENDENCIAS.md` local (fica fora do repositório, que é público).
@@ -12,20 +12,22 @@ Site em HTML, CSS e JavaScript puros (sem build), com um mundo 3D em Three.js qu
 | Endereço | O que é |
 |---|---|
 | `/` | Portal: a logo 3D entre os dois caminhos. Mover o mouse (ou o dedo) antecipa o universo; clicar ou tocar confirma. |
-| `/sites/` | Jornada *Sites que convertem*, contada em capítulos: a logo expande → o problema (notebook 3D com um site que perde o visitante) → as cinco camadas → o caso MedGrind → mais projetos → a oportunidade → planos e vagas. |
-| `/criativos/` | Jornada *Criativos e conteúdos virais*: a logo expande → o problema (celular 3D com o feed sendo pulado) → as camadas de um reel → o celular gira com um reel que deu certo → números das fontes → vídeos → anúncios → a oportunidade → planos e vagas. |
+| `/sites/` | Jornada *Sites para médicos e clínicas*, contada em capítulos: a logo expande → o problema (notebook 3D com um site que perde o paciente) → as cinco camadas do site de um consultório → o caso em destaque (a landing do livro do Dr. Lucas Tosi voando no notebook) → mais projetos → a oportunidade → planos e vagas. |
+| `/criativos/` | Jornada *Criativos e conteúdo médico*: a logo expande → o problema (celular 3D com o feed sendo pulado) → as camadas de um reel → o celular gira com um reel que deu certo → números das fontes → vídeos → anúncios → a oportunidade → planos e vagas. |
 
 Os capítulos (`.cap`) ficam presos na tela enquanto a pessoa rola; a rolagem continua natural. Os textos de cada capítulo, os planos e as **vagas do mês** estão em `conteudo/site.mjs` (`historia`, `planos`, `vagas`).
 
 - As três páginas são HTML completo (funcionam sem JavaScript, boas para Google e para compartilhar link).
   Com JavaScript, a troca entre elas acontece sem recarregar: a câmera mergulha na logo ou um círculo de luz atravessa a tela.
-- `assets/js/mundo.js` — a cena 3D (logo em esfera de contornos, luz por universo, telas e quadros de vídeo em órbita).
+- `assets/js/mundo.js` — a cena 3D (fundo de papel com traços dourados por capítulo, telas e quadros de vídeo em órbita).
   Três níveis de qualidade automáticos; `?qualidade=baixa|media|alta` força um nível e `?3d=0` desliga o 3D.
 - `assets/js/dispositivos.js` — celular e notebook em 3D (materiais físicos, luz de estúdio), camadas que se montam e partículas, guiados pelo progresso de cada capítulo.
 - `assets/js/app.js` — navegação, portal, capítulos, animações de rolagem, estudos de caso, player de vídeo.
 - `assets/js/cursor.js` — cursor com a logo (o rodapé tem o botão para voltar ao cursor padrão).
 - `assets/js/medicao.js` — eventos: `escolha_especialidade`, `abrir_projeto`, `reproduzir_video`, `clique_whatsapp`. Nenhum dado pessoal.
-- `assets/tex/matcap-*.jpg` — materiais da logo renderizados no Blender (`tools/blender/matcaps.py`).
+- `assets/js/emblema.js` — a logo 3D: pérola com arcos de ouro que, com o mouse em cima (da logo 3D ou da logo do topo), se transforma no bastão de Asclépio. É uma geometria só: os arcos viram a serpente e o aro vira a haste. Sem mouse, a transformação toca uma vez na chegada e depois de tempos em tempos; `?bastao=1` deixa o bastão fixo para conferir. No topo, o mesmo desenho é um SVG gerado em `tools/gerar.mjs` (`BASTAO`).
+- `assets/tex/matcap-ouro.webp` e `matcap-perola.webp` — materiais da logo renderizados no Blender (`tools/blender/matcaps.py`).
+- **Marca:** papel `#ffffff` e creme `#faf8f4`, tinta `#0f1724`, ouro `#b8923a` (claro `#e8d9b0`, escuro `#8a6b22`). Títulos em Cormorant Garamond, texto em DM Sans. As cores vivem no `:root` de `assets/css/wzs.css` e em `CORES` (`mundo.js` e `app.js`).
 - Com “reduzir movimento” ligado no sistema: sem rolagem suave, sem voo de câmera, troca de página por corte curto.
 
 ## Como atualizar o conteúdo
@@ -44,7 +46,9 @@ O gerador põe `?v=` (marca do conteúdo) em todo CSS, JS, imagem e vídeo, porq
 Regras do arquivo de conteúdo:
 - Toda métrica leva **fonte e data**. Visualização, curtida, CTR e venda são coisas diferentes: escreva qual é.
 - Lista vazia esconde a seção (ex.: `depoimentos`, `anuncios.videos`).
-- `publicar: false` numa série de vídeos deixa ela pronta, mas fora do site.
+- `publicar: false` numa série de vídeos ou num projeto deixa ele guardado, mas fora do site; `oculto: true` faz o mesmo com um vídeo só. Desde 20/11/2026 o site mostra só trabalhos da área da saúde: MedGrind, 1UPmed, @wzs_studio, Nilo e os sites de outros ramos estão guardados assim.
+- `clientes` traz o cartão de prova social (foto, registro, números do perfil com a data). Os números são do perfil do cliente: o texto diz que não são resultado do trabalho.
+- Publicidade médica: os textos seguem a Resolução CFM nº 2.336/2023. Nada de promessa de resultado, de “o melhor” ou de garantia de pacientes.
 
 ### Adicionar um vídeo
 
@@ -62,15 +66,15 @@ node tools/midia.mjs captura "C:/caminho/tela.png" media/sites/projeto/desk-1.we
 
 Para celular use largura 780: `... media/sites/projeto/cel-1.webp 780`.
 
-### Trocar a gravação do voo do MedGrind
+### Trocar o caso em destaque (e a gravação do voo)
 
-As telas do capítulo MedGrind não usam vídeo: mostram quadros prontos que seguem a rolagem. Para trocar a gravação, substitua `midia/medgrind/voo.mp4` e `voo-cel.mp4` e rode:
+As telas do capítulo "Caso em destaque" de Sites não usam vídeo: mostram quadros prontos que seguem a rolagem. O projeto do capítulo é `sites.historia.caso.projeto` (hoje `lucas-tosi`). Para trocar a gravação, ponha a landing gravada rolando em `midia/<projeto>/voo.mp4` (computador, 16:9) e `voo-cel.mp4` (celular, 780×1688) e rode:
 
 ```bash
-node tools/voo.mjs
+node tools/voo.mjs lucas-tosi
 ```
 
-Gera os pacotes `.bin` em `media/sites/medgrind/` e a curva de ritmo. Depois rode `node tools/gerar.mjs`.
+Gera os pacotes `.bin` em `media/sites/<projeto>/` e a curva de ritmo (gravações longas são lidas de N em N quadros, para ficar perto de 300). Os seis quadros parados que aparecem enquanto o voo baixa ficam em `media/sites/<projeto>/cenas/c0…c5-wide.webp` e `-tall.webp`. Depois rode `node tools/gerar.mjs`.
 
 ## Testar no computador
 
@@ -92,4 +96,4 @@ O [`.cpanel.yml`](.cpanel.yml) copia só o que o site usa: as páginas, `assets/
 
 ---
 
-Bibliotecas em `assets/vendor/`: Three.js r160, GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fontes em `assets/fontes/` (servidas pelo próprio site, licença OFL): Anybody, Schibsted Grotesk e Martian Mono.
+Bibliotecas em `assets/vendor/`: Three.js r160, GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13. Fontes em `assets/fontes/` (servidas pelo próprio site, licença OFL): Cormorant Garamond, DM Sans e Martian Mono.
