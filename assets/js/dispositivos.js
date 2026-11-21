@@ -6,7 +6,7 @@
 //   c-sucesso     o reel publicado viraliza (contadores e corações dentro da tela)
 //   c-dinheiro    para anunciar: cada clique custa, o criativo paga (no celular, um vídeo do Dr. Lucas Tosi)
 //   c-oportunidade  o vídeo chega a quem não segue
-//   s-problema    um site genérico que perde o visitante
+//   s-problema    o site genérico perde o paciente: não abre, não diz a especialidade, não tem como agendar, e ele marca com outro consultório
 //   s-montagem    o site sendo construído: mensagem, design, conteúdo, celular, ação
 //   s-caso        o caso em destaque (landing do livro do Dr. Lucas Tosi): o notebook abre e a landing de verdade voa pela rolagem; o celular sobe pela frente
 //   s-oportunidade  do vídeo no celular até a conversa no WhatsApp
@@ -331,10 +331,13 @@ export function criarDispositivos({ scene, renderer, vista, nivel, reduce, midia
       x.restore(); return texCanvas(c);
     })();
     const base = new THREE.Mesh(extrudar(NB.w, NB.d, 0.1, NB.base, 0.01, 18), matAluClaro); base.rotation.x = -Math.PI / 2;
-    const deck = new THREE.Mesh(new THREE.ShapeGeometry(retArred(2.24, 0.86, 0.04), 10), new THREE.MeshStandardMaterial({ map: teclas, roughness: 0.6, metalness: 0.3 }));
-    deck.rotation.x = -Math.PI / 2; deck.position.set(0, NB.base / 2 + 0.011, -0.3);
+    // a ShapeGeometry traz as UVs nas medidas da forma (de −1,12 a 1,12); sem normalizar, só um quarto do teclado aparecia
+    const deckGeo = new THREE.ShapeGeometry(retArred(2.24, 0.86, 0.04), 10), uvD = deckGeo.attributes.uv;
+    for (let i = 0; i < uvD.count; i++) uvD.setXY(i, uvD.getX(i) / 2.24 + 0.5, uvD.getY(i) / 0.86 + 0.5);
+    const deck = new THREE.Mesh(deckGeo, new THREE.MeshStandardMaterial({ map: teclas, roughness: 0.6, metalness: 0.3 }));
+    deck.rotation.x = -Math.PI / 2; deck.position.set(0, NB.base / 2 + 0.0125, -0.3);
     const touch = new THREE.Mesh(new THREE.ShapeGeometry(retArred(1.0, 0.56, 0.05), 12), new THREE.MeshPhysicalMaterial({ color: "#d9dde3", metalness: 0.9, roughness: 0.2, clearcoat: 1, envMapIntensity: 1.1 }));
-    touch.rotation.x = -Math.PI / 2; touch.position.set(0, NB.base / 2 + 0.0115, 0.45);
+    touch.rotation.x = -Math.PI / 2; touch.position.set(0, NB.base / 2 + 0.0125, 0.45);
     dobradica.position.set(0, NB.base / 2 + 0.006, -NB.d / 2 + 0.035);
     const eixo = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, NB.w * 0.82, 16), new THREE.MeshStandardMaterial({ color: "#2a2d33", metalness: 0.8, roughness: 0.4 }));
     eixo.rotation.z = Math.PI / 2;
@@ -544,36 +547,249 @@ varying float vNota;`)
     igT.needsUpdate = true;
   }
 
-  // site genérico que perde o visitante
-  const siteC = canvas(960, 600), sx = siteC.getContext("2d"), siteT = texCanvas(siteC);
-  function desenharSite(p, t) {
-    const x = sx, w = siteC.width, h = siteC.height;
-    x.textAlign = "left";
-    x.fillStyle = "#e9ebef"; x.fillRect(0, 0, w, h); x.fillStyle = "#cfd3da"; x.fillRect(0, 0, w, 30);
-    x.fillStyle = "#fff"; rr(x, 90, 6, 520, 18, 9); x.fill(); x.fillStyle = "#8a909b"; x.font = "11px DM Sans, sans-serif"; x.fillText("www.seuconsultorio.com.br", 104, 19);
-    if (p < 0.25) {
-      const a = t * 5; x.strokeStyle = "#9aa1ad"; x.lineWidth = 6; x.beginPath(); x.arc(w / 2, h / 2, 34, a, a + 4.2); x.stroke();
-      x.fillStyle = "#9aa1ad"; x.font = "600 18px DM Sans, sans-serif"; x.textAlign = "center"; x.fillText("Carregando…", w / 2, h / 2 + 72); x.textAlign = "left";
-      x.fillStyle = "#7f8794"; x.fillRect(0, h - 6, w * (0.12 + p * 2), 6);
-    } else {
-      x.fillStyle = "#3d4250"; x.fillRect(0, 30, w, 46);
-      for (let i = 0; i < 9; i++) { x.fillStyle = "#aab0bb"; x.fillRect(260 + i * 74, 49, 52, 7); }
-      x.fillStyle = "#c3c8d0"; x.fillRect(30, 96, w - 60, 200); x.fillStyle = "#a9afb9"; x.font = "700 20px DM Sans, sans-serif"; x.textAlign = "center"; x.fillText("BEM-VINDO AO NOSSO SITE", w / 2, 190); x.textAlign = "left";
-      for (let c = 0; c < 3; c++) for (let l = 0; l < 9; l++) { x.fillStyle = "#c5cad2"; x.fillRect(40 + c * 300, 320 + l * 16, 240 - (l % 3) * 30, 6); }
-      x.fillStyle = "rgba(20,24,32,.88)"; rr(x, w - 300, h - 150, 270, 120, 10); x.fill(); x.fillStyle = "#fff"; x.font = "12px DM Sans, sans-serif"; x.fillText("Usamos cookies para melhorar…", w - 284, h - 118);
-      x.fillStyle = "#5b6070"; rr(x, 40, h - 110, 210, 70, 10); x.fill(); x.fillStyle = "#fff"; x.fillText("Assine nossa newsletter!", 56, h - 72);
-      if (p > 0.5) {
-        const q = faixa(p, 0.52, 0.78), cx = w * 0.5 + (w * 0.47 - w * 0.5) * q, cy = h * 0.6 + (14 - h * 0.6) * q;
-        x.fillStyle = "#111"; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + 14, cy + 36); x.lineTo(cx + 22, cy + 22); x.lineTo(cx + 38, cy + 18); x.closePath(); x.fill();
-        if (p > 0.8) {
-          x.globalAlpha = faixa(p, 0.8, 0.9); x.fillStyle = "#fff"; x.fillRect(0, 30, w, h - 30);
-          x.fillStyle = "#1a0dab"; x.font = "600 20px DM Sans, sans-serif"; x.fillText("Outro consultório · a mesma especialidade", 60, 120);
-          x.fillStyle = "#4d5156"; x.font = "14px DM Sans, sans-serif"; x.fillText("outroconsultorio.com.br — Agende pelo WhatsApp", 60, 146);
-          for (let l = 0; l < 4; l++) { x.fillStyle = "#dfe1e5"; x.fillRect(60, 200 + l * 70, 600, 10); x.fillRect(60, 220 + l * 70, 420, 8); }
-          x.globalAlpha = 1;
-        }
-      }
+  // ---------- s-problema: o site genérico que perde o paciente ----------
+  // A tela conta os quatro passos do texto, cada um na sua faixa da rolagem (0–0,25 · 0,25–0,5 · 0,5–0,75 · 0,75–1):
+  //   1. a página não abre (os segundos correm) e ele fecha a aba;
+  //   2. abriu, mas a busca na página por "ginecologia" não acha nada;
+  //   3. rola até o rodapé, não há botão de agendar, e a busca por "agendar" também não acha;
+  //   4. volta à pesquisa, clica no outro consultório, que agenda pelo WhatsApp, e a consulta fica marcada lá.
+  // Desenho em 960×600 (escala RS no canvas); só redesenha quando a cena muda, porque cada envio da textura pesa na placa.
+  const RS = grande ? 1.5 : 1;
+  const siteC = canvas(960 * RS, 600 * RS), sx = siteC.getContext("2d"), siteT = texCanvas(siteC);
+  let siteChave = "";
+  const NAV = 'system-ui, "Segoe UI", Roboto, Arial, sans-serif', ARIAL = "Arial, Helvetica, sans-serif";
+  const TOPO = 86, ABA = { x: 84, w: 236 }, FECHA = { x: ABA.x + ABA.w - 24, y: 24 };
+  // posição do cursor por quadros-chave [p, x, y], com aceleração suave entre eles
+  const trajeto = (p, k) => {
+    if (p <= k[0][0]) return [k[0][1], k[0][2]];
+    for (let i = 1; i < k.length; i++) if (p <= k[i][0]) { const e = glide(faixa(p, k[i - 1][0], k[i][0])); return [k[i - 1][1] + (k[i][1] - k[i - 1][1]) * e, k[i - 1][2] + (k[i][2] - k[i - 1][2]) * e]; }
+    const u = k[k.length - 1]; return [u[1], u[2]];
+  };
+  const girando = (x, cx, cy, r, t, cor, lw) => { const a = t * 6; x.strokeStyle = cor; x.lineWidth = lw; x.lineCap = "round"; x.beginPath(); x.arc(cx, cy, r, a, a + 4.4); x.stroke(); };
+  // sombra em camadas: o shadowBlur do canvas custa caro a cada redesenho
+  const sombra = (x, X, Y, W, H, r, k = 1) => { for (let i = 4; i >= 1; i--) { x.fillStyle = `rgba(0,0,0,${0.028 * k})`; rr(x, X - i * 1.6, Y - i * 1.6 + 3, W + i * 3.2, H + i * 3.2, r + i * 1.6); x.fill(); } };
+  const check = (x, cx, cy, s, cor, lw) => { x.strokeStyle = cor; x.lineWidth = lw; x.lineCap = "round"; x.lineJoin = "round"; x.beginPath(); x.moveTo(cx - s * 0.5, cy); x.lineTo(cx - s * 0.12, cy + s * 0.38); x.lineTo(cx + s * 0.55, cy - s * 0.4); x.stroke(); };
+  function navegador(x, aba, t) {
+    // aba: { titulo, icone: "carregando" | "site" | "busca" | "chat", fecha: 0–1, url }
+    x.fillStyle = "#dee1e6"; x.fillRect(0, 0, 960, 44);
+    ["#ff5f57", "#febc2e", "#28c840"].forEach((c, i) => { x.fillStyle = c; x.beginPath(); x.arc(22 + i * 20, 22, 6.5, 0, Math.PI * 2); x.fill(); });
+    const lw = aba.titulo ? ABA.w * (1 - (aba.fecha || 0)) : 0;
+    if (lw > 4) {
+      x.fillStyle = "#fff"; rr(x, ABA.x, 8, lw, 36, 10); x.fill(); x.fillRect(ABA.x, 30, lw, 14);
+      x.save(); x.beginPath(); x.rect(ABA.x, 8, lw, 36); x.clip();
+      if (aba.icone === "carregando") girando(x, ABA.x + 22, 26, 7, t, "#1a73e8", 2.6);
+      else { x.fillStyle = aba.icone === "chat" ? "#25d366" : aba.icone === "busca" ? "#5f6368" : "#2f6fb2"; x.beginPath(); x.arc(ABA.x + 22, 26, 8, 0, Math.PI * 2); x.fill();
+        if (aba.icone === "site") { x.fillStyle = "#fff"; x.fillRect(ABA.x + 20.5, 21, 3, 10); x.fillRect(ABA.x + 17, 24.5, 10, 3); } }
+      x.fillStyle = "#202124"; x.font = `400 15px ${NAV}`; x.textAlign = "left"; x.fillText(aba.titulo, ABA.x + 40, 31);
+      x.strokeStyle = "#5f6368"; x.lineWidth = 1.8; x.lineCap = "round"; x.beginPath();
+      x.moveTo(ABA.x + lw - 29, 21); x.lineTo(ABA.x + lw - 19, 31); x.moveTo(ABA.x + lw - 19, 21); x.lineTo(ABA.x + lw - 29, 31); x.stroke();
+      x.restore();
     }
+    // "+" de nova aba
+    const mx = ABA.x + lw + 22; x.strokeStyle = "#5f6368"; x.lineWidth = 2; x.beginPath(); x.moveTo(mx - 7, 26); x.lineTo(mx + 7, 26); x.moveTo(mx, 19); x.lineTo(mx, 33); x.stroke();
+    // barra de endereço
+    x.fillStyle = "#fff"; x.fillRect(0, 44, 960, 42);
+    x.strokeStyle = "#5f6368"; x.lineWidth = 2; x.lineJoin = "round"; x.lineCap = "round";
+    x.beginPath(); x.moveTo(30, 65); x.lineTo(20, 65); x.moveTo(25, 59); x.lineTo(19, 65); x.lineTo(25, 71); x.stroke();
+    x.strokeStyle = "#bdc1c6"; x.beginPath(); x.moveTo(52, 65); x.lineTo(62, 65); x.moveTo(57, 59); x.lineTo(63, 65); x.lineTo(57, 71); x.stroke();
+    x.strokeStyle = "#5f6368"; x.beginPath(); x.arc(91, 65, 7, -0.4, Math.PI * 1.6); x.stroke();
+    x.fillStyle = "#f1f3f4"; rr(x, 118, 50, 740, 30, 15); x.fill();
+    if (aba.url) {
+      x.strokeStyle = "#5f6368"; x.lineWidth = 1.8;
+      // na página de resultados o navegador mostra a própria pesquisa (lupa); nos sites, o cadeado
+      if (aba.lupa) { x.beginPath(); x.arc(138, 63, 5.5, 0, Math.PI * 2); x.moveTo(142, 67); x.lineTo(146, 71); x.stroke(); }
+      else { rr(x, 133, 63, 11, 9, 2); x.stroke(); x.beginPath(); x.arc(138.5, 62, 3.6, Math.PI, 0); x.stroke(); }
+      x.fillStyle = "#202124"; x.font = `400 16px ${NAV}`; x.fillText(aba.url, 156, 70);
+    } else { x.fillStyle = "#80868b"; x.font = `400 16px ${NAV}`; x.fillText("Pesquise ou digite um endereço", 140, 70); }
+    x.fillStyle = "#5f6368"; [0, 1, 2].forEach((i) => { x.beginPath(); x.arc(934, 58 + i * 7, 2, 0, Math.PI * 2); x.fill(); });
+    x.fillStyle = "#dadce0"; x.fillRect(0, TOPO - 1, 960, 1);
+  }
+  function seta(x, cx, cy, clique) {
+    if (clique > 0 && clique < 1) { x.strokeStyle = `rgba(26,115,232,${(1 - clique) * 0.9})`; x.lineWidth = 3; x.beginPath(); x.arc(cx, cy, 8 + clique * 26, 0, Math.PI * 2); x.stroke(); }
+    x.save(); x.translate(cx, cy); x.scale(1.35, 1.35);
+    x.beginPath(); x.moveTo(0, 0); x.lineTo(0, 21); x.lineTo(5, 16.5); x.lineTo(8.6, 24.5); x.lineTo(12, 23); x.lineTo(8.5, 15.2); x.lineTo(15, 15.2); x.closePath();
+    x.lineJoin = "round"; x.strokeStyle = "#fff"; x.lineWidth = 3; x.stroke(); x.fillStyle = "#111"; x.fill();
+    x.restore();
+  }
+  // busca na página (Ctrl+F): o texto vai sendo digitado e, no fim, "0 de 0" em vermelho
+  function buscaNaPagina(x, texto, n, achou, a) {
+    if (a <= 0) return;
+    const X = 520, Y = TOPO + 12, W = 420, H = 58, falhou = achou === false;
+    x.save(); x.globalAlpha = a; x.translate(0, (1 - a) * -10);
+    sombra(x, X, Y, W, H, 12, 1.4); x.fillStyle = "#fff"; rr(x, X, Y, W, H, 12); x.fill();
+    x.strokeStyle = falhou ? "#d93025" : "#1a73e8"; x.lineWidth = 2.5; rr(x, X, Y, W, H, 12); x.stroke();
+    x.strokeStyle = "#5f6368"; x.lineWidth = 2.6; x.beginPath(); x.arc(X + 30, Y + 26, 9, 0, Math.PI * 2); x.moveTo(X + 37, Y + 33); x.lineTo(X + 44, Y + 40); x.stroke();
+    const vis = texto.slice(0, n); x.fillStyle = falhou ? "#c5221f" : "#202124"; x.font = `500 26px ${NAV}`; x.textAlign = "left"; x.fillText(vis, X + 58, Y + 38);
+    if (!falhou && n <= texto.length) { const cw = x.measureText(vis).width; x.fillStyle = "#1a73e8"; x.fillRect(X + 60 + cw, Y + 16, 2.5, 28); }
+    if (falhou) {
+      x.fillStyle = "#d93025"; x.font = `700 24px ${NAV}`; x.textAlign = "right"; x.fillText("0 de 0", X + W - 20, Y + 37);
+      x.textAlign = "left"; x.fillStyle = "#fce8e6"; rr(x, X, Y + H + 10, W, 46, 10); x.fill();
+      x.fillStyle = "#c5221f"; x.font = `600 21px ${NAV}`; x.fillText(`Nenhum “${texto}” nesta página`, X + 20, Y + H + 40);
+    }
+    x.restore();
+  }
+  // o site genérico (sem especialidade, sem botão de agendar); rolar = deslocamento da página em px
+  // A página inteira é desenhada uma vez num canvas próprio; a cada quadro só se copia o trecho visível.
+  const PAG_H = 1000;
+  let pagC = null;
+  function paginaGenerica(x, rolar) {
+    if (!pagC) { pagC = canvas(960 * RS, PAG_H * RS); const c = pagC.getContext("2d"); c.setTransform(RS, 0, 0, RS, 0, 0); desenharPagina(c); }
+    x.drawImage(pagC, 0, rolar * RS, 960 * RS, (600 - TOPO) * RS, 0, TOPO, 960, 600 - TOPO);
+  }
+  function desenharPagina(x) {
+    x.fillStyle = "#fff"; x.fillRect(0, 0, 960, PAG_H);
+    // topo do site: logo genérica e menu
+    x.fillStyle = "#2f6fb2"; x.fillRect(40, 24, 30, 30); x.fillStyle = "#fff"; x.fillRect(51, 29, 8, 20); x.fillRect(45, 35, 20, 8);
+    x.fillStyle = "#2f6fb2"; x.font = `700 24px ${ARIAL}`; x.textAlign = "left"; x.fillText("Seu Consultório", 82, 48);
+    x.fillStyle = "#555"; x.font = `400 17px ${ARIAL}`; let mx = 470; for (const m of ["Início", "Quem somos", "Serviços", "Blog", "Contato"]) { x.fillText(m, mx, 46); mx += x.measureText(m).width + 30; }
+    // banner de banco de imagens
+    const g = x.createLinearGradient(0, 78, 960, 330); g.addColorStop(0, "#6f97bd"); g.addColorStop(1, "#a9c2d8"); x.fillStyle = g; x.fillRect(0, 78, 960, 262);
+    x.fillStyle = "rgba(255,255,255,.12)"; x.beginPath(); x.arc(780, 210, 150, 0, Math.PI * 2); x.fill(); x.beginPath(); x.arc(880, 120, 90, 0, Math.PI * 2); x.fill();
+    x.fillStyle = "#fff"; x.font = `700 42px ${ARIAL}`; x.textAlign = "center"; x.fillText("Bem-vindo ao nosso site!", 480, 190);
+    x.font = `400 21px ${ARIAL}`; x.fillText("Cuidando de você com carinho e dedicação.", 480, 228);
+    x.strokeStyle = "#fff"; x.lineWidth = 2; rr(x, 410, 252, 140, 42, 4); x.stroke(); x.font = `700 16px ${ARIAL}`; x.fillText("SAIBA MAIS", 480, 279);
+    x.font = `700 34px ${ARIAL}`; x.fillStyle = "rgba(255,255,255,.7)"; x.fillText("‹", 36, 222); x.fillText("›", 924, 222);
+    [0, 1, 2].forEach((i) => { x.fillStyle = i ? "rgba(255,255,255,.45)" : "#fff"; x.beginPath(); x.arc(462 + i * 18, 322, 5, 0, Math.PI * 2); x.fill(); });
+    // sobre nós: missão, visão e valores
+    x.fillStyle = "#333"; x.font = `700 28px ${ARIAL}`; x.fillText("Sobre nós", 480, 396);
+    x.fillStyle = "#777"; x.font = `400 17px ${ARIAL}`; x.fillText("Somos uma equipe comprometida com a sua saúde e o seu bem-estar.", 480, 428);
+    ["Missão", "Visão", "Valores"].forEach((nome, i) => {
+      const cx = 180 + i * 300; x.fillStyle = "#e3edf6"; x.beginPath(); x.arc(cx, 492, 30, 0, Math.PI * 2); x.fill(); x.fillStyle = "#2f6fb2"; x.beginPath(); x.arc(cx, 492, 9, 0, Math.PI * 2); x.fill();
+      x.fillStyle = "#333"; x.font = `700 20px ${ARIAL}`; x.fillText(nome, cx, 552);
+      for (let l = 0; l < 3; l++) { x.fillStyle = "#d6d9de"; x.fillRect(cx - 100 + (l === 2 ? 30 : 0), 570 + l * 18, l === 2 ? 140 : 200, 8); }
+    });
+    // nossa estrutura: fotos que não carregaram
+    x.fillStyle = "#333"; x.font = `700 28px ${ARIAL}`; x.fillText("Nossa estrutura", 480, 680);
+    [0, 1, 2].forEach((i) => {
+      const X = 60 + i * 290; x.fillStyle = "#eceef1"; x.fillRect(X, 704, 260, 130);
+      x.strokeStyle = "#c3c8cf"; x.lineWidth = 2.5; x.lineJoin = "round"; x.beginPath(); x.moveTo(X + 96, 790); x.lineTo(X + 122, 758); x.lineTo(X + 140, 778); x.lineTo(X + 152, 766); x.lineTo(X + 170, 790); x.closePath(); x.stroke();
+      x.beginPath(); x.arc(X + 158, 744, 7, 0, Math.PI * 2); x.stroke();
+    });
+    // rodapé: só um e-mail, nenhum botão de agendar
+    x.fillStyle = "#2b2f36"; x.fillRect(0, 866, 960, PAG_H - 866);
+    x.textAlign = "left"; x.fillStyle = "#fff"; x.font = `700 20px ${ARIAL}`; x.fillText("Seu Consultório", 60, 906);
+    x.fillStyle = "#aab0b9"; x.font = `400 16px ${ARIAL}`; x.fillText("Rua Exemplo, 123 · Centro", 60, 934); x.fillText("contato@seuconsultorio.com.br", 60, 958);
+    x.textAlign = "right"; x.fillText("© 2019 · Todos os direitos reservados", 900, 958);
+    x.textAlign = "left";
+  }
+  // a página de resultados também fica pronta de antemão, nas duas versões (com e sem o 1º resultado em destaque)
+  const pesqC = [];
+  function paginaPesquisa(x, foco) {
+    const k = foco ? 1 : 0;
+    if (!pesqC[k]) { const c = canvas(960 * RS, (600 - TOPO) * RS), cx = c.getContext("2d"); cx.setTransform(RS, 0, 0, RS, 0, 0); desenharPesquisa(cx, foco); pesqC[k] = c; }
+    x.drawImage(pesqC[k], 0, TOPO, 960, 600 - TOPO);
+  }
+  function desenharPesquisa(x, foco) {
+    x.save();
+    x.fillStyle = "#fff"; x.fillRect(0, 0, 960, 600 - TOPO);
+    x.strokeStyle = "#dfe1e5"; x.lineWidth = 1.5; rr(x, 40, 18, 620, 46, 23); x.stroke();
+    x.fillStyle = "#202124"; x.font = `400 19px ${NAV}`; x.textAlign = "left"; x.fillText("ginecologista perto de mim", 70, 48);
+    x.strokeStyle = "#5f6368"; x.lineWidth = 2.4; x.beginPath(); x.arc(622, 39, 8, 0, Math.PI * 2); x.moveTo(628, 45); x.lineTo(635, 52); x.stroke();
+    x.fillStyle = "#ebebeb"; x.fillRect(0, 80, 960, 1);
+    // 1º resultado: o outro consultório, que agenda pelo WhatsApp
+    x.fillStyle = foco ? "#f2f8f3" : "#fff"; rr(x, 30, 96, 650, 196, 14); x.fill(); if (foco) { x.strokeStyle = "#bfe3c6"; x.lineWidth = 1.5; rr(x, 30, 96, 650, 196, 14); x.stroke(); }
+    x.fillStyle = "#4d5156"; x.font = `400 15px ${NAV}`; x.fillText("outroconsultorio.com.br", 54, 126);
+    x.fillStyle = "#1a0dab"; x.font = `500 25px ${NAV}`; x.fillText("Outro consultório · Ginecologia", 54, 160);
+    x.fillStyle = "#e8a400"; x.font = `400 18px ${NAV}`; x.fillText("★★★★★", 54, 190); x.fillStyle = "#4d5156"; x.fillText("4,9 · 212 avaliações", 140, 190);
+    x.fillText("Atendimento para mulheres em todas as fases da vida.", 54, 218);
+    x.fillStyle = "#25d366"; rr(x, 54, 234, 262, 44, 22); x.fill();
+    x.fillStyle = "#fff"; x.font = `700 18px ${NAV}`; x.fillText("Agendar pelo WhatsApp", 82, 262);
+    // 2º: o site dele, já visitado
+    x.fillStyle = "#4d5156"; x.font = `400 15px ${NAV}`; x.fillText("seuconsultorio.com.br", 54, 330);
+    x.fillStyle = "#681da8"; x.font = `500 23px ${NAV}`; x.fillText("Seu Consultório · Bem-vindo ao nosso site!", 54, 362);
+    x.fillStyle = "#70757a"; x.font = `400 17px ${NAV}`; x.fillText("Você visitou esta página hoje.", 54, 390);
+    for (let l = 0; l < 2; l++) { x.fillStyle = "#e8eaed"; x.fillRect(54, 430 + l * 40, l ? 420 : 560, 10); x.fillRect(54, 448 + l * 40, l ? 300 : 460, 8); }
+    x.restore();
+  }
+  // a conversa com o outro consultório termina com a consulta marcada (q de 0 a 1)
+  function paginaChat(x, q, t) {
+    x.save(); x.beginPath(); x.rect(0, TOPO, 960, 600 - TOPO); x.clip(); x.translate(0, TOPO);
+    x.fillStyle = "#efeae2"; x.fillRect(0, 0, 960, 600);
+    x.fillStyle = "#f0f2f5"; x.fillRect(0, 0, 960, 70); x.fillStyle = "#e0e3e7"; x.fillRect(0, 70, 960, 1);
+    x.fillStyle = "#25a36a"; x.beginPath(); x.arc(56, 35, 24, 0, Math.PI * 2); x.fill(); x.fillStyle = "#fff"; x.font = `700 19px ${NAV}`; x.textAlign = "center"; x.fillText("OC", 56, 42);
+    const digitando = (q > 0.18 && q < 0.36) || (q > 0.58 && q < 0.72);
+    x.textAlign = "left"; x.fillStyle = "#111b21"; x.font = `600 21px ${NAV}`; x.fillText("Outro consultório · Ginecologia", 96, 32);
+    x.fillStyle = digitando ? "#1fa855" : "#667781"; x.font = `400 16px ${NAV}`; x.fillText(digitando ? "digitando…" : "online", 96, 56);
+    const msg = (txt, eu, y, a, hora) => {
+      if (a <= 0) return 0; x.font = `400 22px ${NAV}`; const w = x.measureText(txt).width + (eu ? 96 : 80), X = eu ? 960 - 40 - w : 40;
+      x.save(); x.globalAlpha = a; x.translate(0, (1 - a) * 12);
+      x.fillStyle = eu ? "#d9fdd3" : "#fff"; rr(x, X, y, w, 50, 10); x.fill();
+      x.fillStyle = "#111b21"; x.fillText(txt, X + 16, y + 33);
+      x.fillStyle = "#667781"; x.font = `400 13px ${NAV}`; x.textAlign = "right"; x.fillText(hora, X + w - (eu ? 36 : 14), y + 38); x.textAlign = "left";
+      if (eu) { x.strokeStyle = "#53bdeb"; x.lineWidth = 2; x.lineCap = "round"; x.beginPath(); for (const d of [0, 6]) { x.moveTo(X + w - 30 + d, y + 33); x.lineTo(X + w - 26 + d, y + 37); x.lineTo(X + w - 19 + d, y + 28); } x.stroke(); }
+      x.restore(); return 62;
+    };
+    const ap = (a, b) => suave(faixa(q, a, b));
+    let y = 92;
+    y += msg("Oi! Quero marcar uma consulta.", true, y, ap(0.02, 0.12), "10:12");
+    if (digitando && q < 0.4) { x.fillStyle = "#fff"; rr(x, 40, y, 84, 44, 10); x.fill(); [0, 1, 2].forEach((i) => { x.fillStyle = `rgba(102,119,129,${0.4 + 0.6 * Math.max(0, Math.sin(t * 8 - i))})`; x.beginPath(); x.arc(64 + i * 18, y + 22, 5, 0, Math.PI * 2); x.fill(); }); }
+    y += msg("Claro! Temos terça, às 14h. Pode ser?", false, y, ap(0.36, 0.46), "10:13");
+    y += msg("Pode marcar!", true, y, ap(0.48, 0.56), "10:13");
+    if (digitando && q > 0.5) { x.fillStyle = "#fff"; rr(x, 40, y, 84, 44, 10); x.fill(); [0, 1, 2].forEach((i) => { x.fillStyle = `rgba(102,119,129,${0.4 + 0.6 * Math.max(0, Math.sin(t * 8 - i))})`; x.beginPath(); x.arc(64 + i * 18, y + 22, 5, 0, Math.PI * 2); x.fill(); }); }
+    // cartão de confirmação
+    const c = ap(0.72, 0.86);
+    if (c > 0) {
+      x.save(); x.globalAlpha = c; const s = 0.92 + 0.08 * c; x.translate(40, y); x.scale(s, s);
+      sombra(x, 0, 0, 470, 132, 14); x.fillStyle = "#fff"; rr(x, 0, 0, 470, 132, 14); x.fill();
+      x.fillStyle = "#1fa855"; x.beginPath(); x.arc(58, 66, 34, 0, Math.PI * 2); x.fill(); check(x, 58, 67, 34, "#fff", 6);
+      x.fillStyle = "#111b21"; x.font = `700 32px ${NAV}`; x.fillText("Consulta marcada", 112, 58);
+      x.fillStyle = "#3b4a54"; x.font = `400 20px ${NAV}`; x.fillText("Terça, às 14h · Outro consultório", 112, 92);
+      x.restore();
+    }
+    x.restore();
+  }
+  // O que a tela mostra no ponto p da rolagem, em valores arredondados: a chave só muda quando algo visível muda,
+  // e só então a textura é redesenhada e enviada à placa. O carregando e o "digitando…" giram sozinhos a 15 q/s.
+  function cenaSite(p, t) {
+    const q = (v, n) => Math.round(v * n) / n, giro = Math.floor(t * 15) / 15, pos = (k) => trajeto(p, k).map(Math.round);
+    if (p < 0.25) {
+      const fecha = q(faixa(p, 0.2, 0.225), 20);
+      return { f: 1, fecha, seg: 1 + Math.floor(faixa(p, 0.01, 0.19) * 8), barra: q(faixa(p, 0, 0.2), 60), t: fecha < 1 ? giro : 0,
+        cur: pos([[0, 640, 470], [0.12, 640, 470], [0.195, FECHA.x, FECHA.y + 2]]), clique: q(faixa(p, 0.196, 0.24), 24) };
+    }
+    if (p < 0.5) return { f: 2, n: Math.round(faixa(p, 0.305, 0.37) * 11), falhou: p > 0.385, a: q(suave(faixa(p, 0.28, 0.3)), 20), cur: pos([[0.25, 640, 470], [0.28, 560, 420]]) };
+    if (p < 0.75) return { f: 3, rolar: Math.round(glide(faixa(p, 0.505, 0.62)) * (PAG_H - (600 - TOPO))), n: Math.round(faixa(p, 0.645, 0.69) * 7), falhou: p > 0.7,
+      a: q(suave(faixa(p, 0.625, 0.645)), 20), cur: pos([[0.5, 560, 420], [0.56, 380, 470], [0.62, 300, 530]]) };
+    if (p >= 0.835) { const qc = q(faixa(p, 0.845, 0.99), 100); return { f: 4, chat: true, qc, t: (qc > 0.18 && qc < 0.36) || (qc > 0.58 && qc < 0.72) ? giro : 0 }; }
+    return { f: 4, chat: false, foco: p > 0.8, cur: pos([[0.75, 300, 530], [0.81, 200, 342]]), clique: q(faixa(p, 0.812, 0.85), 24) };
+  }
+  function desenharSite(p, t) {
+    const c = cenaSite(p, t), chave = JSON.stringify(c);
+    if (chave === siteChave) return;
+    siteChave = chave;
+    const x = sx; x.setTransform(RS, 0, 0, RS, 0, 0); x.textAlign = "left"; x.globalAlpha = 1;
+    const SITE = { titulo: "Seu Consultório", icone: "site", url: "seuconsultorio.com.br" };
+    if (c.f === 1) {
+      // 1. não abre: os segundos correm, ele leva o cursor até o ✕ e fecha a aba
+      navegador(x, { titulo: c.fecha < 1 ? "Carregando…" : "", icone: "carregando", fecha: c.fecha, url: c.fecha < 1 ? "seuconsultorio.com.br" : "" }, c.t);
+      x.fillStyle = "#fff"; x.fillRect(0, TOPO, 960, 600 - TOPO);
+      if (c.fecha < 1) {
+        x.fillStyle = "#1a73e8"; x.fillRect(0, TOPO - 1, 960 * (0.06 + 0.22 * c.barra), 3);
+        girando(x, 480, 286, 34, c.t, "#9aa0a6", 6);
+        x.textAlign = "center"; x.fillStyle = "#5f6368"; x.font = `500 24px ${NAV}`; x.fillText("Carregando…", 480, 364);
+        x.fillStyle = "#9aa0a6"; x.font = `700 46px ${NAV}`; x.fillText(`${c.seg} s`, 480, 424);
+        x.textAlign = "left"; x.fillStyle = "#f1f3f4"; rr(x, 8, 556, 330, 34, 8); x.fill(); x.fillStyle = "#3c4043"; x.font = `400 16px ${NAV}`; x.fillText("Aguardando seuconsultorio.com.br…", 20, 579);
+      } else {
+        x.textAlign = "center"; x.strokeStyle = "#dfe1e5"; x.lineWidth = 1.5; rr(x, 250, 300, 460, 50, 25); x.stroke();
+        x.fillStyle = "#9aa0a6"; x.font = `400 18px ${NAV}`; x.fillText("Pesquise ou digite um endereço", 480, 332); x.textAlign = "left";
+      }
+    } else if (c.f === 2) {
+      // 2. abriu, mas o site não diz a especialidade: a busca por "ginecologia" não acha nada
+      navegador(x, SITE, t); paginaGenerica(x, 0);
+      buscaNaPagina(x, "ginecologia", c.n, c.falhou ? false : null, c.a);
+    } else if (c.f === 3) {
+      // 3. rola até o rodapé: nenhum botão de agendar; a busca por "agendar" também não acha
+      navegador(x, SITE, t); paginaGenerica(x, c.rolar);
+      x.fillStyle = "rgba(0,0,0,.28)"; rr(x, 948, TOPO + 6 + (c.rolar / PAG_H) * (600 - TOPO), 6, ((600 - TOPO) / PAG_H) * (600 - TOPO) - 12, 3); x.fill();
+      buscaNaPagina(x, "agendar", c.n, c.falhou ? false : null, c.a);
+    } else if (c.chat) {
+      // 4b. a conversa com o outro consultório termina com a consulta marcada
+      navegador(x, { titulo: "Outro consultório", icone: "chat", url: "web.whatsapp.com" }, t); paginaChat(x, c.qc, c.t);
+    } else {
+      // 4a. volta à pesquisa e clica no outro consultório, que agenda pelo WhatsApp
+      navegador(x, { titulo: "ginecologista perto de mim", icone: "busca", url: "ginecologista perto de mim", lupa: true }, t); paginaPesquisa(x, c.foco);
+    }
+    if (c.cur) seta(x, c.cur[0], c.cur[1], c.clique || 0);
     siteT.needsUpdate = true;
   }
 
@@ -885,7 +1101,7 @@ varying float vNota;`)
       ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000, comentarios: 425, envios: 26300, curtido: true, seguindo: true, corAvatar: "#b8923a" });
     } else if (cap === "s-problema") {
       const e = glide(faixa(p, 0, 0.12));
-      nb.pos.set(px, py - 0.35 - (1 - e) * 2.5, 0); nb.rot.set(0.16, -0.34 + p * 0.26, 0); nb.s = escNb;
+      nb.pos.set(px, py - 0.35 - (1 - e) * 2.5, 0); nb.rot.set(0.16, -0.26 + p * 0.16, 0); nb.s = escNb;
       if (redesenha) desenharSite(p, t); porNaTela(nbU, "A", siteT, NB_ASP, 1.6);
     } else if (cap === "s-montagem") {
       // o site do consultório sendo escrito; no fim vira a captura real (computador e celular)
