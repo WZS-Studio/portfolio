@@ -1,7 +1,7 @@
 // Empacota o voo do caso em destaque (a landing gravada rolando) para as telas 3D do capítulo s-caso.
 // Precisa do ffmpeg no PATH.
 //
-//   node tools/voo.mjs [projeto]          (padrão: valter)
+//   node tools/voo.mjs [projeto]          (padrão: lucas-tosi)
 //     lê   midia/<projeto>/voo.mp4 e voo-cel.mp4 (as gravações, só no repositório)
 //     gera media/sites/<projeto>/voo[-cel][-medio|-leve].bin (telas grandes, computadores comuns e celulares)
 //          e midia/<projeto>/voo-ritmo.json
@@ -17,7 +17,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const PROJETO = process.argv[2] || "valter";
+const PROJETO = process.argv[2] || "lucas-tosi";
 const ENTRADA = join(RAIZ, "midia", PROJETO), SAIDA = join(RAIZ, "media/sites", PROJETO);
 mkdirSync(SAIDA, { recursive: true });
 

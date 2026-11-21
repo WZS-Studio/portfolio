@@ -1,7 +1,7 @@
 // Celular e notebook em 3D que contam a história das jornadas, guiados pela rolagem.
 // Cada capítulo recebe um progresso p (0 → 1). Quem manda no ritmo é o visitante.
 //   c-problema    feed do Reels com vídeos que são pulados
-//   c-explode     o celular antigo explode e um novo chega com um reel bem feito
+//   c-explode     o celular antigo explode e um novo chega com um reel bem feito (do Dr. Lucas Tosi)
 //   c-montagem    prévia do editor: corte, gancho, legenda, som e chamada entram camada a camada
 //   c-sucesso     o reel publicado viraliza (contadores e corações dentro da tela)
 //   c-dinheiro    para anunciar: cada clique custa, o criativo paga (no celular, um vídeo do Dr. Lucas Tosi)
@@ -830,8 +830,8 @@ varying float vNota;`)
       } else {
         celU.uLuz.value = 1;
         cel.pos.set(px, py, -2.4 * (1 - volta)); cel.rot.set(0.05, -0.25 + (1 - volta) * Math.PI * 1.5, 0); cel.s = escCel * Math.max(0.05, volta);
-        const v = tocar(midia.videoMontagem);
-        ig({ fonte: pronto(v) ? v : imgEl(midia.posterMontagem), usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
+        const v = tocar(midia.videoExplode);
+        ig({ fonte: pronto(v) ? v : imgEl(midia.posterExplode), usuario: "dr.lucastosi", verificado: midia.verificadoCliente, legenda: "Canetas: como agem no seu corpo", corAvatar: "#b8923a" });
         celU.uBordaK.value = Math.sin(volta * Math.PI) * 1.2;
       }
     } else if (cap === "c-montagem") {
@@ -840,7 +840,7 @@ varying float vNota;`)
       const cam = [0, 1, 2, 3, 4].map((i) => suave(faixa(p, 0.12 + i * 0.14, 0.2 + i * 0.14)));
       const vm = tocar(midia.videoMontagem), fonteV = pronto(vm) ? vm : imgEl(midia.posterMontagem);
       const funde = reduce ? 1 : faixa(p, 0.8, 0.92);
-      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
+      if (p > 0.92) ig({ fonte: vm, usuario: "felipen.med", verificado: midia.verificadoAutor, legenda: "FA × FV: só um ainda bombeia", corAvatar: "#3b82f6" });
       else { if (redesenha) desenharEdicao(p, cam.map((v) => v * funde), fonteV); porNaTela(celU, "A", igT, CEL_ASP, W / H); }
       if (!reduce) camReel.forEach((k, i) => {
         const chega = faixa(p, 0.08 + i * 0.14, 0.2 + i * 0.14);
@@ -859,10 +859,10 @@ varying float vNota;`)
       if (!reduce && p > 0.25 && corac.length < 14 && Math.random() < 0.3) corac.push({ x: W - 60 + (Math.random() - 0.5) * 40, y: H - 650, vy: 200 + Math.random() * 180, vx: (Math.random() - 0.5) * 100, s: 30 + Math.random() * 36, a: 1, cor: Math.random() < 0.8 ? "#ff3040" : "#ff7aa2" });
       corac.forEach((c) => { c.y -= c.vy * dt; c.x += c.vx * dt + Math.sin(c.y / 40) * 1.2; c.a -= dt * 0.5; });
       corac = corac.filter((c) => c.a > 0);
-      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000 * cresce, comentarios: 425 * cresce, envios: 26300 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#b8923a" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000 * cresce, comentarios: 425 * cresce, envios: 26300 * cresce, curtido: cresce > 0.05, seguindo: cresce > 0.5, coracoes: corac, corAvatar: "#b8923a" });
     } else if (cap === "c-dinheiro") {
       cel.pos.set(px, py, 0); cel.rot.set(0.05, -0.3 + p * 0.25, 0.02); cel.s = escCel;
-      ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, verificado: midia.verificadoCliente, corAvatar: "#b8923a", seguindo: true });
+      ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", verificado: midia.verificadoCliente, corAvatar: "#b8923a", seguindo: true });
       // as cédulas saem da altura da legenda, abrem em leque (o ar freia) e caem devagar, balançando como papel
       if (!notas) criarNotas();
       const jorro = faixa(p, 0.15, 1);
@@ -882,7 +882,7 @@ varying float vNota;`)
       notas.instanceMatrix.needsUpdate = true;
     } else if (cap === "c-oportunidade") {
       cel.pos.set(retrato ? -VW * 0.2 : px + VW * 0.16, retrato ? topo(escCel * 0.6) - 0.2 : -0.25, 0.3); cel.rot.set(0.05, -0.5, 0.05); cel.s = escCel * 0.6;
-      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", avatar: midia.avatarAutor, verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000, comentarios: 425, envios: 26300, curtido: true, seguindo: true, corAvatar: "#b8923a" });
+      ig({ fonte: comPoster(midia.videoSucesso, midia.posterSucesso), usuario: "felipen.med", verificado: midia.verificadoAutor, legenda: "Você prescreveria para ele?", curtidas: 50000, comentarios: 425, envios: 26300, curtido: true, seguindo: true, corAvatar: "#b8923a" });
     } else if (cap === "s-problema") {
       const e = glide(faixa(p, 0, 0.12));
       nb.pos.set(px, py - 0.35 - (1 - e) * 2.5, 0); nb.rot.set(0.16, -0.34 + p * 0.26, 0); nb.s = escNb;
@@ -953,7 +953,7 @@ varying float vNota;`)
       if (p > 0.3) texturasCafe();
       const vira = faixa(p, 0.58, 0.72), giro = Math.sin(vira * Math.PI);
       cel.pos.set(px, py - giro * (retrato ? 0.12 : -0.06), giro * (retrato ? 0.2 : 0.45)); cel.rot.set(0.05 - giro * 0.05, -0.3 + p * 0.22 + suave(vira) * Math.PI * 2, 0.02 - giro * 0.04); cel.s = escCel * 1.02;
-      if (vira < 0.5) ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", avatar: midia.avatarCliente, verificado: midia.verificadoCliente, corAvatar: "#b8923a", seguindo: p > 0.5 });
+      if (vira < 0.5) ig({ fonte: comPoster(midia.videoCliente, midia.posterCliente), usuario: "dr.lucastosi", legenda: "Mioma: vira câncer?", verificado: midia.verificadoCliente, corAvatar: "#b8923a", seguindo: p > 0.5 });
       else { if (redesenha) desenharChat(faixa(p, 0.66, 0.98), t); porNaTela(celU, "A", chatT, CEL_ASP, 540 / 1170); }
       celU.uBordaK.value = giro * 1.3;
     }

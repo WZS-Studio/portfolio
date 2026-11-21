@@ -1,0 +1,3 @@
+# Projeto de demonstração (marca fictícia): não indexar.
+User-agent: *
+Disallow: /

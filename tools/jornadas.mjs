@@ -107,7 +107,7 @@ export function criarJornadas(h) {
 <article class="cart" data-video="${esc(v.id)}">
   <button class="cart__tela vid__tela" type="button" data-play="${esc(v.id)}" data-src="${esc(hv(v.arquivo))}"${leve(v.arquivo)} data-titulo="${esc(v.titulo)}" data-conta="${esc(v.conta)}" data-cursor="Reproduzir" aria-label="Reproduzir vídeo: ${esc(v.titulo)} (${esc(v.conta)})">
     ${img(v.poster, "", { cls: "vid__poster" })}
-    <span class="cart__ui"><span class="cart__conta"><i>${v.foto ? img(v.foto, "") : ""}</i>${esc(v.conta)}${v.verificado ? verificado : ""}</span><span class="cart__titulo">${esc(v.titulo)}</span></span>
+    <span class="cart__ui"><span class="cart__conta"><i></i>${esc(v.conta)}${v.verificado ? verificado : ""}</span><span class="cart__titulo">${esc(v.titulo)}</span></span>
     ${v.selo ? `<span class="cart__selo">${esc(v.selo)}</span>` : ""}
     <span class="vid__play"><i>${ico("play", "ico ico--fill")}</i>Assistir</span>
   </button>
@@ -116,7 +116,7 @@ export function criarJornadas(h) {
   const cartSite = (pj) => `
 <article class="cart cart--site" data-projeto="${pj.slug}">
   <button class="cart__janela" type="button" data-abrir-caso="${pj.slug}" data-cursor="Ver projeto" aria-label="Abrir o estudo de caso: ${esc(pj.nome)}">
-    <span class="cart__barra"><i></i><i></i><i></i><em>${esc((pj.url || pj.slug).replace(/^https?:\/\//, ""))}</em></span>
+    <span class="cart__barra"><i></i><i></i><i></i><em>${esc((pj.url || pj.barra || pj.slug).replace(/^https?:\/\//, ""))}</em></span>
     ${img(pj.capturas?.desktop?.[0], `${pj.nome} no computador`)}
     ${pj.capturas?.celular?.[0] ? `<span class="cart__cel">${img(pj.capturas.celular[0], "")}</span>` : ""}
   </button>
@@ -197,7 +197,7 @@ export function criarJornadas(h) {
   // ======================================================== SITES
   function paginaSites() {
     const s = sites, hi = s.historia;
-    const cmd = hi.caso, md = s.projetos.find((p) => p.slug === cmd.projeto), cl = clientes.find((x) => x.slug === cmd.projeto);
+    const cmd = hi.caso, md = s.projetos.find((p) => p.slug === cmd.projeto), cl = clientes.find((x) => x.slug === (md?.cliente || cmd.projeto));
     const obra = s.projetos.find((p) => p.slug === "valter");
     const secoes = [];
     secoes.push(heroHtml(s.hero, whatsapp.mensagens.sitesGeral, "sites", `<a class="btn btn--linha" href="#cap-caso">Ver o caso em destaque ${ico("dir")}</a>`));
@@ -211,6 +211,7 @@ export function criarJornadas(h) {
         let h2 = titulo(x.titulo, x.texto, i ? "h3" : "h2", i ? "" : "t-mg");
         if (!i) h2 = h2.replace("passo__titulo", "passo__titulo passo__titulo--gigante passo__titulo--nome");
         if (x.barras) h2 += `<div class="barras" aria-label="${x.barras.rotulo ? esc(x.barras.rotulo) + ": " : ""}antes ${esc(x.barras.antes)}, depois ${esc(x.barras.depois)}">${x.barras.rotulo ? `<p class="barras__rotulo">${esc(x.barras.rotulo)}</p>` : ""}<div class="barras__l"><span>Antes</span><i style="--w:1"></i><b>${esc(x.barras.antes)}</b></div><div class="barras__l barras__l--depois"><span>Depois</span><i style="--w:${x.barras.proporcao}"></i><b>${esc(x.barras.depois)}</b></div><p class="passo__fonte">${esc(x.barras.fonte)}</p></div>`;
+        if (x.fonte) h2 += `<p class="passo__fonte">${esc(x.fonte)}</p>`;
         if (x.cliente && cl) h2 += clienteHtml(cl, true);
         if (x.acoes && md) h2 += `<div class="passo__acoes"><button class="btn" type="button" data-abrir-caso="${md.slug}" data-cursor="Ver projeto">Estudo de caso completo ${ico("dir")}</button>${md.url ? `<a class="btn btn--linha" href="${esc(md.url)}" target="_blank" rel="noopener" data-cursor="Abrir site">Ver no ar ${ico("seta")}</a>` : ""}</div>`;
         return passo(fm[i][0], fm[i][1], h2);
@@ -248,7 +249,7 @@ export function criarJornadas(h) {
     secoes.push(heroHtml(c.hero, whatsapp.mensagens.criativosGeral, "criativos", `<a class="btn btn--linha" href="#numeros">Ver os números ${ico("dir")}</a>`));
     secoes.push(expande("abre-criativos", hi.abertura, "c-problema"));
     secoes.push(capitulo({ id: "cap-problema", cap: "c-problema", altura: 240, cena: "fundo", rotulo: hi.problema.rotulo, rotuloId: "t-cp", conteudo: passos(hi.problema.passos, "t-cp") }));
-    secoes.push(capitulo({ id: "cap-explode", cap: "c-explode", altura: 180, cena: "fundo", alt: hi.montagem.poster, rotuloId: "t-ce",
+    secoes.push(capitulo({ id: "cap-explode", cap: "c-explode", altura: 180, cena: "fundo", alt: hi.explode.poster || hi.montagem.poster, rotuloId: "t-ce",
       conteudo: passo("0", "0.580", `<p class="passo__titulo display passo__titulo--gigante" aria-hidden="true">Pulou.</p>`) + passo("0.580", "1.010", titulo(hi.explode.titulo, hi.explode.texto, "h2", "t-ce")) }));
     secoes.push(capitulo({ id: "cap-montagem", cap: "c-montagem", altura: 340, cena: "painel", cls: "cap--painel", alt: hi.montagem.poster, rotulo: hi.montagem.rotulo, rotuloId: "t-cm", conteudo: camadasPassos(hi.montagem, "t-cm"), extra: editorReel(hi.montagem) }));
     if (hi.voz) {

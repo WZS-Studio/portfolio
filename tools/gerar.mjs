@@ -279,9 +279,11 @@ const dadosMundo = {
   midia: {
     // vídeos das telas 3D, sem som, em /media/tex: 720×1280 para telas grandes e "-leve" (540×960) para as demais
     videoMontagem: hv("/media/tex/montagem.mp4"), posterMontagem: midiaV("/media/tex/montagem.jpg"),
+    // "É aqui que nós entramos": o celular novo chega com um reel do Dr. Lucas Tosi ("Canetas", 18 s sem som)
+    videoExplode: hv("/media/tex/explode.mp4"), posterExplode: midiaV("/media/tex/explode.jpg"),
     // o vídeo do cliente (Dr. Lucas Tosi, "Mioma: vira câncer?", 20 s sem som) no celular de "Para anunciar" e da oportunidade de Sites
-    videoSucesso: hv("/media/tex/sucesso.mp4"), videoCliente: hv("/media/tex/cliente.mp4"), avatarCliente: cliente ? midiaV(cliente.foto) : null, verificadoCliente: !!cliente?.verificado,
-    avatarAutor: autor.foto ? midiaV(autor.foto) : null, verificadoAutor: !!autor.verificado,
+    videoSucesso: hv("/media/tex/sucesso.mp4"), videoCliente: hv("/media/tex/cliente.mp4"), verificadoCliente: !!cliente?.verificado,
+    verificadoAutor: !!autor.verificado,
     // quadro parado enquanto o vídeo abre (antes a tela ficava preta)
     posterSucesso: midiaV("/media/tex/sucesso.jpg"), posterCliente: midiaV("/media/tex/cliente.jpg"),
     // frente e verso das cédulas de R$ 100 e R$ 50 (imagens do Banco Central) numa folha só, para as notas 3D do anúncio

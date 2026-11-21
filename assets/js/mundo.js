@@ -28,8 +28,9 @@ const CENAS = {
   painel:    { x: 0.02, y: 0.33, s: 0.17, o: 1, cards: "fora", dim: 0.3, d: { x: 0.33, y: 0.36, s: 0.1, o: 1 } },
   // capítulos só de texto (voz clonada, depoimento): a logo sai de cena para a leitura ficar livre
   texto:     { x: -0.37, y: 0.27, s: 0.12, o: 0, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.1, o: 0 } },
-  // caso em destaque (Sites): como o fundo, mas a logo desce para o canto de baixo e deixa o nome do cliente livre
-  caso:      { x: -0.37, y: -0.36, s: 0.18, o: 1, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.12, o: 1 }, m: { x: -0.36, y: -0.36, s: 0.16 } },
+  // caso em destaque (Sites): como o fundo, mas a logo desce para o canto de baixo e deixa o nome do cliente livre;
+  // na tela em pé ela some (ficaria em cima do notebook)
+  caso:      { x: -0.37, y: -0.36, s: 0.18, o: 1, cards: "fora", dim: 0.3, d: { x: -0.33, y: -0.03, s: 0.12, o: 0 }, m: { x: -0.36, y: -0.36, s: 0.16 } },
   // oportunidade: a logo vira um globo de alcance
   globo:     { x: 0.2,  y: 0.02, s: 0.95, o: 0.85, cards: "fora", dim: 0.15, d: { x: 0, y: 0.2, s: 0.55, o: 0.8 }, m: { x: 0.24, s: 0.7 } },
 };

@@ -34,6 +34,11 @@ ErrorDocument 403 /404.html
   RewriteCond %{REQUEST_URI} !^/LUCASTOSI/
   RewriteRule ^lucastosi(/.*)?$ /LUCASTOSI/ [NC,R=301,L]
 
+  # Site de demonstração da Compasso (cópia do dist de Si/compasso): o endereço é /COMPASSO/, com caminhos relativos.
+  # Outra caixa (/compasso, /Compasso) e o endereço sem a barra final vão para ele, mantendo a página pedida.
+  RewriteCond %{REQUEST_URI} !^/COMPASSO/
+  RewriteRule ^compasso(?:/(.*))?$ /COMPASSO/$1 [NC,R=301,L]
+
   # logo-3d.html é ferramenta interna (exporta a logo 3D e carrega scripts de CDN): fica só no repositório
   RewriteRule ^logo-3d\.html$ - [F,L]
 </IfModule>

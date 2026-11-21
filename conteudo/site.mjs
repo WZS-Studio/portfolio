@@ -54,7 +54,7 @@ export const clientes = [
     instagram: "https://www.instagram.com/dr.lucastosi/", arroba: "@dr.lucastosi", verificado: true,
     numeros: [{ valor: "130 mil", rotulo: "seguidores" }, { valor: "2.299", rotulo: "publicações" }],
     fonte: "Perfil público no Instagram em 20/11/2026. Os números são do perfil dele, não resultado dos vídeos.",
-    feito: ["Vídeos com animação 3D sobre *estrogênio, mioma e canetas emagrecedoras*", "A landing do livro *“A revolução da mulher 40+”*, com o livro em 3D"],
+    feito: ["Vídeos com animação 3D sobre *estrogênio, mioma e canetas emagrecedoras*", "A landing do livro *“A revolução da mulher 40+”*, com o livro em 3D", "A proposta do *site do consultório*, com as quatro áreas de cuidado"],
     site: "https://wzsstudio.com.br/LUCASTOSI/",
   },
 ];
@@ -147,16 +147,18 @@ export const sites = {
           codigo: ['<a class="btn" href="https://wa.me/...">', '  Agendar minha avaliação', '</a>'] },
       ],
     },
-    // caso em destaque: o site gravado rolando voa na tela do notebook (tools/voo.mjs valter) e o projeto abre o estudo de caso
+    // caso em destaque: o site gravado rolando voa nas telas do notebook e do celular (tools/voo.mjs lucas-tosi-clinica) e o projeto abre o estudo de caso.
+    // O Felipe pediu o Dr. Lucas aqui ("ele é referência") e que a landing virasse um site de clínica: é a proposta feita em Si/lucas-tosi-clinica,
+    // ainda não aprovada nem publicada (por isso não tem "Ver no ar"). A landing do livro continua no carrossel.
     caso: {
       rotulo: "Caso em destaque",
-      projeto: "valter",
+      projeto: "lucas-tosi-clinica",
       passos: [
-        { titulo: "Dr. Valter Dias", texto: "O site de um consultório de farmácia clínica e estética em Adamantina-SP." },
-        { titulo: "A avaliação vem primeiro.", texto: "O site explica que todo tratamento começa pela saúde e pelos remédios em uso, antes de qualquer procedimento." },
-        { titulo: "Uma página para cada dúvida.", texto: "32 páginas: 16 tratamentos, perguntas frequentes e artigos. O paciente acha a resposta antes de chamar." },
-        { titulo: "Pensado para o celular.", texto: "Cada tratamento abre com um toque e o botão de agendar fica sempre à vista." },
-        { titulo: "Do interesse ao agendamento.", texto: "O agendamento já monta a mensagem no WhatsApp com o tratamento escolhido.", acoes: true },
+        { titulo: "Dr. Lucas Tosi", texto: "A proposta de site do consultório, feita a partir da landing do livro.", cliente: true },
+        { titulo: "Uma página para cada assunto.", texto: "Menopausa, reposição hormonal, emagrecimento e laser: o que é, quando procurar, os limites de cada tratamento e as referências." },
+        { titulo: "O livro continua em 3D.", texto: "Numa seção só, onde a página vira com o dedo, no computador e no celular." },
+        { titulo: "Rápido no celular.", texto: "No 3G, o texto da abertura aparece em 1,7 s. O livro 3D carrega depois, sem segurar a página.", fonte: "Teste da WZS Studio: celular emulado, rede 3G do Chrome, processador 4× mais lento, sem cache, mediana de 3 cargas, em 20/11/2026." },
+        { titulo: "Do clique à consulta.", texto: "Cada botão abre o WhatsApp do consultório com a mensagem pronta e a cidade escolhida. CRM e RQE à vista, sem promessa de resultado.", acoes: true },
       ],
     },
     // depoimento de cliente (texto passado pelo Felipe em 20/11/2026); a agenda ao lado enche com a rolagem
@@ -218,7 +220,64 @@ export const sites = {
   // publicar: false = o projeto fica guardado aqui, mas não aparece no site (desde 20/11/2026 o site mostra só a área da saúde)
   projetos: [
     {
-      slug: "valter", nome: "Dr. Valter Dias", peso: "destaque", interesse: "site do zero",
+      // proposta feita em Si/lucas-tosi-clinica (20/11/2026), a partir da landing do livro; não aprovada nem publicada ainda
+      slug: "lucas-tosi-clinica", cliente: "lucas-tosi", barra: "consultório do dr. lucas tosi · proposta", nome: "Dr. Lucas Tosi", peso: "destaque", interesse: "site de consultório",
+      tipo: "Site de consultório · ginecologia · proposta",
+      linha: "O site do consultório, feito a partir da landing do livro: quatro áreas de cuidado, os dois lugares de atendimento e o livro em 3D.",
+      oQueE: "Proposta de site para o consultório do Dr. Lucas Tosi, ginecologista e obstetra que atende mulheres na transição da menopausa em Santa Cruz do Rio Pardo e em Alphaville (SP). São 12 páginas: a inicial, uma para cada área (menopausa, reposição hormonal, emagrecimento e laser), o perfil do médico, onde atende, conteúdos em vídeo, agendamento, privacidade e a página de erro.",
+      paraQuem: "A mulher de 40 anos ou mais com sintomas da transição, que chega pelo Instagram dele ou pela busca, lê no celular e quer entender o que acontece antes de decidir um tratamento.",
+      desafio: "Convencer sem prometer, com CRM e RQE à vista, em temas em que a publicidade costuma exagerar (emagrecimento, reposição hormonal e laser íntimo), e manter a personalidade da landing do livro sem que o site vire peça de lançamento.",
+      feito: "Na página inicial: a proposta do médico, as quatro áreas, quem atende, os dois lugares de atendimento, três vídeos feitos pela WZS, o livro em 3D que vira a página no arraste, o Instituto Tosi, a MenoRun e o agendamento pelo WhatsApp com a mensagem pronta para cada cidade. Cada área tem o que é, quando procurar, o que acontece na consulta, as opções e quando não são indicadas, perguntas frequentes e referências.",
+      decisoes: [
+        "Faixas pretas para a voz do médico (abertura, quem atende, vídeos e livro) e faixas em branco quente para ler: texto longo de saúde em fundo preto cansa.",
+        "O 3D aparece só onde diz algo: o livro, prova de que ele explica o assunto em linguagem clara. Ele é montado logo depois da carga, para não dar tranco na rolagem.",
+        "Cada área tem uma seção “quando não é indicado”: mostrar os limites dá confiança e segue a Resolução CFM nº 2.336/2023.",
+        "Agendar sem formulário: o botão abre o WhatsApp com a cidade escolhida, sem cookies e sem dado de saúde passando pelo site (LGPD).",
+        "O que ainda depende do consultório (endereço, horários e convênios) aparece marcado “a confirmar”, em vez de texto inventado.",
+      ],
+      stack: ["HTML", "CSS", "JavaScript", "Three.js"],
+      capturaNota: "proposta, ainda não publicada",
+      capturas: {
+        desktop: ["/media/sites/lucas-tosi-clinica/desk-1.webp", "/media/sites/lucas-tosi-clinica/desk-2.webp", "/media/sites/lucas-tosi-clinica/desk-3.webp", "/media/sites/lucas-tosi-clinica/desk-4.webp"],
+        celular: ["/media/sites/lucas-tosi-clinica/cel-1.webp", "/media/sites/lucas-tosi-clinica/cel-2.webp", "/media/sites/lucas-tosi-clinica/cel-3.webp"],
+      },
+      resultados: [
+        { valor: "1,7 s", rotulo: "até o texto da abertura aparecer num celular em 3G, sem cache", fonte: "Teste da WZS Studio: celular emulado, rede 3G do Chrome, processador 4× mais lento, sem cache, mediana de 3 cargas", data: "20/11/2026" },
+        { valor: "11 KB", rotulo: "de HTML na página inicial, com 1,2 KB de JavaScript", fonte: "Arquivos do projeto comprimidos com brotli", data: "20/11/2026" },
+      ],
+      nota: "Proposta de site, ainda não publicada. Fotos do palco: @oandrewillian (encontro do Clube VERO).",
+    },
+    {
+      // demonstração feita em Si/compasso (20/11/2026): marca fictícia, a mesma dos dois anúncios de Criativos; no ar em /COMPASSO/ (cópia do dist)
+      slug: "compasso", nome: "Compasso", peso: "medio", interesse: "site de clínica",
+      tipo: "Site de clínica · cardiologia · demonstração",
+      linha: "O site de uma clínica de check-up do coração que continua os dois anúncios da marca, com a mesma voz e os mesmos números.",
+      url: "https://wzsstudio.com.br/COMPASSO/", urlRotulo: "wzsstudio.com.br/COMPASSO",
+      oQueE: "Projeto de demonstração: a Compasso é uma clínica fictícia de check-up do coração, criada pela WZS Studio para mostrar o que entregamos quando a campanha de vídeo já existe. São 8 páginas: a inicial, o check-up etapa por etapa com o preparo, para quem é, equipe, dúvidas, agendamento, privacidade e a página de erro.",
+      paraQuem: "Quem nunca fez um check-up do coração, quem tem pressão ou colesterol alto na família, quem vai começar a treinar e, em especial, a mulher que cuida de todo mundo e se deixa para depois.",
+      desafio: "Os dois anúncios falam em tons opostos, um de precisão e outro de cuidado. O site precisava juntar os dois sem virar duas marcas, abrir rápido no celular e seguir a Resolução CFM nº 2.336/2023 e a LGPD sem parecer um formulário jurídico.",
+      feito: "Um site que começa em “precisão” e vira “cuidado” no meio da página inicial, com uma frase de ponte: “Precisão é como a gente examina. Cuidado é como a gente recebe.” O coração do anúncio abre a página, as cinco etapas se marcam como no vídeo e a lista do dia termina em “e o seu coração?”.",
+      decisoes: [
+        "Duas metades, como os dois anúncios: azul-noite, linhas de exame e DM Sans para explicar o check-up; cacau, creme e serifa itálica para falar com quem vai fazer.",
+        "O coração do anúncio entra como vídeo leve depois da carga, sem WebGL. Com economia de dados ou “reduzir movimento”, fica a imagem parada.",
+        "A copy manda: entradas curtas, nenhuma seção presa na tela e a rolagem sempre livre.",
+        "Responsável técnico com CRM e RQE no topo e no rodapé, aviso de urgência (192), equipe sem fotos de rosto e nenhuma promessa de resultado.",
+        "Agendar sem formulário de saúde: duas escolhas montam a mensagem do WhatsApp, e o site não usa cookies nem medição.",
+      ],
+      stack: ["HTML", "CSS", "JavaScript"],
+      capturaNota: "demonstração com marca fictícia",
+      capturas: {
+        desktop: ["/media/sites/compasso/desk-1.webp", "/media/sites/compasso/desk-2.webp", "/media/sites/compasso/desk-3.webp", "/media/sites/compasso/desk-4.webp"],
+        celular: ["/media/sites/compasso/cel-1.webp", "/media/sites/compasso/cel-2.webp", "/media/sites/compasso/cel-3.webp"],
+      },
+      resultados: [
+        { valor: "1,9 s", rotulo: "até o título aparecer num celular em 3G, sem cache", fonte: "Teste da WZS Studio: celular emulado, rede 3G do Chrome, processador 4× mais lento, sem cache, mediana de 3 cargas", data: "20/11/2026" },
+        { valor: "135 KB", rotulo: "na primeira tela do celular, com as fontes e o coração", fonte: "Soma dos arquivos da primeira tela comprimidos com brotli", data: "20/11/2026" },
+      ],
+      nota: "Marca, equipe, CRM, endereço e contatos fictícios. As imagens saem dos dois anúncios da marca, gerados sem pessoas reais; os anúncios estão em Criativos, em “Para anunciar”.",
+    },
+    {
+      slug: "valter", barra: "dr. valter dias · site pronto", nome: "Dr. Valter Dias", peso: "compacto", interesse: "site do zero",
       tipo: "Site · farmácia clínica e estética",
       linha: "Um site de 32 páginas para um farmacêutico clínico e esteta de Adamantina-SP, com a avaliação individual como ponto de partida.",
       oQueE: "Consultório do Dr. Valter Dias, farmacêutico clínico e esteta em Adamantina-SP: estética facial e corporal e farmácia clínica, com atendimento particular e hora marcada.",
@@ -240,7 +299,7 @@ export const sites = {
       nota: "Site pronto e ainda não publicado: o domínio ainda não foi definido.",
     },
     {
-      slug: "lucas-tosi", nome: "Dr. Lucas Tosi", peso: "medio", interesse: "landing page",
+      slug: "lucas-tosi", nome: "Dr. Lucas Tosi", peso: "compacto", interesse: "landing page",
       tipo: "Landing page 3D · livro de ginecologista",
       linha: "A landing do livro “A revolução da mulher 40+”, com o livro em 3D que acompanha a leitura e as duas lojas a um toque.",
       url: "https://wzsstudio.com.br/LUCASTOSI/", urlRotulo: "wzsstudio.com.br/LUCASTOSI",
@@ -592,7 +651,7 @@ export const criativos = {
         { titulo: "Sem roteiro, assiste e não lembra de quem era." },
       ],
     },
-    explode: { titulo: "É aqui que nós entramos.", texto: "Montamos o vídeo inteiro: a ideia, o roteiro conferido na fonte, a animação e a edição." },
+    explode: { titulo: "É aqui que nós entramos.", texto: "Montamos o vídeo inteiro: a ideia, o roteiro conferido na fonte, a animação e a edição.", poster: "/media/criativos/lucas-canetas.jpg" },
     // clonagem de voz (texto do Felipe, 20/11/2026)
     voz: {
       rotulo: "Com a sua voz",
@@ -664,14 +723,14 @@ export const criativos = {
         inclui: ["Ideia e roteiro com fonte, em série", "Narração com a sua voz, sem gravar cada vídeo", "Animação e edição com legenda e som", "Sua revisão clínica antes de publicar"],
         metrica: { rotulo: "Medido por", itens: ["Visualizações", "Envios e salvamentos", "Seguidores"] },
         // celular atrás da caixa: o reel “Eu quero antibiótico!” do @felipen.med (contador público do Instagram, 19/11/2026)
-        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "felipen.med", cor: "#b8923a", avatar: "/media/clientes/felipen-med.jpg",
+        vitrine: { video: "/media/tex/sucesso-leve.mp4", poster: "/media/tex/sucesso.jpg", conta: "felipen.med", cor: "#b8923a",
           legenda: "Você prescreveria para ele?", curtidas: "50 mil", comentarios: "425", envios: "26,3 mil", selo: { rotulo: "Visualizações", valor: "759 mil", nota: "em um único reel" } } },
       { slug: "anunciar", nome: "Para anunciar", rotulo: "Tráfego pago", interesse: "anúncios", cta: "Quero criativos para anúncios",
         resumo: "Criativos para campanhas: apresentar a clínica, um serviço, um livro ou um evento e testar ganchos.",
         inclui: ["Roteiro com variações de gancho", "Edição em 9:16, 4:5 e 1:1", "Texto revisado pelas regras do CFM"],
         metrica: { rotulo: "Medido por", itens: ["CTR", "Custo por resultado", "Conversão"] },
         // celular atrás da caixa: um vídeo do Dr. Lucas Tosi (sem número de anúncio: o selo fica de fora)
-        vitrine: { video: "/media/tex/cliente-leve.mp4", poster: "/media/tex/cliente.jpg", conta: "dr.lucastosi", cor: "#b8923a", avatar: "/media/clientes/dr-lucastosi.jpg",
+        vitrine: { video: "/media/tex/cliente-leve.mp4", poster: "/media/tex/cliente.jpg", conta: "dr.lucastosi", cor: "#b8923a",
           legenda: "Mioma: vira câncer?" } },
     ],
     nota: "Ninguém controla o algoritmo: não existe garantia de alcance nem de pacientes novos. E nenhum vídeo promete resultado de tratamento.",
@@ -923,20 +982,28 @@ export const criativos = {
   ],
 
   // Anúncios e criativos de conversão: a seção só aparece quando houver vídeos aqui sem oculto: true.
-  // Desde 20/11/2026 todos estão ocultos (MedGrind, @wzs_studio e peças de demonstração não são da área médica).
+  // Desde 20/11/2026 só os da Compasso aparecem (MedGrind, @wzs_studio e as peças de outros ramos estão ocultos).
   anuncios: {
-    titulo: "Criativos de campanha.",
-    lead: "Anúncios e peças de motion feitos em código: ritmo, tipografia em movimento e a oferta clara no final.",
-    conta: "Anúncios e motion", tema: "Criativos de conversão", slug: "anuncios", nomeSerie: "Feitos para vender.",
+    titulo: "Uma oferta, dois públicos.",
+    lead: "O mesmo check-up contado com precisão para um público e com cuidado para outro. Peças de demonstração para uma clínica fictícia.",
+    conta: "Compasso · demonstração", tema: "Criativos de conversão", slug: "anuncios", nomeSerie: "Feitos para agendar.",
     descricao: [
-      "Vídeos de 15 a 28 s para campanhas pagas, com imagens reais do produto, HUD animado e trilha no tempo dos cortes. O mesmo corpo de vídeo ganha ganchos diferentes para testar qual segura melhor.",
+      "Dois anúncios de 30 s para a mesma oferta: um check-up cardiológico em uma manhã. Um fala com quem confia em dados; o outro, com a mulher que cuida de todo mundo e esquece de si. A Compasso é uma marca fictícia, criada para demonstrar o formato. O site da marca, que continua estes anúncios, está em Sites.",
     ],
-    numeros: [
-      { valor: "4,56%", rotulo: "CTR do vídeo Plantão" },
-      { valor: "R$ 0,15", rotulo: "por visita à página" },
-    ],
-    fonte: "Gerenciador de Anúncios da Meta, campanha de tráfego de 08 a 20/10/2026.",
+    numeros: [],
+    fonte: "",
+    // Compasso: marca, equipe e contatos fictícios (peças de demonstração enviadas pelo Felipe em 20/11/2026)
     videos: [
+      { id: "compasso-precisao", conta: "Compasso · demonstração", grande: true, titulo: "Seu coração, com precisão.",
+        arquivo: "/media/criativos/compasso-precisao.mp4", poster: "/media/criativos/compasso-precisao.jpg",
+        objetivo: "Levar quem nunca fez um check-up cardiológico ao agendamento pelo WhatsApp.", publico: "Adultos a partir dos 40 anos.",
+        gancho: "“Seu coração bate cerca de 100.000 vezes por dia.”",
+        edicao: "Coração 3D em raio X, interface de exame e as cinco etapas do check-up marcadas na tela; termina na chamada para o WhatsApp. Marca, equipe e contatos fictícios." },
+      { id: "compasso-cuidado", conta: "Compasso · demonstração", titulo: "Quem cuida de todo mundo também merece cuidado.",
+        arquivo: "/media/criativos/compasso-cuidado.mp4", poster: "/media/criativos/compasso-cuidado.jpg",
+        objetivo: "A mesma oferta contada para outro público, pela emoção.", publico: "Mulheres a partir dos 40 anos.",
+        gancho: "A lista do dia: a vacina do filho, o remédio da mãe, o exame do marido… e o seu coração?",
+        edicao: "Luz quente, serifa e a lista que vai sendo marcada; o dado da Sociedade Brasileira de Cardiologia na tela e a chamada no fim. Marca, equipe e contatos fictícios." },
       { id: "ad05v-plantao", oculto: true, grande: true, selo: "CTR 4,56%", titulo: "Plantão: “Paciente na sala 1. A conduta é sua.”",
         arquivo: "/media/criativos/ad05v-plantao.mp4", poster: "/media/criativos/ad05v-plantao.jpg",
         metricas: [{ tipo: "CTR", valor: "4,56%" }, { tipo: "por visita", valor: "R$ 0,15" }],
