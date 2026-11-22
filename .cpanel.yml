@@ -3,9 +3,10 @@
 # As páginas (index.html, sites/, criativos/) são geradas por `node tools/gerar.mjs` antes do commit.
 # LUCASTOSI/ é a landing do livro do Dr. Lucas Tosi, gerada no projeto livro-revolucao-mulher-40 (dist/ copiado aqui).
 # COMPASSO/ é o site da clínica fictícia Compasso (demonstração), gerado em Si/compasso (dist/ copiado aqui).
+# aulapatologia/ é o aulão de patologia (turma T9) para os alunos (fora do site, noindex), gerado em Si/aulao-patologia (dist/aulao-patologia.html copiado como index.html).
 ---
 deployment:
   tasks:
     - export DEPLOYPATH=$HOME/public_html/
     - /bin/cp index.html 404.html .htaccess robots.txt sitemap.xml $DEPLOYPATH
-    - /bin/cp -R assets media sites criativos audio posters videos LUCASTOSI COMPASSO $DEPLOYPATH
+    - /bin/cp -R assets media sites criativos audio posters videos LUCASTOSI COMPASSO aulapatologia $DEPLOYPATH
