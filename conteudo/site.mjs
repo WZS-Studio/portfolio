@@ -982,13 +982,16 @@ export const criativos = {
   ],
 
   // Anúncios e criativos de conversão: a seção só aparece quando houver vídeos aqui sem oculto: true.
-  // Desde 20/11/2026 só os da Compasso aparecem (MedGrind, @wzs_studio e as peças de outros ramos estão ocultos).
+  // Desde 20/11/2026 só os de clínicas fictícias aparecem: os dois da Compasso e, desde 21/11/2026, o da Clínica Mapa
+  // (MedGrind, @wzs_studio e as peças de outros ramos estão ocultos). Com três peças de duas marcas, o título
+  // "Uma oferta, dois públicos." deixou de valer e virou "Feitos para agendar.".
   anuncios: {
-    titulo: "Uma oferta, dois públicos.",
-    lead: "O mesmo check-up contado com precisão para um público e com cuidado para outro. Peças de demonstração para uma clínica fictícia.",
+    titulo: "Feitos para agendar.",
+    lead: "Anúncios de 30 s que terminam no agendamento pelo WhatsApp. Peças de demonstração para clínicas fictícias.",
     conta: "Compasso · demonstração", tema: "Criativos de conversão", slug: "anuncios", nomeSerie: "Feitos para agendar.",
     descricao: [
       "Dois anúncios de 30 s para a mesma oferta: um check-up cardiológico em uma manhã. Um fala com quem confia em dados; o outro, com a mulher que cuida de todo mundo e esquece de si. A Compasso é uma marca fictícia, criada para demonstrar o formato. O site da marca, que continua estes anúncios, está em Sites.",
+      "Um anúncio de 31 s para o mapeamento de pintas de uma clínica de dermatologia, a Clínica Mapa, também fictícia: o teste ABCDE na tela e a foto que compara a pinta de um ano para o outro.",
     ],
     numeros: [],
     fonte: "",
@@ -1004,6 +1007,12 @@ export const criativos = {
         objetivo: "A mesma oferta contada para outro público, pela emoção.", publico: "Mulheres a partir dos 40 anos.",
         gancho: "A lista do dia: a vacina do filho, o remédio da mãe, o exame do marido… e o seu coração?",
         edicao: "Luz quente, serifa e a lista que vai sendo marcada; o dado da Sociedade Brasileira de Cardiologia na tela e a chamada no fim. Marca, equipe e contatos fictícios." },
+      // Clínica Mapa: dermatologia fictícia (reel de demonstração enviado pelo Felipe em 21/11/2026; o próprio vídeo traz telefone, CRM e RQE de exemplo)
+      { id: "mapa-pintas", conta: "Clínica Mapa · demonstração", titulo: "Você nunca viu as suas costas.",
+        arquivo: "/media/criativos/mapa-pintas.mp4", poster: "/media/criativos/mapa-pintas.jpg",
+        objetivo: "Levar quem não vê as próprias costas ao mapeamento de pintas, agendado pelo WhatsApp.",
+        gancho: "“Você nunca viu as suas costas.”",
+        edicao: "Pele em close, a pinta que cresce e o teste ABCDE marcado letra por letra (a regra da Sociedade Brasileira de Dermatologia, citada na tela); depois a dermatoscopia digital, o mapa do corpo que compara a foto de um ano atrás com a de hoje e a chamada para o WhatsApp. Marca, equipe e contatos fictícios." },
       { id: "ad05v-plantao", oculto: true, grande: true, selo: "CTR 4,56%", titulo: "Plantão: “Paciente na sala 1. A conduta é sua.”",
         arquivo: "/media/criativos/ad05v-plantao.mp4", poster: "/media/criativos/ad05v-plantao.jpg",
         metricas: [{ tipo: "CTR", valor: "4,56%" }, { tipo: "por visita", valor: "R$ 0,15" }],
