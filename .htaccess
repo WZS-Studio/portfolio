@@ -44,6 +44,11 @@ ErrorDocument 403 /404.html
   RewriteCond %{REQUEST_URI} !^/aulapatologia/
   RewriteRule ^aulapatologia(?:/(.*))?$ /aulapatologia/$1 [NC,R=301,L]
 
+  # Aulão de farmacologia (P2) para os alunos (fora do site; noindex na página): o endereço é /aulafarmacologia/.
+  # Outra caixa (/AulaFarmacologia) e o endereço sem a barra final vão para ele, mantendo a página pedida.
+  RewriteCond %{REQUEST_URI} !^/aulafarmacologia/
+  RewriteRule ^aulafarmacologia(?:/(.*))?$ /aulafarmacologia/$1 [NC,R=301,L]
+
   # logo-3d.html é ferramenta interna (exporta a logo 3D e carrega scripts de CDN): fica só no repositório
   RewriteRule ^logo-3d\.html$ - [F,L]
 </IfModule>
